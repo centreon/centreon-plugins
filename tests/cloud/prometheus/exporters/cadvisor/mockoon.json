@@ -1,0 +1,358 @@
+{
+  "uuid": "8bd91186-3cae-4ea6-ba11-71e1ebf653f7",
+  "lastMigration": 33,
+  "name": "Prometheus cAdvisor",
+  "endpointPrefix": "",
+  "latency": 0,
+  "port": 3000,
+  "hostname": "",
+  "folders": [],
+  "routes": [
+    {
+      "uuid": "e5abccdd-0cf6-4441-8466-586cd80248c7",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/v1/query",
+      "responses": [
+        {
+          "uuid": "038a6f20-2412-4f6f-a073-256b10740cb3",
+          "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": [\n      {\n        \"metric\": {\n          \"__name__\": \"container_last_seen\",\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"metrics_path\": \"/metrics/cadvisor\",\n          \"endpoint\": \"https-metrics\",\n          \"service\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"id\": \"/\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1775655779\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"__name__\": \"container_last_seen\",\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"metrics_path\": \"/metrics/cadvisor\",\n          \"endpoint\": \"https-metrics\",\n          \"service\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"id\": \"/system.slice/kubelet.service\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1775655779\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"__name__\": \"container_last_seen\",\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"metrics_path\": \"/metrics/cadvisor\",\n          \"endpoint\": \"https-metrics\",\n          \"service\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"id\": \"/system.slice/docker-a1b2.scope\",\n          \"name\": \"haproxy\",\n          \"image\": \"haproxy:2.8\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1775655779\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"__name__\": \"container_last_seen\",\n          \"instance\": \"docker-b:8080\",\n          \"job\": \"kubelet\",\n          \"metrics_path\": \"/metrics/cadvisor\",\n          \"endpoint\": \"https-metrics\",\n          \"service\": \"kubelet\",\n          \"node\": \"docker-b\",\n          \"id\": \"/system.slice/docker-hhhh8888.scope\",\n          \"name\": \"haproxy\",\n          \"image\": \"haproxy:2.8\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1775655529\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"__name__\": \"container_last_seen\",\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"metrics_path\": \"/metrics/cadvisor\",\n          \"endpoint\": \"https-metrics\",\n          \"service\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"id\": \"/kubepods.slice/kubepods-burstable-podalertmanager_main_0.slice\",\n          \"namespace\": \"monitoring\",\n          \"pod\": \"alertmanager-main-0\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1775655779\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"__name__\": \"container_last_seen\",\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"metrics_path\": \"/metrics/cadvisor\",\n          \"endpoint\": \"https-metrics\",\n          \"service\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"id\": \"/kubepods.slice/kubepods-burstable-podalertmanager_main_0.slice/cri-containerd-1.scope\",\n          \"namespace\": \"monitoring\",\n          \"pod\": \"alertmanager-main-0\",\n          \"image\": \"registry.k8s.io/pause:3.9\",\n          \"name\": \"11111111\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1775655779\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"__name__\": \"container_last_seen\",\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"metrics_path\": \"/metrics/cadvisor\",\n          \"endpoint\": \"https-metrics\",\n          \"service\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"id\": \"/kubepods.slice/kubepods-burstable-podalertmanager_main_0.slice/cri-containerd-2.scope\",\n          \"namespace\": \"monitoring\",\n          \"pod\": \"alertmanager-main-0\",\n          \"container\": \"alertmanager\",\n          \"image\": \"quay.io/prometheus/alertmanager:v0.25.0\",\n          \"name\": \"22222222\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1775655179\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"__name__\": \"container_last_seen\",\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"metrics_path\": \"/metrics/cadvisor\",\n          \"endpoint\": \"https-metrics\",\n          \"service\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"id\": \"/kubepods.slice/kubepods-burstable-podalertmanager_main_0.slice/cri-containerd-3.scope\",\n          \"namespace\": \"monitoring\",\n          \"pod\": \"alertmanager-main-0\",\n          \"container\": \"alertmanager\",\n          \"image\": \"quay.io/prometheus/alertmanager:v0.26.0\",\n          \"name\": \"33333333\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1775655775\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"__name__\": \"container_last_seen\",\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"metrics_path\": \"/metrics/cadvisor\",\n          \"endpoint\": \"https-metrics\",\n          \"service\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"id\": \"/kubepods.slice/kubepods-burstable-podalertmanager_main_0.slice/cri-containerd-4.scope\",\n          \"namespace\": \"monitoring\",\n          \"pod\": \"alertmanager-main-0\",\n          \"container\": \"config-reloader\",\n          \"image\": \"quay.io/prometheus-operator/prometheus-config-reloader:v0.70.0\",\n          \"name\": \"44444444\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1775655659\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"__name__\": \"container_last_seen\",\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"metrics_path\": \"/metrics/cadvisor\",\n          \"endpoint\": \"https-metrics\",\n          \"service\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"id\": \"/kubepods.slice/kubepods-burstable-podweb_7d9f8b6c5_x2k4p.slice/cri-containerd-5.scope\",\n          \"namespace\": \"default\",\n          \"pod\": \"web-7d9f8b6c5-x2k4p\",\n          \"container\": \"POD\",\n          \"image\": \"registry.k8s.io/pause:3.9\",\n          \"name\": \"55555555\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1775655779\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"__name__\": \"container_last_seen\",\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"metrics_path\": \"/metrics/cadvisor\",\n          \"endpoint\": \"https-metrics\",\n          \"service\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"id\": \"/kubepods.slice/kubepods-burstable-podweb_7d9f8b6c5_x2k4p.slice/cri-containerd-6.scope\",\n          \"namespace\": \"default\",\n          \"pod\": \"web-7d9f8b6c5-x2k4p\",\n          \"container\": \"nginx\",\n          \"image\": \"nginx:1.25\",\n          \"name\": \"66666666\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1775655779\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"__name__\": \"container_last_seen\",\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"metrics_path\": \"/metrics/cadvisor\",\n          \"endpoint\": \"https-metrics\",\n          \"service\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"id\": \"/kubepods.slice/kubepods-burstable-podweb_7d9f8b6c5_q8z7m.slice/cri-containerd-7.scope\",\n          \"namespace\": \"default\",\n          \"pod\": \"web-7d9f8b6c5-q8z7m\",\n          \"container\": \"nginx\",\n          \"image\": \"nginx:1.25\",\n          \"name\": \"77777777\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1775655779\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"__name__\": \"container_last_seen\",\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"metrics_path\": \"/metrics/cadvisor\",\n          \"endpoint\": \"https-metrics\",\n          \"service\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"id\": \"/kubepods.slice/kubepods-burstable-podbatch_crashloop.slice\",\n          \"namespace\": \"default\",\n          \"pod\": \"batch-crashloop\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1775655779\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"__name__\": \"container_last_seen\",\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"metrics_path\": \"/metrics/cadvisor\",\n          \"endpoint\": \"https-metrics\",\n          \"service\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"id\": \"/kubepods.slice/kubepods-burstable-podbatch_crashloop.slice/cri-containerd-8.scope\",\n          \"namespace\": \"default\",\n          \"pod\": \"batch-crashloop\",\n          \"image\": \"registry.k8s.io/pause:3.9\",\n          \"name\": \"88888888\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1775655779\"\n        ]\n      }\n    ]\n  }\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "Kubernetes >= 1.16 (pod/container labels)",
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "b571d206-0e10-41b8-9529-c8836915e12d",
+          "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": [\n      {\n        \"metric\": {\n          \"__name__\": \"container_last_seen\",\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"metrics_path\": \"/metrics/cadvisor\",\n          \"endpoint\": \"https-metrics\",\n          \"service\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"id\": \"/kubepods.slice/kubepods-burstable-podalertmanager_main_0.slice\",\n          \"namespace\": \"monitoring\",\n          \"pod\": \"alertmanager-main-0\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1775655779\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"__name__\": \"container_last_seen\",\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"metrics_path\": \"/metrics/cadvisor\",\n          \"endpoint\": \"https-metrics\",\n          \"service\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"id\": \"/kubepods.slice/kubepods-burstable-podalertmanager_main_0.slice/cri-containerd-1.scope\",\n          \"namespace\": \"monitoring\",\n          \"pod\": \"alertmanager-main-0\",\n          \"image\": \"registry.k8s.io/pause:3.9\",\n          \"name\": \"11111111\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1775655779\"\n        ]\n      }\n    ]\n  }\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "Filter pod=\"alertmanager-main-0\",container=\"\"",
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "pod=\"alertmanager-main-0\"",
+              "invert": false,
+              "operator": "regex"
+            },
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "container=\"\"",
+              "invert": false,
+              "operator": "regex"
+            }
+          ],
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "latency": 0,
+          "statusCode": 200,
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "uuid": "4b85a3bb-8096-44d2-8260-06ac17466a2d",
+          "label": "Filter container=\"absent\"",
+          "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": []\n  }\n}",
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "container=\"absent\"",
+              "invert": false,
+              "operator": "regex"
+            }
+          ],
+          "default": false
+        },
+        {
+          "latency": 0,
+          "statusCode": 200,
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "uuid": "c102e004-4f24-45b6-94a6-49b0f36a5035",
+          "label": "Filter pod=\"web-7d9f8b6c5-x2k4p\"",
+          "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": [\n      {\n        \"metric\": {\n          \"__name__\": \"container_last_seen\",\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"metrics_path\": \"/metrics/cadvisor\",\n          \"endpoint\": \"https-metrics\",\n          \"service\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"id\": \"/kubepods.slice/kubepods-burstable-podweb_7d9f8b6c5_x2k4p.slice/cri-containerd-6.scope\",\n          \"namespace\": \"default\",\n          \"pod\": \"web-7d9f8b6c5-x2k4p\",\n          \"container\": \"nginx\",\n          \"image\": \"nginx:1.25\",\n          \"name\": \"66666666\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1775655779\"\n        ]\n      }\n    ]\n  }\n}",
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "pod=\"web-7d9f8b6c5-x2k4p\"",
+              "invert": false,
+              "operator": "regex"
+            }
+          ],
+          "default": false
+        },
+        {
+          "latency": 0,
+          "statusCode": 200,
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "uuid": "c7fb9260-20b7-4fb0-b9de-387520b57b8f",
+          "label": "Filter name=\"haproxy\"",
+          "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": [\n      {\n        \"metric\": {\n          \"__name__\": \"container_last_seen\",\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"metrics_path\": \"/metrics/cadvisor\",\n          \"endpoint\": \"https-metrics\",\n          \"service\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"id\": \"/system.slice/docker-a1b2.scope\",\n          \"name\": \"haproxy\",\n          \"image\": \"haproxy:2.8\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1775655779\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"__name__\": \"container_last_seen\",\n          \"instance\": \"docker-b:8080\",\n          \"job\": \"kubelet\",\n          \"metrics_path\": \"/metrics/cadvisor\",\n          \"endpoint\": \"https-metrics\",\n          \"service\": \"kubelet\",\n          \"node\": \"docker-b\",\n          \"id\": \"/system.slice/docker-hhhh8888.scope\",\n          \"name\": \"haproxy\",\n          \"image\": \"haproxy:2.8\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1775655529\"\n        ]\n      }\n    ]\n  }\n}",
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "name=\"haproxy\"",
+              "invert": false,
+              "operator": "regex"
+            }
+          ],
+          "default": false
+        },
+        {
+          "uuid": "3325b72b-0d2e-4318-a448-3ce8a83fb538",
+          "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": [\n      {\n        \"metric\": {\n          \"__name__\": \"container_last_seen\",\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"metrics_path\": \"/metrics/cadvisor\",\n          \"endpoint\": \"https-metrics\",\n          \"service\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"id\": \"/kubepods.slice/kubepods-burstable-podalertmanager_main_0.slice\",\n          \"namespace\": \"monitoring\",\n          \"pod\": \"alertmanager-main-0\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1775655779\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"__name__\": \"container_last_seen\",\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"metrics_path\": \"/metrics/cadvisor\",\n          \"endpoint\": \"https-metrics\",\n          \"service\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"id\": \"/kubepods.slice/kubepods-burstable-podalertmanager_main_0.slice/cri-containerd-1.scope\",\n          \"namespace\": \"monitoring\",\n          \"pod\": \"alertmanager-main-0\",\n          \"image\": \"registry.k8s.io/pause:3.9\",\n          \"name\": \"11111111\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1775655779\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"__name__\": \"container_last_seen\",\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"metrics_path\": \"/metrics/cadvisor\",\n          \"endpoint\": \"https-metrics\",\n          \"service\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"id\": \"/kubepods.slice/kubepods-burstable-podalertmanager_main_0.slice/cri-containerd-2.scope\",\n          \"namespace\": \"monitoring\",\n          \"pod\": \"alertmanager-main-0\",\n          \"container\": \"alertmanager\",\n          \"image\": \"quay.io/prometheus/alertmanager:v0.25.0\",\n          \"name\": \"22222222\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1775655179\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"__name__\": \"container_last_seen\",\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"metrics_path\": \"/metrics/cadvisor\",\n          \"endpoint\": \"https-metrics\",\n          \"service\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"id\": \"/kubepods.slice/kubepods-burstable-podalertmanager_main_0.slice/cri-containerd-3.scope\",\n          \"namespace\": \"monitoring\",\n          \"pod\": \"alertmanager-main-0\",\n          \"container\": \"alertmanager\",\n          \"image\": \"quay.io/prometheus/alertmanager:v0.26.0\",\n          \"name\": \"33333333\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1775655775\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"__name__\": \"container_last_seen\",\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"metrics_path\": \"/metrics/cadvisor\",\n          \"endpoint\": \"https-metrics\",\n          \"service\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"id\": \"/kubepods.slice/kubepods-burstable-podalertmanager_main_0.slice/cri-containerd-4.scope\",\n          \"namespace\": \"monitoring\",\n          \"pod\": \"alertmanager-main-0\",\n          \"container\": \"config-reloader\",\n          \"image\": \"quay.io/prometheus-operator/prometheus-config-reloader:v0.70.0\",\n          \"name\": \"44444444\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1775655659\"\n        ]\n      }\n    ]\n  }\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "Filter namespace=\"monitoring\"",
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "namespace=\"monitoring\"",
+              "invert": false,
+              "operator": "regex"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "848efe2e-5e63-4f52-8d5d-7424118f00b2",
+          "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": [\n      {\n        \"metric\": {\n          \"__name__\": \"container_last_seen\",\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"metrics_path\": \"/metrics/cadvisor\",\n          \"endpoint\": \"https-metrics\",\n          \"service\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"id\": \"/\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1775655779\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"__name__\": \"container_last_seen\",\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"metrics_path\": \"/metrics/cadvisor\",\n          \"endpoint\": \"https-metrics\",\n          \"service\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"id\": \"/system.slice/kubelet.service\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1775655779\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"__name__\": \"container_last_seen\",\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"metrics_path\": \"/metrics/cadvisor\",\n          \"endpoint\": \"https-metrics\",\n          \"service\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"id\": \"/system.slice/docker-a1b2.scope\",\n          \"name\": \"haproxy\",\n          \"image\": \"haproxy:2.8\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1775655779\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"__name__\": \"container_last_seen\",\n          \"instance\": \"docker-b:8080\",\n          \"job\": \"kubelet\",\n          \"metrics_path\": \"/metrics/cadvisor\",\n          \"endpoint\": \"https-metrics\",\n          \"service\": \"kubelet\",\n          \"node\": \"docker-b\",\n          \"id\": \"/system.slice/docker-hhhh8888.scope\",\n          \"name\": \"haproxy\",\n          \"image\": \"haproxy:2.8\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1775655529\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"__name__\": \"container_last_seen\",\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"metrics_path\": \"/metrics/cadvisor\",\n          \"endpoint\": \"https-metrics\",\n          \"service\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"id\": \"/kubepods.slice/kubepods-burstable-podalertmanager_main_0.slice\",\n          \"namespace\": \"monitoring\",\n          \"pod\": \"alertmanager-main-0\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1775655779\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"__name__\": \"container_last_seen\",\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"metrics_path\": \"/metrics/cadvisor\",\n          \"endpoint\": \"https-metrics\",\n          \"service\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"id\": \"/kubepods.slice/kubepods-burstable-podalertmanager_main_0.slice/cri-containerd-1.scope\",\n          \"namespace\": \"monitoring\",\n          \"pod\": \"alertmanager-main-0\",\n          \"image\": \"registry.k8s.io/pause:3.9\",\n          \"name\": \"11111111\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1775655779\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"__name__\": \"container_last_seen\",\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"metrics_path\": \"/metrics/cadvisor\",\n          \"endpoint\": \"https-metrics\",\n          \"service\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"id\": \"/kubepods.slice/kubepods-burstable-podalertmanager_main_0.slice/cri-containerd-2.scope\",\n          \"namespace\": \"monitoring\",\n          \"pod\": \"alertmanager-main-0\",\n          \"container\": \"alertmanager\",\n          \"image\": \"quay.io/prometheus/alertmanager:v0.25.0\",\n          \"name\": \"22222222\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1775655179\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"__name__\": \"container_last_seen\",\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"metrics_path\": \"/metrics/cadvisor\",\n          \"endpoint\": \"https-metrics\",\n          \"service\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"id\": \"/kubepods.slice/kubepods-burstable-podalertmanager_main_0.slice/cri-containerd-3.scope\",\n          \"namespace\": \"monitoring\",\n          \"pod\": \"alertmanager-main-0\",\n          \"container\": \"alertmanager\",\n          \"image\": \"quay.io/prometheus/alertmanager:v0.26.0\",\n          \"name\": \"33333333\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1775655775\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"__name__\": \"container_last_seen\",\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"metrics_path\": \"/metrics/cadvisor\",\n          \"endpoint\": \"https-metrics\",\n          \"service\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"id\": \"/kubepods.slice/kubepods-burstable-podalertmanager_main_0.slice/cri-containerd-4.scope\",\n          \"namespace\": \"monitoring\",\n          \"pod\": \"alertmanager-main-0\",\n          \"container\": \"config-reloader\",\n          \"image\": \"quay.io/prometheus-operator/prometheus-config-reloader:v0.70.0\",\n          \"name\": \"44444444\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1775655659\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"__name__\": \"container_last_seen\",\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"metrics_path\": \"/metrics/cadvisor\",\n          \"endpoint\": \"https-metrics\",\n          \"service\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"id\": \"/kubepods.slice/kubepods-burstable-podweb_7d9f8b6c5_x2k4p.slice/cri-containerd-6.scope\",\n          \"namespace\": \"default\",\n          \"pod\": \"web-7d9f8b6c5-x2k4p\",\n          \"container\": \"nginx\",\n          \"image\": \"nginx:1.25\",\n          \"name\": \"66666666\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1775655779\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"__name__\": \"container_last_seen\",\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"metrics_path\": \"/metrics/cadvisor\",\n          \"endpoint\": \"https-metrics\",\n          \"service\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"id\": \"/kubepods.slice/kubepods-burstable-podweb_7d9f8b6c5_q8z7m.slice/cri-containerd-7.scope\",\n          \"namespace\": \"default\",\n          \"pod\": \"web-7d9f8b6c5-q8z7m\",\n          \"container\": \"nginx\",\n          \"image\": \"nginx:1.25\",\n          \"name\": \"77777777\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1775655779\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"__name__\": \"container_last_seen\",\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"metrics_path\": \"/metrics/cadvisor\",\n          \"endpoint\": \"https-metrics\",\n          \"service\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"id\": \"/kubepods.slice/kubepods-burstable-podbatch_crashloop.slice\",\n          \"namespace\": \"default\",\n          \"pod\": \"batch-crashloop\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1775655779\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"__name__\": \"container_last_seen\",\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"metrics_path\": \"/metrics/cadvisor\",\n          \"endpoint\": \"https-metrics\",\n          \"service\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"id\": \"/kubepods.slice/kubepods-burstable-podbatch_crashloop.slice/cri-containerd-8.scope\",\n          \"namespace\": \"default\",\n          \"pod\": \"batch-crashloop\",\n          \"image\": \"registry.k8s.io/pause:3.9\",\n          \"name\": \"88888888\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1775655779\"\n        ]\n      }\n    ]\n  }\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "Filter container!~\".*POD.*\"",
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "container!~\"\\.\\*POD\\.\\*\"",
+              "invert": false,
+              "operator": "regex"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "eeb3e034-1ad1-4902-af45-afc28b9b9412",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "legacy/api/v1/query",
+      "responses": [
+        {
+          "uuid": "844ccd81-ab44-4b2c-a14d-862951beab33",
+          "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": [\n      {\n        \"metric\": {\n          \"__name__\": \"container_last_seen\",\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"metrics_path\": \"/metrics/cadvisor\",\n          \"endpoint\": \"https-metrics\",\n          \"service\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"id\": \"/\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1775655779\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"__name__\": \"container_last_seen\",\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"metrics_path\": \"/metrics/cadvisor\",\n          \"endpoint\": \"https-metrics\",\n          \"service\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"id\": \"/system.slice/kubelet.service\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1775655779\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"__name__\": \"container_last_seen\",\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"metrics_path\": \"/metrics/cadvisor\",\n          \"endpoint\": \"https-metrics\",\n          \"service\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"id\": \"/system.slice/docker-a1b2.scope\",\n          \"name\": \"haproxy\",\n          \"image\": \"haproxy:2.8\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1775655779\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"__name__\": \"container_last_seen\",\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"metrics_path\": \"/metrics/cadvisor\",\n          \"endpoint\": \"https-metrics\",\n          \"service\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"id\": \"/kubepods.slice/kubepods-burstable-podalertmanager_main_0.slice\",\n          \"namespace\": \"monitoring\",\n          \"pod_name\": \"alertmanager-main-0\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1775655779\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"__name__\": \"container_last_seen\",\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"metrics_path\": \"/metrics/cadvisor\",\n          \"endpoint\": \"https-metrics\",\n          \"service\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"id\": \"/kubepods.slice/kubepods-burstable-podalertmanager_main_0.slice/cri-containerd-1.scope\",\n          \"namespace\": \"monitoring\",\n          \"pod_name\": \"alertmanager-main-0\",\n          \"image\": \"registry.k8s.io/pause:3.9\",\n          \"name\": \"11111111\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1775655779\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"__name__\": \"container_last_seen\",\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"metrics_path\": \"/metrics/cadvisor\",\n          \"endpoint\": \"https-metrics\",\n          \"service\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"id\": \"/kubepods.slice/kubepods-burstable-podalertmanager_main_0.slice/cri-containerd-2.scope\",\n          \"namespace\": \"monitoring\",\n          \"pod_name\": \"alertmanager-main-0\",\n          \"container_name\": \"alertmanager\",\n          \"image\": \"quay.io/prometheus/alertmanager:v0.25.0\",\n          \"name\": \"22222222\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1775655179\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"__name__\": \"container_last_seen\",\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"metrics_path\": \"/metrics/cadvisor\",\n          \"endpoint\": \"https-metrics\",\n          \"service\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"id\": \"/kubepods.slice/kubepods-burstable-podalertmanager_main_0.slice/cri-containerd-3.scope\",\n          \"namespace\": \"monitoring\",\n          \"pod_name\": \"alertmanager-main-0\",\n          \"container_name\": \"alertmanager\",\n          \"image\": \"quay.io/prometheus/alertmanager:v0.26.0\",\n          \"name\": \"33333333\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1775655775\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"__name__\": \"container_last_seen\",\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"metrics_path\": \"/metrics/cadvisor\",\n          \"endpoint\": \"https-metrics\",\n          \"service\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"id\": \"/kubepods.slice/kubepods-burstable-podalertmanager_main_0.slice/cri-containerd-4.scope\",\n          \"namespace\": \"monitoring\",\n          \"pod_name\": \"alertmanager-main-0\",\n          \"container_name\": \"config-reloader\",\n          \"image\": \"quay.io/prometheus-operator/prometheus-config-reloader:v0.70.0\",\n          \"name\": \"44444444\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1775655659\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"__name__\": \"container_last_seen\",\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"metrics_path\": \"/metrics/cadvisor\",\n          \"endpoint\": \"https-metrics\",\n          \"service\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"id\": \"/kubepods.slice/kubepods-burstable-podweb_7d9f8b6c5_x2k4p.slice/cri-containerd-5.scope\",\n          \"namespace\": \"default\",\n          \"pod_name\": \"web-7d9f8b6c5-x2k4p\",\n          \"container_name\": \"POD\",\n          \"image\": \"registry.k8s.io/pause:3.9\",\n          \"name\": \"55555555\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1775655779\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"__name__\": \"container_last_seen\",\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"metrics_path\": \"/metrics/cadvisor\",\n          \"endpoint\": \"https-metrics\",\n          \"service\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"id\": \"/kubepods.slice/kubepods-burstable-podweb_7d9f8b6c5_x2k4p.slice/cri-containerd-6.scope\",\n          \"namespace\": \"default\",\n          \"pod_name\": \"web-7d9f8b6c5-x2k4p\",\n          \"container_name\": \"nginx\",\n          \"image\": \"nginx:1.25\",\n          \"name\": \"66666666\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1775655779\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"__name__\": \"container_last_seen\",\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"metrics_path\": \"/metrics/cadvisor\",\n          \"endpoint\": \"https-metrics\",\n          \"service\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"id\": \"/kubepods.slice/kubepods-burstable-podweb_7d9f8b6c5_q8z7m.slice/cri-containerd-7.scope\",\n          \"namespace\": \"default\",\n          \"pod_name\": \"web-7d9f8b6c5-q8z7m\",\n          \"container_name\": \"nginx\",\n          \"image\": \"nginx:1.25\",\n          \"name\": \"77777777\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1775655779\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"__name__\": \"container_last_seen\",\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"metrics_path\": \"/metrics/cadvisor\",\n          \"endpoint\": \"https-metrics\",\n          \"service\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"id\": \"/kubepods.slice/kubepods-burstable-podbatch_crashloop.slice\",\n          \"namespace\": \"default\",\n          \"pod_name\": \"batch-crashloop\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1775655779\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"__name__\": \"container_last_seen\",\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"metrics_path\": \"/metrics/cadvisor\",\n          \"endpoint\": \"https-metrics\",\n          \"service\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"id\": \"/kubepods.slice/kubepods-burstable-podbatch_crashloop.slice/cri-containerd-8.scope\",\n          \"namespace\": \"default\",\n          \"pod_name\": \"batch-crashloop\",\n          \"image\": \"registry.k8s.io/pause:3.9\",\n          \"name\": \"88888888\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1775655779\"\n        ]\n      }\n    ]\n  }\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "Kubernetes < 1.14 (pod_name/container_name labels)",
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "20006756-0e43-41aa-a4cd-c6775367325d",
+          "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": [\n      {\n        \"metric\": {\n          \"__name__\": \"container_last_seen\",\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"metrics_path\": \"/metrics/cadvisor\",\n          \"endpoint\": \"https-metrics\",\n          \"service\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"id\": \"/\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1775655779\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"__name__\": \"container_last_seen\",\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"metrics_path\": \"/metrics/cadvisor\",\n          \"endpoint\": \"https-metrics\",\n          \"service\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"id\": \"/system.slice/kubelet.service\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1775655779\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"__name__\": \"container_last_seen\",\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"metrics_path\": \"/metrics/cadvisor\",\n          \"endpoint\": \"https-metrics\",\n          \"service\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"id\": \"/system.slice/docker-a1b2.scope\",\n          \"name\": \"haproxy\",\n          \"image\": \"haproxy:2.8\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1775655779\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"__name__\": \"container_last_seen\",\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"metrics_path\": \"/metrics/cadvisor\",\n          \"endpoint\": \"https-metrics\",\n          \"service\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"id\": \"/kubepods.slice/kubepods-burstable-podalertmanager_main_0.slice\",\n          \"namespace\": \"monitoring\",\n          \"pod_name\": \"alertmanager-main-0\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1775655779\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"__name__\": \"container_last_seen\",\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"metrics_path\": \"/metrics/cadvisor\",\n          \"endpoint\": \"https-metrics\",\n          \"service\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"id\": \"/kubepods.slice/kubepods-burstable-podalertmanager_main_0.slice/cri-containerd-1.scope\",\n          \"namespace\": \"monitoring\",\n          \"pod_name\": \"alertmanager-main-0\",\n          \"image\": \"registry.k8s.io/pause:3.9\",\n          \"name\": \"11111111\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1775655779\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"__name__\": \"container_last_seen\",\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"metrics_path\": \"/metrics/cadvisor\",\n          \"endpoint\": \"https-metrics\",\n          \"service\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"id\": \"/kubepods.slice/kubepods-burstable-podalertmanager_main_0.slice/cri-containerd-2.scope\",\n          \"namespace\": \"monitoring\",\n          \"pod_name\": \"alertmanager-main-0\",\n          \"container_name\": \"alertmanager\",\n          \"image\": \"quay.io/prometheus/alertmanager:v0.25.0\",\n          \"name\": \"22222222\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1775655179\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"__name__\": \"container_last_seen\",\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"metrics_path\": \"/metrics/cadvisor\",\n          \"endpoint\": \"https-metrics\",\n          \"service\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"id\": \"/kubepods.slice/kubepods-burstable-podalertmanager_main_0.slice/cri-containerd-3.scope\",\n          \"namespace\": \"monitoring\",\n          \"pod_name\": \"alertmanager-main-0\",\n          \"container_name\": \"alertmanager\",\n          \"image\": \"quay.io/prometheus/alertmanager:v0.26.0\",\n          \"name\": \"33333333\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1775655775\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"__name__\": \"container_last_seen\",\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"metrics_path\": \"/metrics/cadvisor\",\n          \"endpoint\": \"https-metrics\",\n          \"service\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"id\": \"/kubepods.slice/kubepods-burstable-podalertmanager_main_0.slice/cri-containerd-4.scope\",\n          \"namespace\": \"monitoring\",\n          \"pod_name\": \"alertmanager-main-0\",\n          \"container_name\": \"config-reloader\",\n          \"image\": \"quay.io/prometheus-operator/prometheus-config-reloader:v0.70.0\",\n          \"name\": \"44444444\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1775655659\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"__name__\": \"container_last_seen\",\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"metrics_path\": \"/metrics/cadvisor\",\n          \"endpoint\": \"https-metrics\",\n          \"service\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"id\": \"/kubepods.slice/kubepods-burstable-podweb_7d9f8b6c5_x2k4p.slice/cri-containerd-6.scope\",\n          \"namespace\": \"default\",\n          \"pod_name\": \"web-7d9f8b6c5-x2k4p\",\n          \"container_name\": \"nginx\",\n          \"image\": \"nginx:1.25\",\n          \"name\": \"66666666\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1775655779\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"__name__\": \"container_last_seen\",\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"metrics_path\": \"/metrics/cadvisor\",\n          \"endpoint\": \"https-metrics\",\n          \"service\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"id\": \"/kubepods.slice/kubepods-burstable-podweb_7d9f8b6c5_q8z7m.slice/cri-containerd-7.scope\",\n          \"namespace\": \"default\",\n          \"pod_name\": \"web-7d9f8b6c5-q8z7m\",\n          \"container_name\": \"nginx\",\n          \"image\": \"nginx:1.25\",\n          \"name\": \"77777777\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1775655779\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"__name__\": \"container_last_seen\",\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"metrics_path\": \"/metrics/cadvisor\",\n          \"endpoint\": \"https-metrics\",\n          \"service\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"id\": \"/kubepods.slice/kubepods-burstable-podbatch_crashloop.slice\",\n          \"namespace\": \"default\",\n          \"pod_name\": \"batch-crashloop\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1775655779\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"__name__\": \"container_last_seen\",\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"metrics_path\": \"/metrics/cadvisor\",\n          \"endpoint\": \"https-metrics\",\n          \"service\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"id\": \"/kubepods.slice/kubepods-burstable-podbatch_crashloop.slice/cri-containerd-8.scope\",\n          \"namespace\": \"default\",\n          \"pod_name\": \"batch-crashloop\",\n          \"image\": \"registry.k8s.io/pause:3.9\",\n          \"name\": \"88888888\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1775655779\"\n        ]\n      }\n    ]\n  }\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "Filter container_name!~\".*POD.*\"",
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "container_name!~\"\\.\\*POD\\.\\*\"",
+              "invert": false,
+              "operator": "regex"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    }
+  ],
+  "rootChildren": [
+    {
+      "type": "route",
+      "uuid": "e5abccdd-0cf6-4441-8466-586cd80248c7"
+    },
+    {
+      "type": "route",
+      "uuid": "eeb3e034-1ad1-4902-af45-afc28b9b9412"
+    }
+  ],
+  "proxyMode": false,
+  "proxyHost": "",
+  "proxyRemovePrefix": false,
+  "tlsOptions": {
+    "enabled": false,
+    "type": "CERT",
+    "pfxPath": "",
+    "certPath": "",
+    "keyPath": "",
+    "caPath": "",
+    "passphrase": ""
+  },
+  "cors": true,
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json"
+    }
+  ],
+  "proxyReqHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "proxyResHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "data": [],
+  "callbacks": []
+}
