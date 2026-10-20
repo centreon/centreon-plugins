@@ -344,7 +344,8 @@ sub internal_api_list_services {
 
     my $response = $self->{http}->request(
         hostname => $options{node_name},
-        url_path => '/services?status=true',
+        url_path => '/services',
+        get_param => ['status=true'],
         unknown_status => '', critical_status => '', warning_status => ''
     );
     my $services;
