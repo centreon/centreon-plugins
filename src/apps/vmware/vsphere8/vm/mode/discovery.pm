@@ -52,8 +52,8 @@ sub validate_ip {
     my ($ip) = @_;
 
     return '' if is_empty($ip);
-    if (defined(inet_pton(AF_INET, $ip)) || defined(inet_pton(AF_INET6, $ip))){
-        return $ip
+    if (defined(inet_pton(AF_INET, $ip)) || defined(inet_pton(AF_INET6, $ip))) {
+        return $ip;
     }
     return '';
 }
@@ -102,7 +102,7 @@ sub run {
         # address usable as host address, never empty: the IP address if valid, or else the VM hostname,
         # with the characters forbidden in a hostname (spaces...) replaced by underscores
         $vm->{clean_hostname} = validate_ip($vm->{ip_address});
-        if  (is_empty($vm->{clean_hostname})) {
+        if (is_empty($vm->{clean_hostname})) {
             $vm->{clean_hostname} = !is_empty($vm->{vm_hostname}) ? $vm->{vm_hostname} : $vm->{vm_name};
             $vm->{clean_hostname} =~ s/[^A-Za-z0-9_.-]/_/g;
         }
