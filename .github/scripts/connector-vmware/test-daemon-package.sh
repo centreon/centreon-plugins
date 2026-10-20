@@ -34,7 +34,9 @@ getent group centreon >/dev/null || groupadd -r centreon
 id centreon >/dev/null 2>&1 || useradd -r -M -g centreon -s /bin/bash centreon
 getent group centreon-gorgone >/dev/null || groupadd -r centreon-gorgone
 id centreon-gorgone >/dev/null 2>&1 || useradd -r -M -g centreon-gorgone -G centreon -s /bin/bash centreon-gorgone
-# systemd is not running in the container: replace systemctl to record the calls of the postinstall script
+# systemd is not running in the container: replace systemctl to record the calls of the postinstall script.
+# It is never restored (disposable container), so the uninstall step does not exercise the real
+# stop/disable scriptlets either.
 cat > /usr/bin/systemctl <<EOF
 #!/bin/sh
 echo "\$*" >> "$SYSTEMCTL_LOG"
@@ -45,14 +47,25 @@ PACKAGE_FILES=(./*."$PACKAGE_EXTENSION")
 [[ ${#PACKAGE_FILES[@]} -eq 1 && -f "${PACKAGE_FILES[0]}" ]] || fail "Expected exactly one .$PACKAGE_EXTENSION file, found: ${PACKAGE_FILES[*]}"
 PACKAGE_FILE="${PACKAGE_FILES[0]}"
 
-# The daemon is used through this plugin, which brings the common Perl dependencies of the plugins
-echo "=== Install the VMware connector plugin ==="
+# The daemon is used through the VMware connector plugin, which brings the common Perl dependencies
+# of the plugins. Only these dependencies are installed (read from the plugins packaging template),
+# so that the test does not depend on the plugin version available in the repositories.
+echo "=== Install the common Perl dependencies of the plugins ==="
+mapfile -t COMMON_DEPENDENCIES < <(
+  awk -v pkg="$PACKAGE_EXTENSION" '
+    $0 == "  " pkg ":" { in_pkg = 1; next }
+    in_pkg && /depends: \[/ { in_deps = 1; next }
+    in_deps && /\]/ { exit }
+    in_deps { gsub(/[ ,]/, ""); if ($0 != "" && $0 !~ /^@/) print }
+  ' .github/packaging/centreon-plugin.yaml.template
+)
+[[ ${#COMMON_DEPENDENCIES[@]} -gt 0 ]] || fail "No common dependencies found in the plugins packaging template"
 if [[ "$PACKAGE_EXTENSION" == "rpm" ]]; then
-  dnf install -y centreon-plugin-Virtualization-Vmware2-Connector-Plugin
+  dnf install -y --setopt=install_weak_deps=False "${COMMON_DEPENDENCIES[@]}"
 else
   export DEBIAN_FRONTEND=noninteractive
   apt-get update
-  apt-get install -y centreon-plugin-virtualization-vmware2-connector-plugin
+  apt-get install -y --no-install-recommends "${COMMON_DEPENDENCIES[@]}"
 fi
 
 echo "=== Install $PACKAGE_FILE ==="
@@ -85,13 +98,17 @@ runuser -u centreon -- env PERL5LIB="$TEST_DIR" perl /usr/bin/centreon_vmware.pl
 
 runuser -u centreon -- env PERL5LIB="$TEST_DIR" perl /usr/bin/centreon_vmware.pl "${DAEMON_OPTIONS[@]}" &
 DAEMON_PID=$!
+# Wait for the daemon's own log line: a connection check could succeed on a foreign listener
 for i in $(seq 1 30); do
-  perl -MIO::Socket::INET -e "exit(IO::Socket::INET->new(PeerAddr => '127.0.0.1', PeerPort => $DAEMON_PORT, Timeout => 1) ? 0 : 1)" && break
-  kill -0 "$DAEMON_PID" 2>/dev/null || fail "The daemon stopped before listening on port $DAEMON_PORT"
+  grep -qF '[Server accepting clients]' "$DAEMON_LOG" 2>/dev/null && break
+  kill -0 "$DAEMON_PID" 2>/dev/null || fail "The daemon stopped before accepting clients"
   sleep 1
 done
 grep -qF '[Server accepting clients]' "$DAEMON_LOG" || fail "The daemon is not accepting clients"
-echo "The daemon is listening on port $DAEMON_PORT"
+# The daemon does not check the result of zmq_bind: make sure the port is really open
+perl -MIO::Socket::INET -e "exit(IO::Socket::INET->new(PeerAddr => '127.0.0.1', PeerPort => $DAEMON_PORT, Timeout => 1) ? 0 : 1)" \
+  || fail "The daemon is not listening on port $DAEMON_PORT"
+echo "The daemon is accepting clients on port $DAEMON_PORT"
 
 # Stop it (runuser forwards SIGTERM to the daemon): the main loop checks the stop flag every 5 seconds
 kill -TERM "$DAEMON_PID"
