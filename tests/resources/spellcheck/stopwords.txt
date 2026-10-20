@@ -352,6 +352,7 @@ snmpd.conf
 space-usage-prct
 Splunk
 --sql-errors-exit
+sqlpluscmd
 SRX
 SSDCapacity
 SSG
@@ -379,6 +380,8 @@ TLS
 TLSv1
 TMM
 tmnxSasAlarmInputDescription
+TNS
+tnsnames
 topic-messages-inflighted
 total-offline-prct
 total-online-prct
