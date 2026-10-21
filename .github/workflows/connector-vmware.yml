@@ -12,6 +12,8 @@ on:
       - 'connectors/vmware/packaging/**'
       - '.github/docker/connector/Dockerfile.connector-vmware'
       - '.github/docker/connector/entrypoint/**'
+      - '.github/scripts/connector-vmware/**'
+      - 'tests/connectors/vmware/**'
   push:
     branches:
       - develop
@@ -23,6 +25,8 @@ on:
       - 'connectors/vmware/packaging/**'
       - '.github/docker/connector/Dockerfile.connector-vmware'
       - '.github/docker/connector/entrypoint/**'
+      - '.github/scripts/connector-vmware/**'
+      - 'tests/connectors/vmware/**'
 
 jobs:
   dependency-scan:
@@ -99,8 +103,66 @@ jobs:
           path: centreon-plugin*
           retention-days: 1
 
-  deliver-packages:
+  test-package:
     needs: [get-environment, package]
+    if: |
+      needs.get-environment.outputs.skip_workflow == 'false' &&
+      needs.get-environment.outputs.stability != 'stable' &&
+      ! cancelled() &&
+      ! contains(needs.*.result, 'failure') &&
+      ! contains(needs.*.result, 'cancelled')
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - package_extension: rpm
+            image: alma8
+            distrib: el8
+          - package_extension: rpm
+            image: alma9
+            distrib: el9
+          - package_extension: rpm
+            image: alma10
+            distrib: el10
+          - package_extension: deb
+            image: bookworm
+            distrib: bookworm
+          - package_extension: deb
+            image: trixie
+            distrib: trixie
+          - package_extension: deb
+            image: jammy
+            distrib: jammy
+          - package_extension: deb
+            image: noble
+            distrib: noble
+
+    container:
+      # Testing image built by docker-builder-testing-plugins.yml, with zstd and the Centreon repositories
+      image: ghcr.io/${{ github.repository }}/testing:${{ matrix.image }}
+
+    name: test ${{ matrix.distrib }}
+
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Restore ${{ matrix.distrib }} package from cache
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ./*.${{ matrix.package_extension }}
+          key: ${{ github.sha }}-${{ github.run_id }}-${{ matrix.package_extension }}-${{ matrix.distrib }}
+          fail-on-cache-miss: true
+
+      - name: Install, launch and uninstall the daemon
+        env:
+          PACKAGE_EXTENSION: ${{ matrix.package_extension }}
+        run: bash .github/scripts/connector-vmware/test-daemon-package.sh
+        shell: bash
+
+  deliver-packages:
+    needs: [get-environment, package, test-package]
     if: |
       needs.get-environment.outputs.skip_workflow == 'false' &&
       (contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) || ( needs.get-environment.outputs.stability == 'stable' && github.event_name != 'workflow_dispatch')) &&
@@ -143,7 +205,7 @@ jobs:
           artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
 
   deliver-packages-pulp:
-    needs: [get-environment, package]
+    needs: [get-environment, package, test-package]
     if: |
       needs.get-environment.outputs.skip_workflow == 'false' &&
       (contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) || ( needs.get-environment.outputs.stability == 'stable' && github.event_name != 'workflow_dispatch')) &&
