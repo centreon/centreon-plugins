@@ -1,0 +1,11 @@
+{
+    "pkg_name": "centreon-plugin-Hardware-Storage-Veritas-Nba-Ssh",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_veritas_nba_ssh.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "centreon/plugins/backend/ssh/",
+        "centreon/plugins/ssh.pm",
+        "storage/veritas/nba/ssh/"
+    ]
+}
