@@ -41,14 +41,6 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'total', nlabel => 'memory.usage.percentage', set => {
-                key_values => [ { name => 'total' } ],
-                output_template => 'total: %.2f %%',
-                perfdatas => [
-                    { template => '%.2f', min => 0, max => 100, unit => '%' }
-                ]
-            }
-        },
         { label => 'host', nlabel => 'memory.protected_host.percentage', set => {
                 key_values => [ { name => 'host' } ],
                 output_template => 'protected host: %.2f %%',
@@ -145,7 +137,12 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
-    $options{options}->add_options(arguments => {});
+    $options{options}->add_options(arguments => {
+        # deprecated: the memory pools are independent, their sum is meaningless
+        # kept so that existing commands passing them do not fail
+        'warning-total:s'  => { name => 'warning_total' },
+        'critical-total:s' => { name => 'critical_total' }
+    });
 
     return $self;
 }
@@ -213,7 +210,6 @@ sub manage_selection {
     }
 
     # Cleaning and Converting Values
-    my $total = 0;
     foreach my $key (keys %mem_values) {
         if (defined $mem_values{$key}) {
             $mem_values{$key} =~ s/%//g;
@@ -223,12 +219,10 @@ sub manage_selection {
                 delete $mem_values{$key};
                 next;
             }
-            $total += $mem_values{$key};
         } else {
             delete $mem_values{$key};
         }
     }
-    $mem_values{total} = $total;
 
     $self->{global} = \%mem_values;
 }
@@ -245,7 +239,7 @@ Check memory utilization on Stormshield firewalls.
 
 =item B<--warning-total>
 
-Threshold.
+Deprecated, not used anymore: each memory pool is independent and ranges from 0 to 100%, so their sum is meaningless.
 
 =item B<--warning-host>
 
@@ -284,7 +278,7 @@ Threshold. only for version >= 4.8.9
 
 =item B<--critical-total>
 
-Threshold.
+Deprecated, not used anymore (see C<--warning-total>).
 
 =item B<--critical-host>
 
