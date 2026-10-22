@@ -20,6 +20,12 @@
 
 package apps::microsoft::wsus::local::mode::synchronisationstatus;
 
+# Specio's XS implementation is loaded dynamically and is not reliably
+# detected by PAR::Packer. Force its bundled pure-Perl implementation on Windows.
+BEGIN {
+    $ENV{SPECIO_IMPLEMENTATION} = 'PP' if $^O eq 'MSWin32';
+}
+
 use base qw(centreon::plugins::templates::counter);
 
 use strict;
