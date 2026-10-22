@@ -103,7 +103,7 @@ sub manage_selection {
     $self->{repositories} = {};
     foreach my $repo (@{$repositories->{entities}->{repositories}->{repositories}}) {
         next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $repo->{Name} !~ /$self->{option_results}->{filter_name}/);
+            $repo->{name} !~ /$self->{option_results}->{filter_name}/);
 
         $self->{repositories}->{ $repo->{name} } = {
             name => $repo->{name},
