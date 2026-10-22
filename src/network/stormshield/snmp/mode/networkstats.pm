@@ -18,36 +18,26 @@
 # limitations under the License.
 #
 
-package network::stormshield::snmp::mode::interfaces_disco;
+
+package network::stormshield::snmp::mode::networkstats;
 
 use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
 use centreon::plugins::constants qw/:counters :values/;
-
-sub generic_interface_output {
-    my ($self, %options) = @_;
-    return sprintf("Interface %s, Address: %s, Mask: %s, Type: %s, Is Protected: %s",
-    $self->{result_values}->{if_name},
-    $self->{result_values}->{if_address},
-    $self->{result_values}->{if_mask},
-    $self->{result_values}->{if_type},
-    $self->{result_values}->{if_protected},
-    );
-}
-
+use centreon::plugins::misc qw(is_excluded);
 
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { 
-            name => 'interfaces', 
+        {
+            name => 'interfaces',
             type => COUNTER_TYPE_INSTANCE,
             message_multiple => 'All interfaces are OK',
             display_long => 1,
-            skipped_code => { -10 => 1 } 
+            skipped_code => { NO_VALUE() => 1 }
         }
     ];
 
@@ -56,14 +46,14 @@ sub set_counters {
             label => 'textual-info',
             type => COUNTER_KIND_TEXT,
             set => {
-                key_values => [ 
+                key_values => [
                     { name => 'if_name' },
                     { name => 'if_address' },
                     { name => 'if_mask' },
                     { name => 'if_type' },
                     { name => 'if_protected' }
                 ],
-                closure_custom_output => $self->can('generic_interface_output'),
+                output_template => 'Interface %{if_name}, Address: %{if_address}, Mask: %{if_mask}, Type: %{if_type}, Is Protected: %{if_protected}'
             }
         },
         {
@@ -71,23 +61,10 @@ sub set_counters {
             nlabel => 'interface.throughput.in.bytespersecond',
             type => COUNTER_KIND_METRIC,
             set => {
-                key_values => [ 
-                    { name => 'if_throughput_in' },
-                    { name => 'if_name' }
-                ],
+                key_values => [ { name => 'if_throughput_in' }, { name => 'if_name' } ],
                 output_template => 'Throughput In: %s B/s',
                 perfdatas => [
-                    {
-                        label => 'throughput_in',
-                        value => 'if_throughput_in',
-                        template => '%s',
-                        unit => 'B/s',
-                        min => 0,
-                        label_extra_instance => 1,
-                        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-throughput-in'),
-                        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-throughput-in'),
-                        instance_use => 'if_name'
-                    }
+                    { template => '%s', unit => 'B/s', min => 0, label_extra_instance => 1, instance_use => 'if_name' }
                 ]
             }
         },
@@ -96,23 +73,10 @@ sub set_counters {
             nlabel => 'interface.throughput.out.bytespersecond',
             type => COUNTER_KIND_METRIC,
             set => {
-                key_values => [ 
-                    { name => 'if_throughput_out' },
-                    { name => 'if_name' }
-                ],
+                key_values => [ { name => 'if_throughput_out' }, { name => 'if_name' } ],
                 output_template => 'Throughput Out: %s B/s',
                 perfdatas => [
-                    {
-                        label => 'throughput_out',
-                        value => 'if_throughput_out',
-                        template => '%s',
-                        unit => 'B/s',
-                        min => 0,
-                        label_extra_instance => 1,
-                        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-throughput-out'),
-                        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-throughput-out'),
-                        instance_use => 'if_name'
-                    }
+                    { template => '%s', unit => 'B/s', min => 0, label_extra_instance => 1, instance_use => 'if_name' }
                 ]
             }
         },
@@ -121,23 +85,10 @@ sub set_counters {
             nlabel => 'interface.connections.tcp.count',
             type => COUNTER_KIND_METRIC,
             set => {
-                key_values => [ 
-                    { name => 'if_current_tcp' },
-                    { name => 'if_name' }
-                ],
+                key_values => [ { name => 'if_current_tcp' }, { name => 'if_name' } ],
                 output_template => 'Current TCP Connections: %s',
                 perfdatas => [
-                    {
-                        label => 'current_tcp_con',
-                        value => 'if_current_tcp',
-                        template => '%s',
-                        unit => 'con',
-                        min => 0,
-                        label_extra_instance => 1,
-                        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-current-tcp'),
-                        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-current-tcp'),
-                        instance_use => 'if_name'
-                    }
+                    { template => '%s', min => 0, label_extra_instance => 1, instance_use => 'if_name' }
                 ]
             }
         },
@@ -146,23 +97,10 @@ sub set_counters {
             nlabel => 'interface.connections.udp.count',
             type => COUNTER_KIND_METRIC,
             set => {
-                key_values => [ 
-                    { name => 'if_current_udp' },
-                    { name => 'if_name' }
-                ],
+                key_values => [ { name => 'if_current_udp' }, { name => 'if_name' } ],
                 output_template => 'Current UDP Connections: %s',
                 perfdatas => [
-                    {
-                        label => 'current_udp_con',
-                        value => 'if_current_udp',
-                        template => '%s',
-                        unit => 'con',
-                        min => 0,
-                        label_extra_instance => 1,
-                        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-current-udp'),
-                        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-current-udp'),
-                        instance_use => 'if_name'
-                    }
+                    { template => '%s', min => 0, label_extra_instance => 1, instance_use => 'if_name' }
                 ]
             }
         },
@@ -171,23 +109,10 @@ sub set_counters {
             nlabel => 'interface.traffic.tcp.in.bytes',
             type => COUNTER_KIND_METRIC,
             set => {
-                key_values => [ 
-                    { name => 'if_tcp_in' },
-                    { name => 'if_name' }
-                ],
+                key_values => [ { name => 'if_tcp_in' }, { name => 'if_name' } ],
                 output_template => 'TCP In: %s bytes',
                 perfdatas => [
-                    {
-                        label => 'tcp_in',
-                        value => 'if_tcp_in',
-                        template => '%s',
-                        unit => 'bytes',
-                        min => 0,
-                        label_extra_instance => 1,
-                        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-tcp-in'),
-                        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-tcp-in'),
-                        instance_use => 'if_name'
-                    }
+                    { template => '%s', unit => 'B', min => 0, label_extra_instance => 1, instance_use => 'if_name' }
                 ]
             }
         },
@@ -196,23 +121,10 @@ sub set_counters {
             nlabel => 'interface.traffic.tcp.out.bytes',
             type => COUNTER_KIND_METRIC,
             set => {
-                key_values => [ 
-                    { name => 'if_tcp_out' },
-                    { name => 'if_name' }
-                ],
+                key_values => [ { name => 'if_tcp_out' }, { name => 'if_name' } ],
                 output_template => 'TCP Out: %s bytes',
                 perfdatas => [
-                    {
-                        label => 'tcp_out',
-                        value => 'if_tcp_out',
-                        template => '%s',
-                        unit => 'bytes',
-                        min => 0,
-                        label_extra_instance => 1,
-                        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-tcp-out'),
-                        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-tcp-out'),
-                        instance_use => 'if_name'
-                    }
+                    { template => '%s', unit => 'B', min => 0, label_extra_instance => 1, instance_use => 'if_name' }
                 ]
             }
         },
@@ -221,23 +133,10 @@ sub set_counters {
             nlabel => 'interface.traffic.udp.in.bytes',
             type => COUNTER_KIND_METRIC,
             set => {
-                key_values => [ 
-                    { name => 'if_udp_in' },
-                    { name => 'if_name' }
-                ],
+                key_values => [ { name => 'if_udp_in' }, { name => 'if_name' } ],
                 output_template => 'UDP In: %s bytes',
                 perfdatas => [
-                    {
-                        label => 'udp_in',
-                        value => 'if_udp_in',
-                        template => '%s',
-                        unit => 'bytes',
-                        min => 0,
-                        label_extra_instance => 1,
-                        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-udp-in'),
-                        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-udp-in'),
-                        instance_use => 'if_name'
-                    }
+                    { template => '%s', unit => 'B', min => 0, label_extra_instance => 1, instance_use => 'if_name' }
                 ]
             }
         },
@@ -246,23 +145,10 @@ sub set_counters {
             nlabel => 'interface.traffic.udp.out.bytes',
             type => COUNTER_KIND_METRIC,
             set => {
-                key_values => [ 
-                    { name => 'if_udp_out' },
-                    { name => 'if_name' }
-                ],
+                key_values => [ { name => 'if_udp_out' }, { name => 'if_name' } ],
                 output_template => 'UDP Out: %s bytes',
                 perfdatas => [
-                    {
-                        label => 'udp_out',
-                        value => 'if_udp_out',
-                        template => '%s',
-                        unit => 'bytes',
-                        min => 0,
-                        label_extra_instance => 1,
-                        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-udp-out'),
-                        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-udp-out'),
-                        instance_use => 'if_name'
-                    }
+                    { template => '%s', unit => 'B', min => 0, label_extra_instance => 1, instance_use => 'if_name' }
                 ]
             }
         },
@@ -271,23 +157,10 @@ sub set_counters {
             nlabel => 'interface.packets.accepted.count',
             type => COUNTER_KIND_METRIC,
             set => {
-                key_values => [ 
-                    { name => 'if_pack_accepted' },
-                    { name => 'if_name' }
-                ],
+                key_values => [ { name => 'if_pack_accepted' }, { name => 'if_name' } ],
                 output_template => 'Packets Accepted: %s',
                 perfdatas => [
-                    {
-                        label => 'pack_accepted',
-                        value => 'if_pack_accepted',
-                        template => '%s',
-                        unit => 'packets',
-                        min => 0,
-                        label_extra_instance => 1,
-                        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-packets-accepted'),
-                        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-packets-accepted'),
-                        instance_use => 'if_name'
-                    }
+                    { template => '%s', min => 0, label_extra_instance => 1, instance_use => 'if_name' }
                 ]
             }
         },
@@ -296,36 +169,24 @@ sub set_counters {
             nlabel => 'interface.packets.blocked.count',
             type => COUNTER_KIND_METRIC,
             set => {
-                key_values => [ 
-                    { name => 'if_pack_blocked' },
-                    { name => 'if_name' }
-                ],
+                key_values => [ { name => 'if_pack_blocked' }, { name => 'if_name' } ],
                 output_template => 'Packets Blocked: %s',
                 perfdatas => [
-                    {
-                        label => 'pack_blocked',
-                        value => 'if_pack_blocked',
-                        template => '%s',
-                        unit => 'packets',
-                        min => 0,
-                        label_extra_instance => 1,
-                        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-packets-blocked'),
-                        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-packets-blocked'),
-                        instance_use => 'if_name'
-                    }
+                    { template => '%s', min => 0, label_extra_instance => 1, instance_use => 'if_name' }
                 ]
             }
-        },
+        }
     ];
 }
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-name:s' => { name => 'filter_name' },
+        'include-name:s' => { name => 'include_name', default => '' },
+        'exclude-name:s' => { name => 'exclude_name', default => '^mgmt' }
     });
 
     return $self;
@@ -334,7 +195,7 @@ sub new {
 my $mapping = {
     snsifName              => { oid => '.1.3.6.1.4.1.11256.1.4.1.1.2' },
     snsifAddr              => { oid => '.1.3.6.1.4.1.11256.1.4.1.1.4' },
-    snsifMask              => { oid => '.1.3.6.1.4.1.11256.1.4.1.1.5' },  
+    snsifMask              => { oid => '.1.3.6.1.4.1.11256.1.4.1.1.5' },
     snsifType              => { oid => '.1.3.6.1.4.1.11256.1.4.1.1.6' },
     snsifProtected         => { oid => '.1.3.6.1.4.1.11256.1.4.1.1.37' },
     snsifPktAccepted       => { oid => '.1.3.6.1.4.1.11256.1.4.1.1.11' },
@@ -349,27 +210,24 @@ my $mapping = {
     snsifOutUdpBytes       => { oid => '.1.3.6.1.4.1.11256.1.4.1.1.34' }
 };
 my $oid_snsifEntry = '.1.3.6.1.4.1.11256.1.4.1.1';
-
+my @disco_elements = ('if_name', 'if_address', 'if_mask', 'if_type', 'if_protected');
 
 sub manage_selection {
     my ($self, %options) = @_;
-    
+
     my $snmp_result = $options{snmp}->get_table(
         oid => $oid_snsifEntry,
         start => $mapping->{snsifName}->{oid},
         end => $mapping->{snsifProtected}->{oid},
     );
 
-
     $self->{interfaces} = {};
     foreach my $oid (keys %{$snmp_result}) {
         next if ($oid !~ /^$mapping->{snsifName}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
-        if ((defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' && $result->{snsifName} ne $self->{option_results}->{filter_name}) || ($result->{snsifName} =~ /^mgmt/)) {
-            next;
-        }
-        
+        next if (is_excluded($result->{snsifName}, $self->{option_results}->{include_name}, $self->{option_results}->{exclude_name}, output => $self->{output}));
+
         $self->{interfaces}->{$instance} = {
             if_name => $result->{snsifName} // '-',
             if_address => $result->{snsifAddr} // '-',
@@ -389,25 +247,22 @@ sub manage_selection {
         };
     }
 
-    if (scalar(keys %{$self->{interfaces}}) <= 0) {
-        $self->{output}->add_option_msg(
-            short_msg => 'No interface found matching: ' . ($self->{option_results}->{filter_name} // '')
-        );
-        $self->{output}->option_exit();
+    if (scalar(keys %{$self->{interfaces}}) <= 0 && !$options{disco}) {
+        $self->{output}->option_exit(short_msg => 'No interface found.');
     }
 }
 
 sub disco_format {
     my ($self, %options) = @_;
 
-    $self->{output}->add_disco_format(elements => ['if_name', 'if_address', 'if_mask', 'if_type', 'if_protected', 'if_throughput_in', 'if_throughput_out', 'if_current_tcp', 'if_current_udp', 'if_tcp_in', 'if_tcp_out', 'if_udp_in', 'if_udp_out', 'if_pack_accepted', 'if_pack_blocked']);
+    $self->{output}->add_disco_format(elements => [ @disco_elements ]);
 }
 
 sub disco_show {
     my ($self, %options) = @_;
-    $self->manage_selection(%options);
+    $self->manage_selection(%options, disco => 1);
     foreach my $instance (sort keys %{$self->{interfaces}}) {
-        $self->{output}->add_disco_entry(%{$self->{interfaces}->{$instance}});
+        $self->{output}->add_disco_entry(map { $_ => $self->{interfaces}->{$instance}->{$_} } @disco_elements);
     }
 }
 
@@ -417,13 +272,17 @@ __END__
 
 =head1 MODE
 
-This mode retrieves and displays the status of interfaces on the Stormshield device, including their name, global in/out traffic, TCP/UDP in/out traffic, and packet acceptance/blocking statistics.
+Check Stormshield network statistics per interface: global in/out throughput, TCP/UDP connections and traffic, and accepted/blocked packets.
 
 =over 8
 
-=item B<--filter-name>
+=item B<--include-name>
 
-Filter by name to only display this interface
+Filter interfaces by name (can be a regexp).
+
+=item B<--exclude-name>
+
+Exclude interfaces by name (can be a regexp) (default: '^mgmt').
 
 =item B<--warning-throughput-in>
 
