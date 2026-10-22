@@ -45,9 +45,10 @@ sub custom_auto_update_output {
     my $state = $self->{result_values}->{state};
     my $display = $self->{result_values}->{display};
 
-    return "$display " . $STATES_TO_READABLE{$state} if $STATES_TO_READABLE{$state};
-    return "$display " . $state
-        . " (Last Update: " . ($self->{result_values}->{last_date} // 'N/A') . ")";
+    my $output = "$display " . ($STATES_TO_READABLE{$state} // $state);
+    $output .= " (Last Update: " . ($self->{result_values}->{last_date} // 'N/A') . ")"
+        if ($state !~ /^(Uptodate|Disabled|NeverStarted)$/);
+    return $output;
 }
 
 sub set_counters {
