@@ -160,6 +160,8 @@ my $status_mapping = {
 
 sub manage_selection {
     my ($self, %options) = @_;
+    binmode STDOUT, ':encoding(UTF-8)';
+
     my $results = $options{custom}->request_scenarios_status();
 
     my $time = time();
@@ -167,16 +169,17 @@ sub manage_selection {
     my $end_date = POSIX::strftime('%Y-%m-%dT%H:%M:%SZ', gmtime($time));
     foreach my $scenario (@$results) {
         my $scenario_detail = $options{custom}->request_api(
-            endpoint => '/results-api/results/' . $scenario->{scenarioId},
+            endpoint => '/results-api/scenario-results/' . $scenario->{scenarioId},
             method => 'POST',
             get_param => [
                 'from=' . $start_date,
-                'to=' . $end_date
+                'to=' . $end_date,
+                'sla-level=0'
             ]
         );
 
         if (defined($self->{option_results}->{filter_type}) && $self->{option_results}->{filter_type} ne '' &&
-            $scenario_detail->{infos}->{plugin_id} !~ /$self->{option_results}->{filter_type}/i) {
+            ($scenario->{scenarioType} // $scenario_detail->{infos}->{plugin_id} // '') !~ /$self->{option_results}->{filter_type}/i) {
             $self->{output}->output_add(long_msg => "skipping scenario '" . $scenario->{scenarioName} . "': no matching filter.", debug => 1);
             next;
         }
@@ -198,9 +201,20 @@ sub manage_selection {
             $self->{scenarios}->{ $scenario->{scenarioName} }->{global}->{$kpi->{label}} = $kpi->{value};
         }
         $self->{scenarios}->{ $scenario->{scenarioName} }->{steps_index}->{0} = 'Default';
-        if ($scenario_detail->{infos}->{info}->{hasStep}) {
+        my $step_index_offset = 0;
+        my $has_step = $scenario_detail->{details}->{plugin}->{WEB}->{informations}->{hasStep}
+            if defined($scenario_detail->{details}) && defined($scenario_detail->{details}->{plugin}) &&
+            defined($scenario_detail->{details}->{plugin}->{WEB}) &&
+            defined($scenario_detail->{details}->{plugin}->{WEB}->{informations});
+        $has_step = $scenario_detail->{details}->{plugin}->{DESKTOP}->{informations}->{hasStep}
+            if !defined($has_step) && defined($scenario_detail->{details}->{plugin}->{DESKTOP}) &&
+            defined($scenario_detail->{details}->{plugin}->{DESKTOP}->{informations});
+        $has_step = $scenario_detail->{infos}->{info}->{hasStep}
+            if !defined($has_step) && defined($scenario_detail->{infos}) && defined($scenario_detail->{infos}->{info});
+        if ($has_step) {
+            $step_index_offset = 1 if grep { $_->{stepId} == 0 } @{$scenario_detail->{results}};
             foreach my $steps (@{$scenario_detail->{steps}}) {
-                $self->{scenarios}->{ $scenario->{scenarioName} }->{steps_index}->{$steps->{index} - 1} = $steps->{name};
+                $self->{scenarios}->{ $scenario->{scenarioName} }->{steps_index}->{$steps->{index} - $step_index_offset} = $steps->{name};
             }
         }
         # The API is expected to sort the output to get the most recent data at the end of the array.
@@ -215,10 +229,15 @@ sub manage_selection {
                 next;
             }
             my $exec_time = str2time($step_metrics->{planningTime}, 'GMT');
-            $self->{scenarios}->{ $scenario->{scenarioName} }->{steps}->{ $self->{scenarios}->{ $scenario->{scenarioName} }->{steps_index}->{ $step_metrics->{stepId} } }->{ $step_metrics->{metric} } = $step_metrics->{value};
-            $self->{scenarios}->{ $scenario->{scenarioName} }->{steps}->{ $self->{scenarios}->{ $scenario->{scenarioName} }->{steps_index}->{ $step_metrics->{stepId} } }->{last_exec} = POSIX::strftime('%d-%m-%Y %H:%M:%S %Z', localtime($exec_time));
-            $self->{scenarios}->{ $scenario->{scenarioName} }->{steps}->{ $self->{scenarios}->{ $scenario->{scenarioName} }->{steps_index}->{ $step_metrics->{stepId} } }->{display} = $self->{scenarios}->{ $scenario->{scenarioName} }->{steps_index}->{ $step_metrics->{stepId} };
-            $self->{scenarios}->{ $scenario->{scenarioName} }->{steps}->{ $self->{scenarios}->{ $scenario->{scenarioName} }->{steps_index}->{ $step_metrics->{stepId} } }->{index} = $step_metrics->{stepId};
+            my $step_name = $self->{scenarios}->{ $scenario->{scenarioName} }->{steps_index}->{ $step_metrics->{stepId} };
+            if (!defined($step_name)) {
+                $self->{output}->add_option_msg(long_msg => "Unknown step id '$step_metrics->{stepId}' for scenario '$scenario->{scenarioName}', skipping metric.", debug => 1);
+                next;
+            }
+            $self->{scenarios}->{ $scenario->{scenarioName} }->{steps}->{$step_name}->{ $step_metrics->{metric} } = $step_metrics->{value};
+            $self->{scenarios}->{ $scenario->{scenarioName} }->{steps}->{$step_name}->{last_exec} = POSIX::strftime('%d-%m-%Y %H:%M:%S %Z', localtime($exec_time));
+            $self->{scenarios}->{ $scenario->{scenarioName} }->{steps}->{$step_name}->{display} = $step_name;
+            $self->{scenarios}->{ $scenario->{scenarioName} }->{steps}->{$step_name}->{index} = $step_metrics->{stepId};
         }
     }
 
