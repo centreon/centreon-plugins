@@ -51,7 +51,8 @@ sub custom_qos_calc {
     
     $self->{result_values}->{label} = $options{extra_options}->{label_ref};
     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
-    $self->{result_values}->{traffic} = $options{new_datas}->{$self->{instance} . '_traffic_' . $self->{result_values}->{label}};
+    my $traffic_key = $self->{instance} . '_traffic_' . $self->{result_values}->{label};
+    $self->{result_values}->{traffic} = ($options{new_datas}->{$traffic_key} - $options{old_datas}->{$traffic_key}) / $options{delta_time};
 
     if ($options{new_datas}->{$self->{instance} . '_speed_' . $self->{result_values}->{label}} > 0) {
         $self->{result_values}->{speed} = $options{new_datas}->{$self->{instance} . '_speed_' . $self->{result_values}->{label}};
