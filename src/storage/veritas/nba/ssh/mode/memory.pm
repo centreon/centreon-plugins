@@ -184,11 +184,61 @@ Check memory
 
 =over 8
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-memory-usage>
 
-Thresholds.
-Can be: 'memory-usage' (B), 'memory-usage-free' (B), 'memory-usage-prct' (%),
-'memory-available' (B), 'memory-available-prct' (%), 'buffer' (B), 'shared' (B) .
+Threshold in bytes.
+
+=item B<--critical-memory-usage>
+
+Threshold in bytes.
+
+=item B<--warning-memory-usage-free>
+
+Threshold in bytes.
+
+=item B<--critical-memory-usage-free>
+
+Threshold in bytes.
+
+=item B<--warning-memory-usage-prct>
+
+Threshold in percentage.
+
+=item B<--critical-memory-usage-prct>
+
+Threshold in percentage.
+
+=item B<--warning-memory-available>
+
+Threshold in bytes.
+
+=item B<--critical-memory-available>
+
+Threshold in bytes.
+
+=item B<--warning-memory-available-prct>
+
+Threshold in percentage.
+
+=item B<--critical-memory-available-prct>
+
+Threshold in percentage.
+
+=item B<--warning-buffer>
+
+Threshold in bytes.
+
+=item B<--critical-buffer>
+
+Threshold in bytes.
+
+=item B<--warning-shared>
+
+Threshold in bytes.
+
+=item B<--critical-shared>
+
+Threshold in bytes.
 
 =back
 

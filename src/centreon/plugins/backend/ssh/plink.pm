@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -119,11 +119,11 @@ __END__
 
 =head1 NAME
 
-plink backend.
+Plink backend.
 
 =head1 SYNOPSIS
 
-plink backend.
+Plink backend.
 
 =head1 BACKEND PLINK OPTIONS
 
@@ -131,20 +131,20 @@ plink backend.
 
 =item B<--plink-command>
 
-plink command (default: 'plink').
+Plink command (default: C<plink>).
 
 =item B<--plink-path>
 
-plink command path (default: none)
+Plink command path (default: none)
 
 =item B<--plink-option>
 
-Specify plink options (example: --plink-option='-T').
+Specify Plink options (example: --plink-option='-T').
 
 =back
 
 =head1 DESCRIPTION
 
-B<plink>.
+B<Plink>.
 
 =cut

@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -202,11 +202,11 @@ __END__
 
 =head1 NAME
 
-libssh backend.
+libSSH backend.
 
 =head1 SYNOPSIS
 
-libssh backend.
+libSSH backend.
 
 =head1 BACKEND LIBSSH OPTIONS
 
@@ -220,6 +220,6 @@ Connection won't be OK even if there is a problem (server known changed or serve
 
 =head1 DESCRIPTION
 
-B<libssh>.
+B<libSSH>.
 
 =cut

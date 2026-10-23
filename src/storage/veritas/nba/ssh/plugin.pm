@@ -46,6 +46,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Veritas Netbackup Appliance in SSH.
+Check Veritas NetBackup Appliance in SSH.
 
 =cut
