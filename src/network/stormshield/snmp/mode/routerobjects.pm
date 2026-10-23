@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::stormshield::snmp::mode::router_disco;
+package network::stormshield::snmp::mode::routerobjects;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -26,7 +26,7 @@ use strict;
 use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 use centreon::plugins::constants qw/:counters :values/;
-use centreon::plugins::misc;
+use centreon::plugins::misc qw(is_excluded);
 
 
 sub build_gateways_detail {
@@ -150,7 +150,7 @@ sub custom_packetloss_output {
         );
     }
 
-    return join(', ', @bad) . '.';
+    return scalar(@bad) > 0 ? join(', ', @bad) . '.' : '';
 }
 
 sub custom_packetloss_perfdata {
@@ -220,7 +220,7 @@ sub custom_latency_output {
         );
     }
 
-    return join(', ', @bad) . '.';
+    return scalar(@bad) > 0 ? join(', ', @bad) . '.' : '';
 }
 
 sub custom_latency_perfdata {
@@ -290,7 +290,7 @@ sub custom_jitter_output {
         );
     }
 
-    return join(', ', @bad) . '.';
+    return scalar(@bad) > 0 ? join(', ', @bad) . '.' : '';
 }
 
 sub custom_jitter_perfdata {
@@ -334,12 +334,13 @@ sub custom_principal_count_threshold {
     );
 }
 
-# silent: the down count is already shown in the router-status line, this counter
-# only exists to drive warning/critical off a user-defined numeric threshold
+# the down count is already shown in the router-status line:
+# only display it when its own threshold is breached
 sub custom_principal_count_output {
     my ($self, %options) = @_;
 
-    return '';
+    return '' if (custom_principal_count_threshold($self) eq 'ok');
+    return sprintf('principal gateways down: %d/%d.', $self->{result_values}->{down}, $self->{result_values}->{total});
 }
 
 sub custom_principal_count_perfdata {
@@ -381,7 +382,8 @@ sub custom_backup_count_threshold {
 sub custom_backup_count_output {
     my ($self, %options) = @_;
 
-    return '';
+    return '' if (custom_backup_count_threshold($self) eq 'ok');
+    return sprintf('backup gateways down: %d/%d.', $self->{result_values}->{down}, $self->{result_values}->{total});
 }
 
 sub custom_backup_count_perfdata {
@@ -409,14 +411,14 @@ sub set_counters {
             message_multiple => 'All gateways are ok',
             display_long => 0,
             message_separator => ' ',
-            skipped_code => { -10 => 1 }
+            skipped_code => { NO_VALUE() => 1 }
         }
     ];
 
     $self->{maps_counters}->{router} = [
         {
             label => 'router-status',
-            type => 2,
+            type => COUNTER_KIND_TEXT,
             warning_default => '%{one_principal_down} == 1',
             critical_default => '%{all_down} == 1',
             set => {
@@ -426,7 +428,6 @@ sub set_counters {
                     { name => 'backup_down' }, { name => 'backup_total' }
                 ],
                 closure_custom_output => $self->can('custom_router_status_output'),
-                closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
@@ -514,7 +515,8 @@ sub new {
         'critical-principal-count:s' => { name => 'critical_principal_count' },
         'warning-backup-count:s'     => { name => 'warning_backup_count' },
         'critical-backup-count:s'    => { name => 'critical_backup_count' },
-        'filter-name:s'              => { name => 'filter_name' }
+        'include-name:s'             => { name => 'include_name', default => '' },
+        'exclude-name:s'             => { name => 'exclude_name', default => '' }
     });
 
     return $self;
@@ -541,8 +543,7 @@ sub check_options {
         my ($label, $option_name) = @$threshold;
 
         if (($self->{perfdata}->threshold_validate(label => $label, value => $self->{option_results}->{$option_name})) == 0) {
-            $self->{output}->add_option_msg(short_msg => "Wrong threshold '" . $label . "' value '" . $self->{option_results}->{$option_name} . "'.");
-            $self->{output}->option_exit();
+            $self->{output}->option_exit(short_msg => "Wrong threshold '" . $label . "' value '" . $self->{option_results}->{$option_name} . "'.");
         }
     }
 }
@@ -564,7 +565,7 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     my $oid_snsVersion = '.1.3.6.1.4.1.11256.1.18.2.0';
-    
+
     my $snmp_result_version = $options{snmp}->get_leef(
         oids => [ $oid_snsVersion ],
         nothing_quit => 0,
@@ -603,7 +604,7 @@ sub manage_selection {
             { oid => $mapping->{snsRouteJitter}->{oid} },
             { oid => $packet_loss_oid }
         ],
-        nothing_quit => 1
+        nothing_quit => 0
     );
 
     $self->{router} = {};
@@ -612,10 +613,7 @@ sub manage_selection {
         my $instance = $1;
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
 
-        next if (
-            defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne ''
-            && lc($result->{snsRouteRouterName}) ne lc($self->{option_results}->{filter_name})
-        );
+        next if (is_excluded($result->{snsRouteRouterName}, $self->{option_results}->{include_name}, $self->{option_results}->{exclude_name}, output => $self->{output}));
 
         my $router_name = $result->{snsRouteRouterName};
         if (!defined($self->{router}->{$router_name})) {
@@ -643,7 +641,7 @@ sub manage_selection {
                 || $result->{snsRouteLatency} == 0
             ) ? 1 : 0;
         }
-        
+
         my $packet_loss_value;
         my $raw = $result->{ $use_old_packet_loss_oid ? 'snsRoutePacketLossPrctOld' : 'snsRoutePacketLossPrctRaw' };
 
@@ -674,9 +672,8 @@ sub manage_selection {
         };
     }
 
-    if (scalar(keys %{$self->{router}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => 'No routes found matching filters.');
-        $self->{output}->option_exit();
+    if (scalar(keys %{$self->{router}}) <= 0 && !$options{disco}) {
+        $self->{output}->option_exit(short_msg => 'No router object found.');
     }
 
     foreach my $router_name (keys %{$self->{router}}) {
@@ -698,7 +695,7 @@ sub manage_selection {
         $self->{router}->{$router_name}->{all_down} = (
             scalar(@gateways) > 0 && $principal_down == $principal_total && $backup_down == $backup_total
         ) ? 1 : 0;
-        
+
         $self->{output}->output_add(
             long_msg => $self->build_gateways_detail(gateways => $self->{router}->{$router_name}->{gateways})
         );
@@ -714,7 +711,7 @@ sub disco_format {
 sub disco_show {
     my ($self, %options) = @_;
 
-    $self->manage_selection(%options);
+    $self->manage_selection(%options, disco => 1);
     foreach my $router_name (sort keys %{$self->{router}}) {
         my $router = $self->{router}->{$router_name};
         my @gateways = @{ $router->{gateways} };
@@ -735,9 +732,9 @@ __END__
 
 =head1 MODE
 
-Discovery mode for Stormshield SD-WAN/VPN routes, grouped by router.
-This mode produces a single Centreon service per router, with every gateway of that router (latency, jitter, packet loss, reachability state)
-folded into that one service's output and perfdata, plus an aggregated router-level status.
+Check Stormshield router objects (gateways grouped for policy-based routing / SD-WAN).
+This mode produces a single Centreon service per router object, with every gateway of that object (latency, jitter, packet loss, reachability state)
+folded into that one service's output and perfdata, plus an aggregated router object status.
 
 =over 8
 
@@ -783,9 +780,13 @@ Warning threshold on jitter (in milliseconds), applied to C<snsRouteJitter> for 
 
 Critical threshold on jitter (in milliseconds), applied to C<snsRouteJitter> for each gateway of the router.
 
-=item B<--filter-name>
+=item B<--include-name>
 
-Filter routers on the exact router name (for discovery).
+Filter router objects by name (can be a regexp).
+
+=item B<--exclude-name>
+
+Exclude router objects by name (can be a regexp).
 
 =back
 

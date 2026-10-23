@@ -100,7 +100,7 @@ sub check {
             $self->{components}->{disk}->{total}++;
 
             my $smart  = $disk->{smartResult} // 'N/A';
-            my $name   = $label_prefix . $disk->{name}        // $instance;
+            my $name   = defined($disk->{name}) ? $label_prefix . $disk->{name} : $instance;
             $self->{output}->output_add(
                 long_msg => sprintf(
                     "disk '%s' smart result is '%s' [isRaid: %s, raidStatus: %s, position: %s]",
@@ -121,9 +121,8 @@ sub check {
             }
 
             if (defined $disk->{isRaid} && $disk->{isRaid} == 1
-                && defined $disk->{raidStatus} && $disk->{raidStatus} ne '')
-            {
-                if ($disk->{raidStatus} eq 'missing'){
+                && defined $disk->{raidStatus} && $disk->{raidStatus} ne '') {
+                if ($disk->{raidStatus} eq 'missing') {
                     $self->{output}->output_add(
                         severity  => 'WARNING',
                         short_msg => sprintf(

@@ -34,13 +34,13 @@ Uptime ${tc}
     ...    --
     ...    1
     ...    ${EMPTY}
-    ...    OK: Uptime: 71 days 20 hours 39 minutes 47 seconds | 'system.uptime.seconds'=6208787s;;;0;
+    ...    OK: Uptime: 71d 20h 39m 47s | 'system.uptime.seconds'=6208787s;;;0;
     ...    2
     ...    --warning-uptime=1
-    ...    WARNING: Uptime: 71 days 20 hours 39 minutes 47 seconds | 'system.uptime.seconds'=6208787s;0:1;;0;
+    ...    WARNING: Uptime: 71d 20h 39m 47s | 'system.uptime.seconds'=6208787s;0:1;;0;
     ...    3
     ...    --critical-uptime=1
-    ...    CRITICAL: Uptime: 71 days 20 hours 39 minutes 47 seconds | 'system.uptime.seconds'=6208787s;;0:1;0;
+    ...    CRITICAL: Uptime: 71d 20h 39m 47s | 'system.uptime.seconds'=6208787s;;0:1;0;
     ...    4
     ...    --verbose
-    ...    OK: Uptime: 71 days 20 hours 39 minutes 47 seconds | 'system.uptime.seconds'=6208787s;;;0; System Name: <fw_2> Model: SN910 Serial Number: <fw_1> Version: 5.2.0.dev Date: 2026-04-29 17:29:10 System Node Name: None Bios Version: 4.6.5
+    ...    OK: Uptime: 71d 20h 39m 47s | 'system.uptime.seconds'=6208787s;;;0; System Name: <fw_2> Model: SN910 Serial Number: <fw_1> Version: 5.2.0.dev Date: 2026-04-29 17:29:10 System Node Name: None Bios Version: 4.6.5

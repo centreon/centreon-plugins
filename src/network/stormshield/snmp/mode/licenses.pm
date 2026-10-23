@@ -30,32 +30,62 @@ use DateTime;
 
 sub firewall_long_output {
     my ($self, %options) = @_;
-    my $display = $options{instance_value}->{display};
 
-    if (defined $display && $display ne '') {
-        return "--------------Firewall $display--------------";
-    }
-    return "------------------------------------------------------------";
+    # the instance is the firewall serial number, also set for a single node
+    return 'Firewall ' . $options{instance};
+}
+
+sub firewall_prefix_output {
+    my ($self, %options) = @_;
+
+    return is_empty($options{instance_value}->{display}) ? '' : 'Firewall ' . $options{instance_value}->{display} . ': ';
+}
+
+sub custom_summary_output {
+    my ($self, %options) = @_;
+
+    my @counts = map { $self->{result_values}->{$_} . ' ' . $_ }
+        grep { $self->{result_values}->{$_} > 0 } ('critical', 'warning', 'unknown');
+    return '' if (scalar(@counts) == 0);
+    return 'Licences: ' . join(', ', @counts) . ' (out of ' . $self->{result_values}->{total} . ')';
 }
 
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
+        { name => 'global', type => COUNTER_TYPE_GLOBAL, display_long => 0, skipped_code => { NO_VALUE() => 1 } },
         {
             name => 'firewalls',
             type => COUNTER_TYPE_MULTIPLE,
+            cb_prefix_output => 'firewall_prefix_output',
             cb_long_output => 'firewall_long_output',
+            indent_long_output => '    ',
             message_multiple => 'All licences of the cluster are up to date',
             group => [
                 {
                     name => 'licences',
                     display_long => 1,
-                    #cb_prefix_output => sub { return ''; },
                     message_multiple => 'All licences are up to date',
                     type => COUNTER_MULTIPLE_SUBINSTANCE,
                 }
             ]
+        }
+    ];
+
+    # summary of the licences per status, displayed before their detail
+    $self->{maps_counters}->{global} = [
+        {
+            label => 'summary',
+            type => COUNTER_KIND_TEXT,
+            threshold => 0,
+            set => {
+                key_values => [
+                    { name => 'status' }, { name => 'critical' }, { name => 'warning' }, { name => 'unknown' }, { name => 'total' }
+                ],
+                closure_custom_output => $self->can('custom_summary_output'),
+                closure_custom_threshold_check => sub { return $_[0]->{result_values}->{status}; }
+            }
         }
     ];
 
@@ -97,6 +127,7 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
+    $self->{global} = {};
     $self->{firewalls} = {};
 
     my $oid_snsNode = '.1.3.6.1.4.1.11256.1.11.7.1.1';
@@ -290,6 +321,28 @@ sub manage_selection {
         return;
     }
 
+    # count the licences per status with the thresholds of the expires-days counter
+    my $thlabel = $self->{maps_counters}->{licences}->[0]->{obj}->{thlabel};
+    my %counts = (ok => 0, warning => 0, critical => 0, unknown => 0);
+    foreach my $firewall (values %{$self->{firewalls}}) {
+        foreach my $licence (values %{$firewall->{licences}}) {
+            $counts{
+                $self->{perfdata}->threshold_check(
+                    value => $licence->{days_left},
+                    threshold => [
+                        { label => 'critical-' . $thlabel, exit_litteral => 'critical' },
+                        { label => 'warning-' . $thlabel, exit_litteral => 'warning' },
+                        { label => 'unknown-' . $thlabel, exit_litteral => 'unknown' }
+                    ]
+                )
+            }++;
+        }
+    }
+    $self->{global} = {
+        status => $self->{output}->get_most_critical(status => [ grep { $counts{$_} > 0 } keys %counts ]),
+        total => $licence_count_total,
+        map { $_ => $counts{$_} } ('critical', 'warning', 'unknown')
+    };
 }
 
 1;

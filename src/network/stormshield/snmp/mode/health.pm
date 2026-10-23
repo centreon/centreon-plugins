@@ -26,44 +26,23 @@ use strict;
 use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 use centreon::plugins::constants qw/:counters :values/;
-
-
-sub custom_service_status_output {
-    my ($self, %options) = @_;
-
-    return sprintf(
-        "health: %s",
-        $self->{result_values}->{health}
-    );
-}
-
-sub prefix_firewall_output {
-    my ($self, %options) = @_;
-
-    return "firewall '" . $options{instance_value}->{display} . "': ";
-}
-
-sub prefix_service_output {
-    my ($self, %options) = @_;
-
-    return "firewall '" . $options{instance_value}->{firewall} . "' service '" . $options{instance_value}->{service} . "' ";
-}
+use centreon::plugins::misc qw(is_excluded);
 
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
         { name => 'firewalls', type => COUNTER_TYPE_GROUP,
-            cb_prefix_output => 'prefix_firewall_output',
+            prefix_output => "firewall '%{display}': ",
             indent_long_output => '    ',
             message_multiple => 'All firewalls are ok',
             group => [
                 {
                     name => 'services',
-                    cb_prefix_output => 'prefix_service_output',
+                    prefix_output => "firewall '%{firewall}' service '%{service}' ",
                     message_multiple => 'All services are ok',
                     type => COUNTER_TYPE_INSTANCE,
-                    skipped_code => { NO_VALUE => 1 } }
+                    skipped_code => { NO_VALUE() => 1 } }
             ]
         }
     ];
@@ -76,8 +55,7 @@ sub set_counters {
             critical_default => '%{health} =~ /major/i',
             set => {
                 key_values => [ { name => 'health' }, { name => 'service' }, { name => 'firewall' } ],
-                closure_custom_output => $self->can('custom_service_status_output'),
-                closure_custom_perfdata => sub { return 0; },
+                output_template => 'health: %{health}',
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         }
@@ -90,7 +68,9 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-serial:s' => { name => 'filter_serial' }
+        'include-serial:s' => { name => 'include_serial', default => '' },
+        'exclude-serial:s' => { name => 'exclude_serial', default => '' },
+        'filter-serial:s'  => { redirect => 'include_serial' }
     });
 
     return $self;
@@ -129,11 +109,7 @@ sub manage_selection {
         my $instance = $1;
 
         my $serial = $snmp_result->{$_};
-        if (defined($self->{option_results}->{filter_serial}) && $self->{option_results}->{filter_serial} ne '' &&
-            $serial !~ /$self->{option_results}->{filter_serial}/) {
-            $self->{output}->output_add(long_msg => "skipping firewall '" . $serial . "'.", debug => 1);
-            next;
-        }
+        next if (is_excluded($serial, $self->{option_results}->{include_serial}, $self->{option_results}->{exclude_serial}, output => $self->{output}));
 
         $self->{firewalls}->{$instance} = {
             display  => $serial,
@@ -142,8 +118,7 @@ sub manage_selection {
     }
 
     if (scalar(keys %{$self->{firewalls}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No firewall found with accepted serial.");
-        $self->{output}->option_exit();
+        $self->{output}->option_exit(short_msg => "No firewall found with accepted serial.");
     }
 
     $options{snmp}->load(
@@ -175,9 +150,13 @@ Check health.
 
 =over 8
 
-=item B<--filter-serial>
+=item B<--include-serial>
 
-Filter by firewall serial (can be a regexp).
+Filter by firewall serial (can be a regexp). Option C<--filter-serial> is a deprecated alias.
+
+=item B<--exclude-serial>
+
+Exclude firewalls by serial (can be a regexp).
 
 =item B<--unknown-service-status>
 
