@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2024-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,9 +24,10 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::misc;
-use Digest::MD5 qw(md5_hex);
+use centreon::plugins::misc qw(is_excluded);
+use Digest::SHA qw(sha256_hex);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
+use centreon::plugins::constants qw(:counters :values);
 
 sub custom_traffic_perfdata {
     my ($self, %options) = @_;
@@ -42,29 +43,12 @@ sub custom_traffic_perfdata {
     );
 }
 
-sub prefix_vpn_output {
-    my ($self, %options) = @_;
-
-    return sprintf(
-        "VPN '%s/%s/%s' ",
-        $options{instance_value}->{num},
-        $options{instance_value}->{ipSrc},
-        $options{instance_value}->{ipDst}
-    );
-}
-
-sub prefix_global_output {
-    my ($self, %options) = @_;
-
-    return 'VPN ';
-}
-
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output' },
-        { name => 'vpn', type => 1, cb_prefix_output => 'prefix_vpn_output', message_multiple => 'All vpn are ok', skipped_code => { -10 => 1 } }
+        { name => 'global', type => COUNTER_TYPE_GLOBAL, prefix_output => 'VPN ' },
+        { name => 'vpn', type => COUNTER_TYPE_INSTANCE, prefix_output => "VPN '%{num}/%{ipSrc}/%{ipDst}' ", message_multiple => 'All vpn are ok', skipped_code => { NO_VALUE() => 1 } }
     ];
 
     $self->{maps_counters}->{global} = [
@@ -81,14 +65,13 @@ sub set_counters {
     $self->{maps_counters}->{vpn} = [
         {
             label => 'status',
-            type => 2,
+            type => COUNTER_KIND_TEXT,
             warning_default => '%{state} eq "dead"',
             set => {
                 key_values => [
                     { name => 'state' }, { name => 'ipSrc' }, { name => 'ipDst' }
                 ],
                 output_template => 'state: %s',
-                closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
@@ -122,9 +105,15 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        'filter-id:s'     => { name => 'filter_id' },
-        'filter-src-ip:s' => { name => 'filter_src_ip' },
-        'filter-dst-ip:s' => { name => 'filter_dst_ip' }
+        'include-id:s'     => { name => 'include_id', default => '' },
+        'exclude-id:s'     => { name => 'exclude_id', default => '' },
+        'include-src-ip:s' => { name => 'include_src_ip', default => '' },
+        'exclude-src-ip:s' => { name => 'exclude_src_ip', default => '' },
+        'include-dst-ip:s' => { name => 'include_dst_ip', default => '' },
+        'exclude-dst-ip:s' => { name => 'exclude_dst_ip', default => '' },
+        'filter-id:s'      => { redirect => 'include_id' },
+        'filter-src-ip:s'  => { redirect => 'include_src_ip' },
+        'filter-dst-ip:s'  => { redirect => 'include_dst_ip' }
     });
 
     return $self;
@@ -149,12 +138,12 @@ my $mapping = {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{cache_name} = 'stormshield_' . $self->{mode} . '_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' .
-        md5_hex(
-            (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : '') . '_' .
-            (defined($self->{option_results}->{filter_id}) ? md5_hex($self->{option_results}->{filter_id}) : '') . '_' .
-            (defined($self->{option_results}->{filter_src_ip}) ? md5_hex($self->{option_results}->{filter_src_ip}) : '') . '_' .
-            (defined($self->{option_results}->{filter_dst_ip}) ? md5_hex($self->{option_results}->{filter_dst_ip}) : '')
+    $self->{cache_name} = 'stormshield_' . $self->{mode} . '_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port()
+        . '_' . sha256_hex(
+            join('_',
+                $self->{option_results}->{filter_counters} // '',
+                map { $self->{option_results}->{$_} } qw(include_id exclude_id include_src_ip exclude_src_ip include_dst_ip exclude_dst_ip)
+            )
         );
 
     my $os_version = '.1.3.6.1.4.1.11256.1.0.2.0';
@@ -185,21 +174,9 @@ sub manage_selection {
         my $instance = $1;
         my $result = $options{snmp}->map_instance(mapping => $mapping_filter, results => $snmp_result, instance => $instance);
 
-        if (defined($self->{option_results}->{filter_id}) && $self->{option_results}->{filter_id} ne '' &&
-            $instance !~ /$self->{option_results}->{filter_id}/) {
-            $self->{output}->output_add(long_msg => "skipping  '" . $instance . "': no matching filter id.", debug => 1);
-            next;
-        }
-        if (defined($self->{option_results}->{filter_src_ip}) && $self->{option_results}->{filter_src_ip} ne '' &&
-            $result->{ipSrc} !~ /$self->{option_results}->{filter_src_ip}/) {
-            $self->{output}->output_add(long_msg => "skipping  '" . $result->{ipSrc} . "': no matching filter src-ip.", debug => 1);
-            next;
-        }
-        if (defined($self->{option_results}->{filter_dst_ip}) && $self->{option_results}->{filter_dst_ip} ne '' &&
-            $result->{ipDst} !~ /$self->{option_results}->{filter_dst_ip}/) {
-            $self->{output}->output_add(long_msg => "skipping  '" . $result->{ipDst} . "': no matching filter dst-ip.", debug => 1);
-            next;
-        }
+        next if (is_excluded($instance, $self->{option_results}->{include_id}, $self->{option_results}->{exclude_id}, output => $self->{output}));
+        next if (is_excluded($result->{ipSrc}, $self->{option_results}->{include_src_ip}, $self->{option_results}->{exclude_src_ip}, output => $self->{output}));
+        next if (is_excluded($result->{ipDst}, $self->{option_results}->{include_dst_ip}, $self->{option_results}->{exclude_dst_ip}, output => $self->{output}));
 
         $self->{global}->{detected}++;
         $self->{vpn}->{$instance} = $result;
@@ -236,37 +213,76 @@ Check vpn.
 
 =over 8
 
-=item B<--filter-id>
+=item B<--include-id>
 
-Filter by ID (regexp can be used).
+Filter by ID (regexp can be used). Option C<--filter-id> is a deprecated alias.
 
-=item B<--filter-src-ip>
+=item B<--exclude-id>
 
-Filter by src ip (regexp can be used).
+Exclude VPN by ID (regexp can be used).
 
-=item B<--filter-dst-ip>
+=item B<--include-src-ip>
 
-Filter by dst ip (regexp can be used).
+Filter by source IP address (regexp can be used). Option C<--filter-src-ip> is a deprecated alias.
+
+=item B<--exclude-src-ip>
+
+Exclude VPN by source IP address (regexp can be used).
+
+=item B<--include-dst-ip>
+
+Filter by destination IP address (regexp can be used). Option C<--filter-dst-ip> is a deprecated alias.
+
+=item B<--exclude-dst-ip>
+
+Exclude VPN by destination IP address (regexp can be used).
 
 =item B<--unknown-status>
 
 Define the conditions to match for the status to be UNKNOWN.
-You can use the following variables: %{state}, %{srcIp}, %{dstIp}
+You can use the following variables: %{state}, %{ipSrc}, %{ipDst}
 
 =item B<--warning-status>
 
 Define the conditions to match for the status to be WARNING (default: '%{state} eq "dead"').
-You can use the following variables: %{state}, %{srcIp}, %{dstIp}
+You can use the following variables: %{state}, %{ipSrc}, %{ipDst}
 
 =item B<--critical-status>
 
 Define the conditions to match for the status to be CRITICAL.
-You can use the following variables: %{state}, %{srcIp}, %{dstIp}
+You can use the following variables: %{state}, %{ipSrc}, %{ipDst}
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-vpn-detected>
 
-Thresholds.
-Can be: 'vpn-detected', 'traffic', 'traffic-in', 'traffic-out'.
+Threshold on the number of detected VPN.
+
+=item B<--critical-vpn-detected>
+
+Threshold on the number of detected VPN.
+
+=item B<--warning-traffic>
+
+Threshold in b/s (firmware older than 4.2.1).
+
+=item B<--critical-traffic>
+
+Threshold in b/s (firmware older than 4.2.1).
+
+=item B<--warning-traffic-in>
+
+Threshold in b/s.
+
+=item B<--critical-traffic-in>
+
+Threshold in b/s.
+
+=item B<--warning-traffic-out>
+
+Threshold in b/s.
+
+=item B<--critical-traffic-out>
+
+Threshold in b/s.
 
 =back
 

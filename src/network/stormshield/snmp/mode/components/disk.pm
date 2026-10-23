@@ -119,9 +119,8 @@ sub check {
             }
 
             if (defined $disk->{isRaid} && $disk->{isRaid} == 1
-                && defined $disk->{raidStatus} && $disk->{raidStatus} ne '')
-            {
-                if ($disk->{raidStatus} eq 'missing'){
+                && defined $disk->{raidStatus} && $disk->{raidStatus} ne '') {
+                if ($disk->{raidStatus} eq 'missing') {
                     $self->{output}->output_add(
                         severity  => 'WARNING',
                         short_msg => sprintf(

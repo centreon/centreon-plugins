@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2024-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -25,12 +25,14 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::constants qw(:counters);
+use centreon::plugins::misc qw(is_excluded);
 
 sub custom_node_perfdata {
     my ($self, %options) = @_;
-    
+
     $self->{output}->perfdata_add(
-        label => 'dead_nodes',
+        nlabel => $self->{nlabel},
         value => sprintf("%d", $self->{result_values}->{dead_nodes}),
         min => 0, max => $self->{result_values}->{total_nodes}
     );
@@ -41,7 +43,7 @@ sub custom_node_threshold {
 
     my ($exit, $threshold_value);
     $threshold_value = defined($self->{instance_mode}->{option_results}->{percent}) ? $self->{result_values}->{prct_dead} : $self->{result_values}->{dead_nodes} ;
-    $exit = $self->{perfdata}->threshold_check(value => $threshold_value, threshold => [ { label => 'critical-dead-nodes', exit_litteral => 'critical' }, { label => 'warning-dead-nodes', exit_litteral => 'warning' } ]);
+    $exit = $self->{perfdata}->threshold_check(value => $threshold_value, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
     return $exit;
 }
 
@@ -78,22 +80,16 @@ sub custom_state_calc {
     return 0;
 }
 
-sub prefix_node_output {
-    my ($self, %options) = @_;
-
-    return "Node '" . $options{instance_value}->{display} . "' ";
-}
-
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0 },
-        { name => 'nodes', type => 1, cb_prefix_output => 'prefix_node_output', message_multiple => 'All HA nodes are OK' }
+        { name => 'global', type => COUNTER_TYPE_GLOBAL },
+        { name => 'nodes', type => COUNTER_TYPE_INSTANCE, prefix_output => "Node '%{display}' ", message_multiple => 'All HA nodes are OK' }
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'dead-nodes', set => {
+        { label => 'dead-nodes', nlabel => 'ha.dead_nodes.count', set => {
                 key_values => [ { name => 'dead_nodes' }, { name => 'prct_dead' }, { name => 'total_nodes' } ],
                 closure_custom_calc => $self->can('custom_node_calc'),
                 closure_custom_output => $self->can('custom_node_output'),
@@ -108,15 +104,14 @@ sub set_counters {
                 key_values => [ { name => 'ntqOnline' }, { name => 'ntqHALicence' }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_state_calc'),
                 closure_custom_output => $self->can('custom_state_output'),
-                closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold
             }
         },
-        { label => 'health', set => {
+        { label => 'health', nlabel => 'ha.node.health.percentage', set => {
                 key_values => [ { name => 'ntqHAQuality' }, { name => 'display' } ],
                 output_template => 'health: %s%%',
                 perfdatas => [
-                    { label => 'health', template => '%d', min => 0, max => 100,
+                    { template => '%d', min => 0, max => 100,
                        unit => '%', label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
@@ -126,11 +121,13 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-node:s'         => { name => 'filter_node' },
+        'include-node:s'        => { name => 'include_node', default => '' },
+        'exclude-node:s'        => { name => 'exclude_node', default => '' },
+        'filter-node:s'         => { redirect => 'include_node' },
         'percent'               => { name => 'percent' },
         'warning-state:s'       => { name => 'warning_state', default => '' },
         'critical-state:s'      => { name => 'critical_state', default => '%{state} =~ /offline/i' }
@@ -178,19 +175,14 @@ sub manage_selection {
     foreach my $oid (keys %{$snmp_result}) {
         $oid =~ /^$oid_ntqFwSerial\.(.*)$/;
         my $instance = $1;
-        if (defined($self->{option_results}->{filter_node}) && $self->{option_results}->{filter_node} ne '' &&
-            $snmp_result->{$oid} !~ /$self->{option_results}->{filter_node}/) {
-            $self->{output}->output_add(long_msg => "skipping node '" . $snmp_result->{$oid} . "'.", debug => 1);
-            next;
-        }
+        next if (is_excluded($snmp_result->{$oid}, $self->{option_results}->{include_node}, $self->{option_results}->{exclude_node}, output => $self->{output}));
 
         $self->{nodes}->{$instance} = { display => $snmp_result->{$oid} };
     }
 
 
     if (scalar(keys %{$self->{nodes}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No nodes found.");
-        $self->{output}->option_exit();
+        $self->{output}->option_exit(short_msg => "No nodes found.");
     }
 
     $options{snmp}->load(oids => [ $mapping->{ntqOnline}->{oid}, $mapping->{ntqHALicence}->{oid}, $mapping->{ntqHAQuality}->{oid} ],
@@ -216,9 +208,13 @@ Check Stormshield nodes status (state, role and health) and dead nodes.
 
 =over 8
 
-=item B<--filter-node>
+=item B<--include-node>
 
-Filter name with regexp (based on serial).
+Filter nodes by serial (regexp can be used). Option C<--filter-node> is a deprecated alias.
+
+=item B<--exclude-node>
+
+Exclude nodes by serial (regexp can be used).
 
 =item B<--warning-health>
 
@@ -230,11 +226,11 @@ Critical threshold on health level (example --critical 80:).
 
 =item B<--warning-dead-nodes>
 
-Warning threshold on deadnode (absolute unless --percent is used).
+Warning threshold on dead nodes (absolute unless --percent is used).
 
 =item B<--critical-dead-nodes>
 
-Critical threshold on deadnode (absolute unless --percent is used).
+Critical threshold on dead nodes (absolute unless --percent is used).
 
 =item B<--warning-state>
 
