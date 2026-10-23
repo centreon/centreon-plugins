@@ -66,7 +66,6 @@ sub set_counters {
                 {
                     name => 'licences',
                     display_long => 1,
-                    #cb_prefix_output => sub { return ''; },
                     message_multiple => 'All licences are up to date',
                     type => COUNTER_MULTIPLE_SUBINSTANCE,
                 }

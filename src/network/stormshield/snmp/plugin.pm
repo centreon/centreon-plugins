@@ -31,11 +31,11 @@ sub new {
 
     $self->{version} = '1.0';
     $self->{modes} = {
-        'auto-update'      => 'network::stormshield::snmp::mode::auto_update',
+        'auto-update'      => 'network::stormshield::snmp::mode::autoupdate',
         'connections'      => 'network::stormshield::snmp::mode::connections',
         'cpu'              => 'snmp_standard::mode::cpu',
         'cpu-detailed'     => 'snmp_standard::mode::cpudetailed',
-        'ha-cluster'       => 'network::stormshield::snmp::mode::ha_cluster',
+        'ha-cluster'       => 'network::stormshield::snmp::mode::hacluster',
         'ha-nodes'         => 'network::stormshield::snmp::mode::hanodes',
         'hardware'         => 'network::stormshield::snmp::mode::hardware',
         'health'           => 'network::stormshield::snmp::mode::health',

@@ -25,19 +25,13 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::plugins::constants qw/:counters :values/;
-use centreon::plugins::misc;
-
-sub prefix_memory_output {
-    my ($self, %options) = @_;
-
-    return 'Memory usage ';
-}
+use centreon::plugins::misc qw(trim);
 
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => COUNTER_TYPE_GLOBAL, cb_prefix_output => 'prefix_memory_output', skipped_code => { NO_VALUE() => 1 } }
+        { name => 'global', type => COUNTER_TYPE_GLOBAL, prefix_output => 'Memory usage ', skipped_code => { NO_VALUE() => 1 } }
     ];
 
     $self->{maps_counters}->{global} = [
@@ -97,7 +91,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'socket',nlabel => 'memory.socket.percentage', set => {
+        { label => 'socket', nlabel => 'memory.socket.percentage', set => {
                 key_values => [ { name => 'socket' } ],
                 output_template => "Socket: %s%%",
                 perfdatas => [
@@ -152,7 +146,7 @@ sub manage_selection {
 
     my $oid_os_version = '.1.3.6.1.4.1.11256.1.0.2.0';
 
-    # Récupération de la version pour déterminer quel OID utiliser
+    # Retrieve the firmware version to know which OIDs to query
     my $snmp_result = $options{snmp}->get_leef(oids => [ $oid_os_version ], nothing_quit => 1);
     my $version_raw = $snmp_result->{$oid_os_version};
     my $version_clean = $version_raw;
@@ -213,7 +207,7 @@ sub manage_selection {
     foreach my $key (keys %mem_values) {
         if (defined $mem_values{$key}) {
             $mem_values{$key} =~ s/%//g;
-            $mem_values{$key} =~ s/^\s+|\s+$//g;
+            $mem_values{$key} = trim($mem_values{$key});
             # If the value is not a number, it is removed
             if ($mem_values{$key} !~ /^\d+\.?\d*$/) {
                 delete $mem_values{$key};
