@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -25,7 +25,8 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::plugins::statefile;
-use Digest::MD5 qw(md5_hex);
+use centreon::plugins::constants qw(:counters :values);
+use centreon::plugins::misc qw(is_empty is_not_empty is_excluded);
 use Safe;
 
 sub custom_usage_output {
@@ -46,8 +47,8 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0 },
-        { name => 'diskpath', type => 1, cb_prefix_output => 'prefix_diskpath_output', message_multiple => 'All partitions are ok', skipped_code => { -10 => 1 } },
+        { name => 'global', type => COUNTER_TYPE_GLOBAL },
+        { name => 'diskpath', type => COUNTER_TYPE_INSTANCE, prefix_output => "Partition '%{display}' ", message_multiple => 'All partitions are ok', skipped_code => { NO_VALUE() => 1 } },
     ];
     
     $self->{maps_counters}->{global} = [
@@ -101,12 +102,6 @@ sub set_counters {
     ];
 }
 
-sub prefix_diskpath_output {
-    my ($self, %options) = @_;
-    
-    return "Partition '" . $options{instance_value}->{display} . "' ";
-}
-
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
@@ -114,8 +109,12 @@ sub new {
     
     $options{options}->add_options(arguments => {
         'disk-index:s'            => { name => 'disk_index' },
-        'filter-disk-path:s'      => { name => 'filter_disk_path' },
-        'filter-disk-device:s'    => { name => 'filter_disk_device' },
+        'include-disk-path:s'     => { name => 'include_disk_path', default => '' },
+        'exclude-disk-path:s'     => { name => 'exclude_disk_path', default => '' },
+        'include-disk-device:s'   => { name => 'include_disk_device', default => '' },
+        'exclude-disk-device:s'   => { name => 'exclude_disk_device', default => '' },
+        'filter-disk-path:s'      => { name => 'filter_disk_path' }, # legacy
+        'filter-disk-device:s'    => { name => 'filter_disk_device' }, # legacy
         'units:s'                 => { name => 'units', default => '' },
         'free'                    => { name => 'free' },
         'reload-cache-time:s'     => { name => 'reload_cache_time', default => 180 },
@@ -153,16 +152,21 @@ sub check_options {
 
     $self->SUPER::check_options(%options);
 
-    if (defined($self->{option_results}->{space_reservation}) && $self->{option_results}->{space_reservation} ne '') {
+    if (is_not_empty($self->{option_results}->{space_reservation})) {
         if ($self->{option_results}->{space_reservation} eq 'auto') {
             $self->{auto_space_reservation} = 1;
-        } elsif ($self->{option_results}->{space_reservation} !~ /^\d+(?:\.\d+)?$/ ||
-            $self->{option_results}->{space_reservation} < 0 || $self->{option_results}->{space_reservation} > 100) {
-            $self->{output}->add_option_msg(short_msg => "Space reservation argument must be 'auto' or between 0 and 100 percent.");
-            $self->{output}->option_exit();
+        } elsif ($self->{option_results}->{space_reservation} !~ /^\d+(?:\.\d+)?$/
+            || $self->{option_results}->{space_reservation} < 0 || $self->{option_results}->{space_reservation} > 100) {
+            $self->{output}->option_exit(short_msg => "Space reservation argument must be 'auto' or between 0 and 100 percent.");
         }
     }
-    
+
+    # Compatibility: --filter-disk-path and --filter-disk-device are deprecated
+    foreach my $filter ('disk_path', 'disk_device') {
+        $self->{option_results}->{'include_' . $filter} = $self->{option_results}->{'filter_' . $filter}
+            if (is_empty($self->{option_results}->{'include_' . $filter}) && is_not_empty($self->{option_results}->{'filter_' . $filter}));
+    }
+
     $self->{statefile_cache}->check_options(%options);
 }
 
@@ -257,7 +261,7 @@ sub manage_selection {
         my $prct_free = 100 - $prct_used;
         my $free = $total_size - $total_used - $reserved_value;
         # limit to 100. Better output.
-        if ($prct_used > 100) {
+        if ($prct_used >= 100) {
             $free = 0;
             $prct_used = 100;
             $prct_free = 0;
@@ -277,8 +281,7 @@ sub manage_selection {
     }
 
     if (scalar(keys %{$self->{diskpath}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => 'Issue with disk path information (see details)');
-        $self->{output}->option_exit();
+        $self->{output}->option_exit(short_msg => 'Issue with disk path information (see details)');
     }
 }
 
@@ -308,8 +311,7 @@ sub reload_cache {
     }
 
     if (scalar(keys %{$datas->{disks}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "Can't construct cache...");
-        $self->{output}->option_exit();
+        $self->{output}->option_exit(short_msg => "Can't construct cache...");
     }
 
     $self->{statefile_cache}->write(data => $datas);
@@ -333,19 +335,19 @@ sub get_selection {
         $self->{statefile_cache}->read();
     }
 
-    my $select_index = !defined($self->{option_results}->{use_name}) && defined($self->{option_results}->{diskpath}) && defined($self->{option_results}->{diskpath}) ne '' ?
+    my $select_index = !defined($self->{option_results}->{use_name}) && is_not_empty($self->{option_results}->{diskpath}) ?
         $self->{option_results}->{diskpath} : undef;
     $select_index = $self->{option_results}->{disk_index}
-        if (defined($self->{option_results}->{disk_index}) && defined($self->{option_results}->{disk_index}) ne '');
+        if (is_not_empty($self->{option_results}->{disk_index}));
 
-    my $filter_path = defined($self->{option_results}->{use_name}) && defined($self->{option_results}->{diskpath}) && $self->{option_results}->{diskpath} ne '' ? 
+    my $filter_path = defined($self->{option_results}->{use_name}) && is_not_empty($self->{option_results}->{diskpath}) ?
         $self->{option_results}->{diskpath} : undef;
     $filter_path = '^' . $filter_path . '$'
         if (defined($filter_path) && !defined($self->{option_results}->{use_regexp}));
     $filter_path = '(?i)' . $filter_path 
         if (defined($filter_path) && defined($self->{option_results}->{use_regexp}) && defined($self->{option_results}->{use_regexpi}));
-    $filter_path = $self->{option_results}->{filter_disk_path}
-        if (defined($self->{option_results}->{filter_disk_path}) && defined($self->{option_results}->{filter_disk_path}) ne '');
+    $filter_path = $self->{option_results}->{include_disk_path}
+        if (is_not_empty($self->{option_results}->{include_disk_path}));
 
     my $results = {};
     foreach (keys %$disks) {
@@ -353,22 +355,14 @@ sub get_selection {
             $self->{output}->output_add(long_msg => "skipping '" . $disks->{$_}->[0] . "': no matching filter.", debug => 1);
             next;
         }
-        if (defined($filter_path) && $disks->{$_}->[0] !~ /$filter_path/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $disks->{$_}->[0] . "': no matching filter.", debug => 1);
-            next;
-        }
-        if (defined($self->{option_results}->{filter_disk_device}) && $self->{option_results}->{filter_disk_device} ne '' &&
-            $disks->{$_}->[1] !~ /$self->{option_results}->{filter_disk_device}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $disks->{$_}->[1] . "': no matching filter.", debug => 1);
-            next;
-        }
+        next if (is_excluded($disks->{$_}->[0], $filter_path, $self->{option_results}->{exclude_disk_path}, output => $self->{output}));
+        next if (is_excluded($disks->{$_}->[1] // '', $self->{option_results}->{include_disk_device}, $self->{option_results}->{exclude_disk_device}, output => $self->{output}));
 
         $results->{$_} = $disks->{$_};
     }
 
     if (scalar(keys %$results) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No disk path found. Can be: filters, cache file.");
-        $self->{output}->option_exit();
+        $self->{output}->option_exit(short_msg => "No disk path found. Can be: filters, cache file.");
     }
 
     return $results;
@@ -397,7 +391,7 @@ __END__
 =head1 MODE
 
 Check usage on partitions (UCD-SNMP-MIB).
-Need to enable "includeAllDisks 10%" on snmpd.conf.
+Need to enable C<includeAllDisks 10%> on snmpd.conf.
 
 =over 8
 
@@ -409,13 +403,29 @@ Filter counters to be displayed (can be: 'usage', 'count', 'inodes').
 
 Choose disk according to the index.
 
+=item B<--include-disk-path>
+
+Filter disks to include according to their path (can be a regexp).
+
+=item B<--exclude-disk-path>
+
+Filter disks to exclude according to their path (can be a regexp).
+
+=item B<--include-disk-device>
+
+Filter disks to include according to their device name (can be a regexp).
+
+=item B<--exclude-disk-device>
+
+Filter disks to exclude according to their device name (can be a regexp).
+
 =item B<--filter-disk-path>
 
-Filter disks according to their path.
+DEPRECATED: use C<--include-disk-path> instead.
 
 =item B<--filter-disk-device>
 
-Filter disks according to their device name.
+DEPRECATED: use C<--include-disk-device> instead.
 
 =item B<--reload-cache-time>
 
@@ -436,7 +446,7 @@ Display cache disk path data.
 Some filesystem has space reserved (like ext4 for root).
 The value is in percent of total (default: none) (results like 'df' command).
 Use 'auto' to compute the real reservation of each partition from the values
-returned by the agent (dskTotal - dskUsed - dskAvail), instead of applying the
+returned by the agent (C<dskTotal - dskUsed - dskAvail>), instead of applying the
 same fixed percentage to every partition.
 
 =item B<--force-use-mib-percent>
@@ -447,9 +457,45 @@ Can be used if you have counters overload by big disks.
 
 Force to use 32 bits counters. Should be used when 64 bits high/low components are not available.
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-usage>
 
-Thresholds (can be: 'usage', 'usage-free', 'usage-prct', 'inodes', 'count').
+Threshold in bytes.
+
+=item B<--critical-usage>
+
+Threshold in bytes.
+
+=item B<--warning-usage-free>
+
+Threshold in bytes.
+
+=item B<--critical-usage-free>
+
+Threshold in bytes.
+
+=item B<--warning-usage-prct>
+
+Threshold in percentage.
+
+=item B<--critical-usage-prct>
+
+Threshold in percentage.
+
+=item B<--warning-inodes>
+
+Threshold in percentage.
+
+=item B<--critical-inodes>
+
+Threshold in percentage.
+
+=item B<--warning-count>
+
+Threshold.
+
+=item B<--critical-count>
+
+Threshold.
 
 =back
 
