@@ -60,7 +60,7 @@ sub discovery_vm {
         $vm->{name} = $vms->{$vm_id}->{Name};
         $vm->{state} = $vms->{$vm_id}->{State};
         $vm->{node_name} = $vms->{$vm_id}->{Node};
-        $vm->{tags} = [ sort split(/;/, $vms->{$vm_id}->{Tags}) ];
+        $vm->{tags} = $vms->{$vm_id}->{Tags};
 
         my ($network_ips, $network_interfaces, $osinfo);
 
