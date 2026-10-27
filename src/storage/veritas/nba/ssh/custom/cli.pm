@@ -40,7 +40,7 @@ sub new {
     }
 
     if (!defined($options{noptions})) {
-        $options{options}->add_options(arguments =>  {                      
+        $options{options}->add_options(arguments => {
             'hostname:s'        => { name => 'hostname' },
             'timeout:s'         => { name => 'timeout', default => 55 },
             'command:s'         => { name => 'command' },
@@ -128,6 +128,10 @@ my ssh
 
 =head1 SSH OPTIONS
 
+The appliance is driven through its interactive menus, which only the C<libssh> backend supports:
+it is the default backend of this plugin and it requires the Perl module C<Libssh::Session> 1.2 or later.
+On first connection, the host key of the appliance is added to the known hosts file.
+
 =over 8
 
 =item B<--hostname>
@@ -136,11 +140,11 @@ Hostname to query.
 
 =item B<--timeout>
 
-Timeout in seconds for the command (default: 55).
+Timeout in seconds for the SSH connection or the local command (default: 55).
 
 =item B<--command>
 
-Command to get information. Used it you have output in a file.
+Command to get information. Use it if the output is in a file.
 
 =item B<--command-path>
 
