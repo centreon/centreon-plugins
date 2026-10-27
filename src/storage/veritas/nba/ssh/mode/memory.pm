@@ -30,16 +30,14 @@ sub custom_memory_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        'Ram total: %s %s used (-%s): %s %s (%.2f%%) free: %s %s (%.2f%%) available: %s %s (%.2f%%)',
+        'Ram total: %s %s used (-buffers/cache): %s %s (%.2f%%) free: %s %s (%.2f%%) available: %s %s (%.2f%%)',
         $self->{perfdata}->change_bytes(value => $self->{result_values}->{total}),
-        $self->{result_values}->{used_desc},
         $self->{perfdata}->change_bytes(value => $self->{result_values}->{used}),
         $self->{result_values}->{prct_used},
         $self->{perfdata}->change_bytes(value => $self->{result_values}->{free}),
         $self->{result_values}->{prct_free},
         $self->{perfdata}->change_bytes(value => $self->{result_values}->{available}),
-        $self->{result_values}->{prct_available},
-
+        $self->{result_values}->{prct_available}
     );
 }
 
@@ -47,12 +45,12 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'memory', type => COUNTER_TYPE_GLOBAL, skipped_code => { NO_VALUE => 1 } }
+        { name => 'memory', type => COUNTER_TYPE_GLOBAL }
     ];
 
-     $self->{maps_counters}->{memory} = [
+    $self->{maps_counters}->{memory} = [
         { label => 'memory-usage', nlabel => 'memory.usage.bytes', set => {
-                key_values => [ { name => 'used' }, { name => 'free' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' }, { name => 'used_desc' }, { name => 'available' }, { name => 'prct_available' } ],
+                key_values => [ { name => 'used' }, { name => 'free' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' }, { name => 'available' }, { name => 'prct_available' } ],
                 closure_custom_output => $self->can('custom_memory_output'),
                 perfdatas => [
                     { template => '%d', min => 0, max => 'total', unit => 'B' }
@@ -60,7 +58,7 @@ sub set_counters {
             }
         },
         { label => 'memory-usage-free', nlabel => 'memory.free.bytes', display_ok => 0, set => {
-                key_values => [ { name => 'free' }, { name => 'used' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' }, { name => 'used_desc' }, { name => 'available' }, { name => 'prct_available' } ],
+                key_values => [ { name => 'free' }, { name => 'used' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' }, { name => 'available' }, { name => 'prct_available' } ],
                 closure_custom_output => $self->can('custom_memory_output'),
                 perfdatas => [
                     { template => '%d', min => 0, max => 'total', unit => 'B' }
@@ -68,7 +66,7 @@ sub set_counters {
             }
         },
         { label => 'memory-usage-prct', nlabel => 'memory.usage.percentage', display_ok => 0, set => {
-                key_values => [ { name => 'prct_used' }, { name => 'used' }, { name => 'free' }, { name => 'prct_free' }, { name => 'total' }, { name => 'used_desc' }, { name => 'available' }, { name => 'prct_available' } ],
+                key_values => [ { name => 'prct_used' }, { name => 'used' }, { name => 'free' }, { name => 'prct_free' }, { name => 'total' }, { name => 'available' }, { name => 'prct_available' } ],
                 closure_custom_output => $self->can('custom_memory_output'),
                 perfdatas => [
                     { template => '%.2f', min => 0, max => 100, unit => '%' }
@@ -76,7 +74,7 @@ sub set_counters {
             }
         },
         { label => 'memory-available', nlabel => 'memory.available.bytes', display_ok => 0, set => {
-                key_values => [ { name => 'available' }, { name => 'used' }, { name => 'free' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' }, { name => 'used_desc' }, { name => 'prct_available' } ],
+                key_values => [ { name => 'available' }, { name => 'used' }, { name => 'free' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' }, { name => 'prct_available' } ],
                 closure_custom_output => $self->can('custom_memory_output'),
                 perfdatas => [
                     { template => '%d', min => 0, max => 'total', unit => 'B' }
@@ -84,7 +82,7 @@ sub set_counters {
             }
         },
         { label => 'memory-available-prct', nlabel => 'memory.available.percentage', display_ok => 0, set => {
-                key_values => [ { name => 'prct_available' }, { name => 'prct_used' }, { name => 'used' }, { name => 'free' }, { name => 'prct_free' }, { name => 'total' }, { name => 'used_desc' }, { name => 'available' } ],
+                key_values => [ { name => 'prct_available' }, { name => 'prct_used' }, { name => 'used' }, { name => 'free' }, { name => 'prct_free' }, { name => 'total' }, { name => 'available' } ],
                 closure_custom_output => $self->can('custom_memory_output'),
                 perfdatas => [
                     { template => '%.2f', min => 0, max => 100, unit => '%' }
@@ -133,12 +131,12 @@ sub manage_selection {
                 cols => 80
             },
             scenario => [
-                { "cmd" => "waitfor", "options" => { "Match" =>  'Main_Menu>', "Timeout" => "30" } },
-                { "cmd" => "put", "options" => { "String" => "Monitor\n", "Timeout" => "5" } },
-                { "cmd" => "waitfor", "options" => { "Match" =>  'Monitor>', "Timeout" => "5" } },
-                { "cmd" => "put", "options" => { "String" => "MemoryStatus\n", "Timeout" => "5" } },
-                { "cmd" => "waitfor", "options" => { "Match" =>  'Total:', "Timeout" => "10" } },
-                { "cmd" => "close" }
+                { cmd => 'waitfor', options => { Match => 'Main_Menu>', Timeout => 30 } },
+                { cmd => 'put', options => { String => "Monitor\n" } },
+                { cmd => 'waitfor', options => { Match => 'Monitor>', Timeout => 5 } },
+                { cmd => 'put', options => { String => "MemoryStatus\n" } },
+                { cmd => 'waitfor', options => { Match => 'Total:', Timeout => 10 } },
+                { cmd => 'close' }
             ]
         }
     );
@@ -147,29 +145,22 @@ sub manage_selection {
     #Mem:      262873544   122588148     3147172      142120   137138224   137563492
     #Swap:      66674684    14492760    52181924
     #Total:    329548228   137080908    55329096
-    if ($result !~ /^.*?Mem\s*:\s*(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)/mi) {
-        $self->{output}->add_option_msg(short_msg => 'Some memory informations missing.');
+    if ($result !~ /^Mem:\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)/m) {
+        $self->{output}->add_option_msg(short_msg => 'Cannot find memory information in the output');
         $self->{output}->option_exit();
     }
 
-    my $total_size = $1 * 1024;
-    my $free = $3 * 1024;
-    my $used = $2 * 1024;
-    my $shared = $4 * 1024;
-    my $buffer_used = $5 * 1024;
-    my $available = $6 * 1024;
-    my $used_desc = 'buffers/cache';
+    my ($total, $used, $free, $shared, $buffer, $available) = map { $_ * 1024 } ($1, $2, $3, $4, $5, $6);
 
     $self->{memory} = {
-        total => $total_size,
+        total => $total,
         used => $used,
         free => $free,
-        prct_used => $used * 100 / $total_size,
-        prct_free => $free * 100 / $total_size,
-        used_desc => $used_desc,
+        prct_used => $used * 100 / $total,
+        prct_free => $free * 100 / $total,
         available => $available,
-        prct_available => $available * 100 / $total_size,
-        buffer => $buffer_used,
+        prct_available => $available * 100 / $total,
+        buffer => $buffer,
         shared => $shared
     };
 }
@@ -180,7 +171,7 @@ __END__
 
 =head1 MODE
 
-Check memory
+Check memory usage.
 
 =over 8
 
@@ -226,11 +217,11 @@ Threshold in percentage.
 
 =item B<--warning-buffer>
 
-Threshold in bytes.
+Threshold in bytes (the appliance reports buffers and cache as a single value).
 
 =item B<--critical-buffer>
 
-Threshold in bytes.
+Threshold in bytes (the appliance reports buffers and cache as a single value).
 
 =item B<--warning-shared>
 
