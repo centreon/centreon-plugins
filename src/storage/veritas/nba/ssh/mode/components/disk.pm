@@ -22,13 +22,13 @@ package storage::veritas::nba::ssh::mode::components::disk;
 
 use strict;
 use warnings;
-use centreon::plugins::misc;
+use centreon::plugins::misc qw(trim);
 
 sub load {}
 
 sub check {
     my ($self) = @_;
-    
+
     $self->{output}->output_add(long_msg => 'checking disks');
     $self->{components}->{disk} = { name => 'disk', total => 0, skip => 0 };
     return if ($self->check_filter(section => 'disk'));
@@ -38,10 +38,10 @@ sub check {
 
         next if ($part !~ /NetBackup\s+StorageShelf\s+(\d+)/i);
         my $shelf = $1;
-  
-        while ($part =~ /^.*?Controller.*?Disk.*?\|(.*?)\|.*?\|.*?\|.*?\|.*?\|.*?\|.*?\|.*?\|(.*?)\|(.*?)\|/mig) { 
-            my ($enclosure, $disk, $state) = (centreon::plugins::misc::trim($2), centreon::plugins::misc::trim($1), centreon::plugins::misc::trim($3));
-            my $instance = 'shelf' . $shelf . '.' . $enclosure . '.' . $disk;
+
+        while ($part =~ /^.*?Controller.*?Disk.*?\|(.*?)\|.*?\|.*?\|.*?\|.*?\|.*?\|.*?\|.*?\|(.*?)\|(.*?)\|/mig) {
+            my ($enclosure, $disk, $state) = (trim($2), trim($1), trim($3));
+            my $instance = 'shelf' . $shelf . '.' . $disk;
 
             next if ($self->check_filter(section => 'disk', instance => $instance));
             $self->{components}->{disk}->{total}++;
@@ -58,7 +58,7 @@ sub check {
             my $exit = $self->get_severity(label => 'default', section => 'disk', instance => $instance, value => $state);
             if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
                 $self->{output}->output_add(
-                    severity =>  $exit,
+                    severity => $exit,
                     short_msg => sprintf(
                         "disk '%s' shelf '%s' enclosure '%s' state is %s",
                         $disk, $shelf, $enclosure, $state

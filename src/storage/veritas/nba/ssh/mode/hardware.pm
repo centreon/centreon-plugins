@@ -27,23 +27,25 @@ use warnings;
 
 sub set_system {
     my ($self, %options) = @_;
-    
+
+    $self->{regexp_threshold_numeric_check_section_option} = '^temperature$';
+
     $self->{cb_hook2} = 'ssh_execute';
-    
+
     $self->{thresholds} = {
         default => [
-            ['ok', 'OK'],
+            ['^ok$', 'OK'],
             ['.*', 'CRITICAL']
         ]
     };
-    
+
     $self->{components_path} = 'storage::veritas::nba::ssh::mode::components';
     $self->{components_module} = ['disk', 'fan', 'psu', 'temperature'];
 }
 
 sub ssh_execute {
     my ($self, %options) = @_;
-    
+
     ($self->{result}) = $options{custom}->execute_scenario(
         request => {
             interactive => 1,
@@ -52,22 +54,23 @@ sub ssh_execute {
                 cols => 80
             },
             scenario => [
-                { "cmd" => "waitfor", "options" => { "Match" =>  'Main_Menu>', "Timeout" => "20" } },
-                { "cmd" => "put", "options" => { "String" => "Monitor\n", "Timeout" => "5" } },
-                { "cmd" => "waitfor", "options" => { "Match" =>  'Monitor>', "Timeout" => "5" } },
-                { "cmd" => "put", "options" => { "String" => "Hardware ShowHealth StorageShelf all\n", "Timeout" => "5" } },
-                { "cmd" => "waitfor", "options" => { "Match" =>  'to quit', "Timeout" => "10" } },
-                { "cmd" => "put", "options" => { "String" =>  'f', "Timeout" => "30" } },
-                { "cmd" => "waitfor", "options" => { "Match" =>  'to quit', "Timeout" => "10" } },
-                { "cmd" => "put", "options" => { "String" =>  'q', "Timeout" => "30" } },
-                { "cmd" => "waitfor", "options" => { "Match" =>  'Monitor>', "Timeout" => "10" } },
-                { "cmd" => "put", "options" => { "String" => "exit\n", "Timeout" => "5" } },
-                { "cmd" => "close" }
+                { cmd => 'waitfor', options => { Match => 'Main_Menu>', Timeout => 20 } },
+                { cmd => 'put', options => { String => "Monitor\n" } },
+                { cmd => 'waitfor', options => { Match => 'Monitor>', Timeout => 5 } },
+                { cmd => 'put', options => { String => "Hardware ShowHealth StorageShelf all\n" } },
+                { cmd => 'waitfor', options => { Match => 'to quit', Timeout => 10 } },
+                { cmd => 'put', options => { String => 'f' } },
+                { cmd => 'waitfor', options => { Match => 'to quit', Timeout => 10 } },
+                { cmd => 'put', options => { String => 'q' } },
+                { cmd => 'waitfor', options => { Match => 'Monitor>', Timeout => 10 } },
+                { cmd => 'put', options => { String => "exit\n" } },
+                { cmd => 'close' }
             ]
         }
     );
 
-    $self->{result} =~ s/\x{1b}\x{5b}\x{37}\x{6d}.*?\x{1b}\x{5b}\x{32}\x{37}\x{6d}//mg; # Press 'q' to quit... for previous page
+    $self->{result} =~ s/\x{1b}\x{5b}\x{37}\x{6d}.*?\x{1b}\x{5b}\x{32}\x{37}\x{6d}//mg; # pager prompt in reverse video (ESC[7m...ESC[27m), can split a table row
+    $self->{result} =~ s/\x{1b}\[[0-9;?]*[A-Za-z]//g; # remaining terminal control sequences (cursor moves, screen clears)
 }
 
 sub new {
@@ -77,7 +80,6 @@ sub new {
 
     $options{options}->add_options(arguments => {});
 
-    $self->{commands} = [];
     return $self;
 }
 
@@ -87,7 +89,7 @@ __END__
 
 =head1 MODE
 
-Check harware(disks, fans, power supplies and temperatures).
+Check hardware components (disks, fans, power supplies and temperatures).
 
 =over 8
 
@@ -99,7 +101,7 @@ Can be: 'disk', 'fan', 'psu', 'temperature'.
 =item B<--filter>
 
 Exclude the items given as a comma-separated list (example: --filter=temperature).
-You can also exclude items from specific instances: --filter=C<temperature,Temperature CPLD>
+You can also exclude items from specific instances: --filter=C<fan,shelf1\.0>
 
 =item B<--no-component>
 
@@ -108,7 +110,7 @@ Define the expected status if no components are found (default: critical).
 =item B<--threshold-overload>
 
 Use this option to override the status returned by the plugin when the status label matches a regular expression (syntax: section,[instance,]status,regexp).
-Example: --threshold-overload='psu,ok,true'
+Example: --threshold-overload='fan,WARNING,^(?!(ok)$)'
 
 =item B<--warning>
 

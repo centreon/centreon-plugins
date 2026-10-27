@@ -22,13 +22,13 @@ package storage::veritas::nba::ssh::mode::components::fan;
 
 use strict;
 use warnings;
-use centreon::plugins::misc;
+use centreon::plugins::misc qw(trim);
 
 sub load {}
 
 sub check {
     my ($self) = @_;
-    
+
     $self->{output}->output_add(long_msg => 'checking fans');
     $self->{components}->{fan} = { name => 'fan', total => 0, skip => 0 };
     return if ($self->check_filter(section => 'fan'));
@@ -38,10 +38,10 @@ sub check {
 
         next if ($part !~ /StorageShelf\s+(\d+)\s+Fan\s+Information/i);
         my $shelf = $1;
-  
-        while ($part =~ /^.*?Enclosure(.*?)Fan\s+(.*?)\s+\|.*?\|.*?\|.*?\|(.*?)\|/mig) {            
-            my ($enclosure, $fan, $state) = (centreon::plugins::misc::trim($1), centreon::plugins::misc::trim($2), centreon::plugins::misc::trim($3));
-            my $instance = 'shelf' . $shelf . '.' . $enclosure . '.' . $fan;
+
+        while ($part =~ /^.*?Enclosure(.*?)Fan\s+(.*?)\s+\|.*?\|.*?\|.*?\|(.*?)\|/mig) {
+            my ($enclosure, $fan, $state) = (trim($1), trim($2), trim($3));
+            my $instance = 'shelf' . $shelf . '.' . $fan;
 
             next if ($self->check_filter(section => 'fan', instance => $instance));
             $self->{components}->{fan}->{total}++;
@@ -58,7 +58,7 @@ sub check {
             my $exit = $self->get_severity(label => 'default', section => 'fan', instance => $instance, value => $state);
             if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
                 $self->{output}->output_add(
-                    severity =>  $exit,
+                    severity => $exit,
                     short_msg => sprintf(
                         "fan '%s' shelf '%s' enclosure '%s' state is %s",
                         $fan, $shelf, $enclosure, $state

@@ -22,13 +22,13 @@ package storage::veritas::nba::ssh::mode::components::psu;
 
 use strict;
 use warnings;
-use centreon::plugins::misc;
+use centreon::plugins::misc qw(trim);
 
 sub load {}
 
 sub check {
     my ($self) = @_;
-    
+
     $self->{output}->output_add(long_msg => 'checking power supplies');
     $self->{components}->{psu} = { name => 'psu', total => 0, skip => 0 };
     return if ($self->check_filter(section => 'psu'));
@@ -38,10 +38,10 @@ sub check {
 
         next if ($part !~ /StorageShelf\s+(\d+)\s+Power\s+Supply\s+Information/i);
         my $shelf = $1;
-  
-        while ($part =~ /^.*?Enclosure(.*?)Power\s+Supply\s+(.*?)\s+\|.*?\|(.*?)\|/mig) {            
-            my ($enclosure, $psu, $state) = (centreon::plugins::misc::trim($1), centreon::plugins::misc::trim($2), centreon::plugins::misc::trim($3));
-            my $instance = 'shelf' . $shelf . '.' . $enclosure . '.' . $psu;
+
+        while ($part =~ /^.*?Enclosure(.*?)Power\s+Supply\s+(.*?)\s+\|.*?\|(.*?)\|/mig) {
+            my ($enclosure, $psu, $state) = (trim($1), trim($2), trim($3));
+            my $instance = 'shelf' . $shelf . '.' . $psu;
 
             next if ($self->check_filter(section => 'psu', instance => $instance));
             $self->{components}->{psu}->{total}++;
@@ -58,7 +58,7 @@ sub check {
             my $exit = $self->get_severity(label => 'default', section => 'psu', instance => $instance, value => $state);
             if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
                 $self->{output}->output_add(
-                    severity =>  $exit,
+                    severity => $exit,
                     short_msg => sprintf(
                         "power supply '%s' shelf '%s' enclosure '%s' state is %s",
                         $psu, $shelf, $enclosure, $state

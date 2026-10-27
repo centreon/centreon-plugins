@@ -22,13 +22,13 @@ package storage::veritas::nba::ssh::mode::components::temperature;
 
 use strict;
 use warnings;
-use centreon::plugins::misc;
+use centreon::plugins::misc qw(trim);
 
 sub load {}
 
 sub check {
     my ($self) = @_;
-    
+
     $self->{output}->output_add(long_msg => 'checking temperatures');
     $self->{components}->{temperature} = { name => 'temperature', total => 0, skip => 0 };
     return if ($self->check_filter(section => 'temperature'));
@@ -38,10 +38,10 @@ sub check {
 
         next if ($part !~ /StorageShelf\s+(\d+)\s+Temperature\s+Information/i);
         my $shelf = $1;
-  
-        while ($part =~ /^.*?Enclosure(.*?)Temperature\s+(.*?)\s+\|(.*?)Degrees\s+Celsius.*?\|.*?\|(.*?)\|/mig) {            
-            my ($enclosure, $temp, $read, $state) = (centreon::plugins::misc::trim($1), centreon::plugins::misc::trim($2), centreon::plugins::misc::trim($3), centreon::plugins::misc::trim($4));
-            my $instance = 'shelf' . $shelf . '.' . $enclosure . '.' . $temp;
+
+        while ($part =~ /^.*?Enclosure(.*?)Temperature\s+(.*?)\s+\|(.*?)Degrees\s+Celsius.*?\|.*?\|(.*?)\|/mig) {
+            my ($enclosure, $temp, $read, $state) = (trim($1), trim($2), trim($3), trim($4));
+            my $instance = 'shelf' . $shelf . '.' . $temp;
 
             next if ($self->check_filter(section => 'temperature', instance => $instance));
             $self->{components}->{temperature}->{total}++;
@@ -59,14 +59,14 @@ sub check {
             my $exit = $self->get_severity(label => 'default', section => 'temperature', instance => $instance, value => $state);
             if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
                 $self->{output}->output_add(
-                    severity =>  $exit,
+                    severity => $exit,
                     short_msg => sprintf(
                         "temperature '%s' shelf '%s' enclosure '%s' state is %s",
                         $temp, $shelf, $enclosure, $state
                     )
                 );
             }
-            
+
             next if ($read !~ /[0-9]+/);
 
             my ($exit2, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'temperature', instance => $instance, value => $read);
@@ -75,7 +75,7 @@ sub check {
                 $self->{output}->output_add(
                     severity => $exit2,
                     short_msg => sprintf(
-                        "temperature '%s' shelf '%s' enclosure '%s' is %s degree centigrade",
+                        "temperature '%s' shelf '%s' enclosure '%s' is %s C",
                         $temp,
                         $shelf,
                         $enclosure,
@@ -87,7 +87,7 @@ sub check {
             $self->{output}->perfdata_add(
                 nlabel => 'hardware.temperature.celsius',
                 unit => 'C',
-                instances => ['shelf' . $shelf, $enclosure, $temp],
+                instances => ['shelf' . $shelf, $temp],
                 value => $read,
                 warning => $warn,
                 critical => $crit
