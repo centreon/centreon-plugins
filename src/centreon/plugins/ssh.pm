@@ -71,7 +71,6 @@ sub check_options {
     my ($self, %options) = @_;
 
     $self->{ssh_backend} = $options{option_results}->{ssh_backend};
-
     my $default_port = 22;
     if (defined($options{default_ssh_port}) && $options{default_ssh_port} =~ /\d+/) {
         $default_port = $options{default_ssh_port};

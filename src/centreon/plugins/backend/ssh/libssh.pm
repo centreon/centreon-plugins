@@ -165,6 +165,11 @@ sub execute {
 sub execute_scenario {
     my ($self, %options) = @_;
 
+    if (!$self->{ssh}->can('execute_scenario')) {
+        $self->{output}->add_option_msg(short_msg => 'Libssh::Session 1.2 or later is required (execute_scenario method missing)');
+        $self->{output}->option_exit();
+    }
+
     if (defined($options{timeout}) && $options{timeout} =~ /(\d+)/) {
         $self->{ssh}->options(timeout => $options{timeout});
     }
