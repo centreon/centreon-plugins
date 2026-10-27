@@ -284,7 +284,8 @@ if ((${#UNPROMOTED_HREFS[@]} == 0)); then
       '{filename: (.relative_path | sub(".*/"; "")), name: .package, version, arch: .architecture, sha256, repository: $repository, base_path: $base_path, suite: $suite, relative_path}')"
   done < <(echo "$PACKAGES" | jq -c '.[]')
   ensure_legacy_suite_associations
-  create_publication deb "$STABLE_REPOSITORY_NAME" --structured
+  # nothing was added: the publication is only missing after an interrupted run
+  create_publication deb "$STABLE_REPOSITORY_NAME" --structured --skip-if-published
   echo "::notice::Packages are available with: deb $PULP_CONTENT_URL/${LEGACY_STABLE_BASE_PATH:-$PULP_STABLE_DOMAIN/$STABLE_BASE_PATH}/ $STABLE_SUITE main"
   manifest_write "$MODULE_NAME" "${DISTRIB:-}" "deb" "$STABILITY" "promote" "$PULP_CONTENT_URL"
   exit 0
