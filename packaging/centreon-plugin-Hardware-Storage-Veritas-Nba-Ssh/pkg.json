@@ -1,6 +1,6 @@
 {
     "pkg_name": "centreon-plugin-Hardware-Storage-Veritas-Nba-Ssh",
-    "pkg_summary": "Centreon Plugin",
+    "pkg_summary": "Centreon Plugin to monitor Veritas NetBackup Appliance using SSH",
     "plugin_name": "centreon_veritas_nba_ssh.pl",
     "files": [
         "centreon/plugins/script_custom.pm",
