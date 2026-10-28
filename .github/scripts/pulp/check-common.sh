@@ -19,6 +19,15 @@ switch_pulp_domain "$PULP_DOMAIN" || exit 1
 # content-app cache TTL (600s), the window must survive that worst case
 METADATA_TIMEOUT="${METADATA_TIMEOUT:-900}"
 METADATA_INTERVAL="${METADATA_INTERVAL:-15}"
+# concurrent per-package requests (presence lookups, content HEADs)
+[[ "${CHECK_MAX_PARALLEL:-}" =~ ^[1-9][0-9]*$ ]] || CHECK_MAX_PARALLEL=8
+
+# wait_for_slot — block until fewer than CHECK_MAX_PARALLEL background jobs run
+wait_for_slot() {
+  while (($(jobs -rp | wc -l) >= CHECK_MAX_PARALLEL)); do
+    wait -n || true
+  done
+}
 
 # accumulated per-package result rows and the aggregate failure flag
 ROWS=()
@@ -96,25 +105,36 @@ record_row() {
   echo "[CHECK] $filename ($arch): present=$p metadata=$m fetchable=$f"
 }
 
-# check_fetchable_and_record — HEAD each resolved package on the content url and
-# record every package's result row. Uses the E_FILENAME/E_ARCH/E_BASEPATH,
-# PRESENT_IDX, META_IDX and RESOLVED_IDX arrays filled by the sourcing script.
+# check_fetchable_and_record — HEAD each resolved package on the content url
+# (CHECK_MAX_PARALLEL at a time), then record every package's result row in
+# order. Uses the E_FILENAME/E_ARCH/E_BASEPATH, PRESENT_IDX, META_IDX and
+# RESOLVED_IDX arrays filled by the sourcing script.
 check_fetchable_and_record() {
-  local i url code fetchable attempt
+  local i url fetchable results_dir
+  results_dir=$(mktemp -d)
   for i in "${!E_FILENAME[@]}"; do
-    fetchable=false
-    if [[ "${META_IDX[$i]}" == "true" ]]; then
-      url="${PULP_CONTENT_URL}/${E_BASEPATH[$i]}/${RESOLVED_IDX[$i]}"
+    [[ "${META_IDX[$i]}" == "true" ]] || continue
+    url="${PULP_CONTENT_URL}/${E_BASEPATH[$i]}/${RESOLVED_IDX[$i]}"
+    # token refreshed in this shell: a refresh inside the job would be lost
+    refresh_pulp_token
+    (
       # retry: one flaky HEAD out of hundreds (content-app/S3 hiccup) must not
       # fail the whole verification
       for attempt in 1 2 3; do
-        code=$(content_curl -fsSL -o /dev/null -w '%{http_code}' -I "$url" 2>/dev/null || echo 000)
-        [[ "$code" == "200" ]] && { fetchable=true; break; }
+        code=$(curl -fsSL -H "Authorization: Bearer $PULP_TOKEN" -o /dev/null -w '%{http_code}' -I "$url" 2>/dev/null || echo 000)
+        [[ "$code" == "200" ]] && { touch "$results_dir/$i"; break; }
         sleep 2
       done
-    fi
+    ) &
+    wait_for_slot
+  done
+  wait
+  for i in "${!E_FILENAME[@]}"; do
+    fetchable=false
+    [[ -e "$results_dir/$i" ]] && fetchable=true
     record_row "${E_FILENAME[$i]}" "${E_ARCH[$i]}" "${PRESENT_IDX[$i]}" "${META_IDX[$i]}" "$fetchable"
   done
+  rm -rf "$results_dir"
 }
 
 # render_summary — write the per-OS table to the step summary (and stdout), then
