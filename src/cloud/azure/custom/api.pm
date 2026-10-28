@@ -811,6 +811,38 @@ sub azure_list_sqldatabases {
     return $full_response;
 }
 
+sub azure_get_resource_graph_set_url {
+    my ($self, %options) = @_;
+
+    my $url = $self->{management_endpoint} . '/providers/Microsoft.ResourceGraph/resources?api-version=' . $self->{api_version};
+
+    return $url;
+}
+
+sub azure_get_resource_graph {
+    my ($self, %options) = @_;
+
+    my $full_url = $self->azure_get_resource_graph_set_url();
+
+    my $body = { query => $options{query} };
+    $body->{subscriptions} = [ $self->{subscription} ] if (defined($self->{subscription}) && $self->{subscription} ne '');
+
+    my $encoded_body;
+    eval {
+        $encoded_body = JSON::XS->new->utf8->encode($body);
+    };
+
+    my $response = $self->request_api(
+        method           => 'POST',
+        full_url         => $full_url,
+        hostname         => '',
+        query_form_post  => $encoded_body,
+        header           => ['Content-Type: application/json']
+    );
+
+    return $response;
+}
+
 sub azure_get_log_analytics_set_url {
     my ($self, %options) = @_;
 
