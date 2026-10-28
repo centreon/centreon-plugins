@@ -108,8 +108,8 @@ sub execute_scenario {
 
     $content =~ s/\x{0d}//g; # carriage return
     $content =~ s/\x{08}//g; # backspace
-    $content =~ s/\x{1b}\x{5b}\x{30}\x{6d}//g;
-    $content =~ s/\x{1b}\x{5b}\x{31}\x{6d}//g;
+    $content =~ s/\x{1b}\x{5b}\x{30}\x{6d}//g; # ANSI reset (ESC[0m)
+    $content =~ s/\x{1b}\x{5b}\x{31}\x{6d}//g; # ANSI bold (ESC[1m)
 
     return $content;
 }
@@ -120,11 +120,11 @@ __END__
 
 =head1 NAME
 
-ssh
+Veritas NetBackup Appliance SSH
 
 =head1 SYNOPSIS
 
-my ssh
+Veritas NetBackup Appliance SSH custom mode
 
 =head1 SSH OPTIONS
 

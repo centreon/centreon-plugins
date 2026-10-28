@@ -124,21 +124,24 @@ SSH CLI backend.
 
 SSH CLI backend.
 
-=head1 BACKEND SSH CLI OPTIONS
+=head1 BACKEND SSHCLI OPTIONS
 
 =over 8
 
 =item B<--sshcli-command>
 
-ssh command (default: C<ssh>).
+SSH command (default: C<ssh>).
 
 =item B<--sshcli-path>
 
-ssh command path (default: C<none>)
+SSH command path (default: C<none>).
 
 =item B<--sshcli-option>
 
-Specify SSH CLI options (example: --sshcli-option='-o=StrictHostKeyChecking=no -o=LogLevel=ERROR'). The default parameter is --sshcli-options='-o=LogLevel=ERROR' which hides the SSH banner. If you override this parameter, make sure to append '-o=LogLevel=ERROR' to your new value to maintain this behavior. This parameter can be used multiple times and multiple options can be specified in the same parameter.
+Specify SSH CLI options (example: --sshcli-option='-o=StrictHostKeyChecking=no -o=LogLevel=ERROR').
+The default parameter is --sshcli-option='-o=LogLevel=ERROR' which hides the SSH banner.
+If you override this parameter, make sure to append '-o=LogLevel=ERROR' to your new value to maintain this behavior.
+This parameter can be used multiple times and multiple options can be specified in the same parameter.
 
 =back
 

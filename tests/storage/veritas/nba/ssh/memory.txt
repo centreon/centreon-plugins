@@ -1,4 +1,4 @@
-Last login: Mon Jun 15 11:01:46 2026 from 192.0.2.1
+Last login: Thu Jan  1 00:00:00 2026 from 10.0.0.1
 
 
 It has been detected that you have not enabled Call Home.
