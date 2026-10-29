@@ -25,30 +25,16 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::plugins::constants qw/:counters :values/;
-use centreon::plugins::misc;
-
-sub prefix_memory_output {
-    my ($self, %options) = @_;
-
-    return 'Memory usage ';
-}
+use centreon::plugins::misc qw(trim);
 
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => COUNTER_TYPE_GLOBAL, cb_prefix_output => 'prefix_memory_output', skipped_code => { NO_VALUE() => 1 } }
+        { name => 'global', type => COUNTER_TYPE_GLOBAL, prefix_output => 'Memory usage ', skipped_code => { NO_VALUE() => 1 } }
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'total', nlabel => 'memory.usage.percentage', set => {
-                key_values => [ { name => 'total' } ],
-                output_template => 'total: %.2f %%',
-                perfdatas => [
-                    { template => '%.2f', min => 0, max => 100, unit => '%' }
-                ]
-            }
-        },
         { label => 'host', nlabel => 'memory.protected_host.percentage', set => {
                 key_values => [ { name => 'host' } ],
                 output_template => 'protected host: %.2f %%',
@@ -105,7 +91,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'socket',nlabel => 'memory.socket.percentage', set => {
+        { label => 'socket', nlabel => 'memory.socket.percentage', set => {
                 key_values => [ { name => 'socket' } ],
                 output_template => "Socket: %s%%",
                 perfdatas => [
@@ -145,7 +131,12 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
-    $options{options}->add_options(arguments => {});
+    $options{options}->add_options(arguments => {
+        # deprecated: the memory pools are independent, their sum is meaningless
+        # kept so that existing commands passing them do not fail
+        'warning-total:s'  => { name => 'warning_total' },
+        'critical-total:s' => { name => 'critical_total' }
+    });
 
     return $self;
 }
@@ -155,7 +146,7 @@ sub manage_selection {
 
     my $oid_os_version = '.1.3.6.1.4.1.11256.1.0.2.0';
 
-    # Récupération de la version pour déterminer quel OID utiliser
+    # Retrieve the firmware version to know which OIDs to query
     my $snmp_result = $options{snmp}->get_leef(oids => [ $oid_os_version ], nothing_quit => 1);
     my $version_raw = $snmp_result->{$oid_os_version};
     my $version_clean = $version_raw;
@@ -213,22 +204,19 @@ sub manage_selection {
     }
 
     # Cleaning and Converting Values
-    my $total = 0;
     foreach my $key (keys %mem_values) {
         if (defined $mem_values{$key}) {
             $mem_values{$key} =~ s/%//g;
-            $mem_values{$key} =~ s/^\s+|\s+$//g;
+            $mem_values{$key} = trim($mem_values{$key});
             # If the value is not a number, it is removed
             if ($mem_values{$key} !~ /^\d+\.?\d*$/) {
                 delete $mem_values{$key};
                 next;
             }
-            $total += $mem_values{$key};
         } else {
             delete $mem_values{$key};
         }
     }
-    $mem_values{total} = $total;
 
     $self->{global} = \%mem_values;
 }
@@ -245,7 +233,7 @@ Check memory utilization on Stormshield firewalls.
 
 =item B<--warning-total>
 
-Threshold.
+Deprecated, not used anymore: each memory pool is independent and ranges from 0 to 100%, so their sum is meaningless.
 
 =item B<--warning-host>
 
@@ -284,7 +272,7 @@ Threshold. only for version >= 4.8.9
 
 =item B<--critical-total>
 
-Threshold.
+Deprecated, not used anymore (see C<--warning-total>).
 
 =item B<--critical-host>
 

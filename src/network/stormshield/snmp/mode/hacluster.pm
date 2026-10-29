@@ -17,7 +17,7 @@
 # limitations under the License.
 #
 
-package network::stormshield::snmp::mode::ha_cluster;
+package network::stormshield::snmp::mode::hacluster;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -36,7 +36,7 @@ sub set_counters {
     $self->{maps_counters}->{global} = [
         {
             label => 'dead-nodes',
-            nlabel => 'cluster.dead-nodes.count',
+            nlabel => 'ha.dead_nodes.count',
             type => COUNTER_KIND_METRIC,
             warning_default => '50',
             critical_default => '100',
@@ -44,13 +44,13 @@ sub set_counters {
                 key_values => [ { name => 'dead_pct' }, { name => 'nb_nodes' }, { name => 'dead_nodes' } ],
                 output_template => 'Dead Nodes: %{dead_nodes}/%{nb_nodes} (%{dead_pct}%%)',
                 perfdatas => [
-                    { label => 'ha.dead_nodes.count', value => 'dead_nodes', template => '%s', min => 0, max => 'nb_nodes', threshold_total => 'nb_nodes', cast_int => 1 }
+                    { value => 'dead_nodes', template => '%s', min => 0, max => 'nb_nodes', threshold_total => 'nb_nodes', cast_int => 1 }
                 ]
             }
         },
         {
             label => 'faulty-links',
-            nlabel => 'cluster.faulty-links.count',
+            nlabel => 'ha.faulty_links.count',
             type => COUNTER_KIND_METRIC,
             warning_default => '50',
             critical_default => '100',
@@ -58,20 +58,20 @@ sub set_counters {
                 key_values => [ { name => 'faulty_pct' }, { name => 'nb_links' }, { name => 'faulty_links' } ],
                 output_template => 'Faulty Links: %{faulty_links}/%{nb_links} (%{faulty_pct}%%)',
                 perfdatas => [
-                    { label => 'ha.faulty_links.count', value => 'faulty_links', template => '%s', min => 0, max => 'nb_links', threshold_total => 'nb_links', cast_int => 1 }
+                    { value => 'faulty_links', template => '%s', min => 0, max => 'nb_links', threshold_total => 'nb_links', cast_int => 1 }
                 ]
             }
         },
         {
             label => 'active-firewall',
-            nlabel => 'cluster.active-firewalls.count',
+            nlabel => 'ha.active_firewalls.count',
             type => COUNTER_KIND_METRIC,
             critical_default => '1:1',
             set => {
                 key_values => [ { name => 'nb_active' } ],
                 output_template => 'Active Firewalls: %{nb_active}/2',
                 perfdatas => [
-                    { label => 'ha.active_firewalls.count', value => 'nb_active', template => '%s', min => 0, max => 2, cast_int => 1 }
+                    { value => 'nb_active', template => '%s', min => 0, max => 2, cast_int => 1 }
                 ]
             }
         },
@@ -90,7 +90,7 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
     return $self;
