@@ -134,10 +134,8 @@ sub manage_selection {
     #
     # The per-volume tables that follow the partition summary have the same
     # header but are preceded by a title line instead of a blank line.
-    if ($result !~ /\n[ \t]*\n-+\nPartition\s*\|\s*Total\s*\|[^\n]*\n-+\n(.*?)(?:\n[ \t]*\n|\z)/s) {
-        $self->{output}->add_option_msg(short_msg => 'Cannot find the partition summary table in the output');
-        $self->{output}->option_exit();
-    }
+    $self->{output}->option_exit(short_msg => 'Cannot find the partition summary table in the output')
+        if ($result !~ /\n[ \t]*\n-+\nPartition\s*\|\s*Total\s*\|[^\n]*\n-+\n(.*?)(?:\n[ \t]*\n|\z)/s);
 
     my $pattern = '^([0-9.]+)\s*([a-zA-Z]+)$';
     $self->{partitions} = {};
@@ -160,10 +158,8 @@ sub manage_selection {
         $self->{partitions}->{$name}->{prct_free} = $free * 100 / $total;
     }
 
-    if (scalar(keys %{$self->{partitions}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => 'No partition found. Please check filters.');
-        $self->{output}->option_exit();
-    }
+    $self->{output}->option_exit(short_msg => 'No partition found. Please check filters.')
+        if (scalar(keys %{$self->{partitions}}) <= 0);
 }
 
 sub disco_format {

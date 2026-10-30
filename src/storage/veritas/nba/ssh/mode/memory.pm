@@ -145,10 +145,8 @@ sub manage_selection {
     #Mem:      262873544   122588148     3147172      142120   137138224   137563492
     #Swap:      66674684    14492760    52181924
     #Total:    329548228   137080908    55329096
-    if ($result !~ /^Mem:\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)/m) {
-        $self->{output}->add_option_msg(short_msg => 'Cannot find memory information in the output');
-        $self->{output}->option_exit();
-    }
+    $self->{output}->option_exit(short_msg => 'Cannot find memory information in the output')
+        if ($result !~ /^Mem:\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)/m);
 
     my ($total, $used, $free, $shared, $buffer, $available) = map { $_ * 1024 } ($1, $2, $3, $4, $5, $6);
 

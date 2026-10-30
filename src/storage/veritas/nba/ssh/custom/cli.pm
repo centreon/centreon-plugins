@@ -23,7 +23,7 @@ package storage::veritas::nba::ssh::custom::cli;
 use strict;
 use warnings;
 use centreon::plugins::ssh;
-use centreon::plugins::misc;
+use centreon::plugins::misc qw/is_empty is_not_empty/;
 
 sub new {
     my ($class, %options) = @_;
@@ -34,10 +34,8 @@ sub new {
         print "Class Custom: Need to specify 'output' argument.\n";
         exit 3;
     }
-    if (!defined($options{options})) {
-        $options{output}->add_option_msg(short_msg => "Class Custom: Need to specify 'options' argument.");
-        $options{output}->option_exit();
-    }
+    $options{output}->option_exit(short_msg => "Class Custom: Need to specify 'options' argument.")
+        unless defined($options{options});
 
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
@@ -67,7 +65,7 @@ sub set_defaults {}
 sub check_options {
     my ($self, %options) = @_;
 
-    if (defined($self->{option_results}->{hostname}) && $self->{option_results}->{hostname} ne '') {
+    if (is_not_empty($self->{option_results}->{hostname})) {
         $self->{ssh}->check_options(option_results => $self->{option_results});
     }
 
@@ -85,17 +83,15 @@ sub execute_scenario {
     my ($self, %options) = @_;
 
     my $content;
-    if (defined($self->{option_results}->{hostname}) && $self->{option_results}->{hostname} ne '') {
+    if (is_not_empty($self->{option_results}->{hostname})) {
         ($content) = $self->{ssh}->execute_scenario(
             hostname => $self->{option_results}->{hostname},
             request => $options{request},
             timeout => $self->{option_results}->{timeout}
         );
     } else {
-        if (!defined($self->{option_results}->{command}) || $self->{option_results}->{command} eq '') {
-            $self->{output}->add_option_msg(short_msg => 'please set --hostname option for ssh connection (or --command for local)');
-            $self->{output}->option_exit();
-        }
+        $self->{output}->option_exit(short_msg => 'please set --hostname option for ssh connection (or --command for local)')
+            if (is_empty($self->{option_results}->{command}));
 
         ($content) = centreon::plugins::misc::execute(
             output => $self->{output},

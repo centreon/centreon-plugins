@@ -166,8 +166,7 @@ sub execute_scenario {
     my ($self, %options) = @_;
 
     if (!$self->{ssh}->can('execute_scenario')) {
-        $self->{output}->add_option_msg(short_msg => 'Libssh::Session 1.2 or later is required (execute_scenario method missing)');
-        $self->{output}->option_exit();
+        $self->{output}->option_exit(short_msg => 'Libssh::Session 1.2 or later is required (execute_scenario method missing)');
     }
 
     if (defined($options{timeout}) && $options{timeout} =~ /(\d+)/) {
@@ -186,16 +185,13 @@ sub execute_scenario {
         $content = $ret->{stdout};
         $exit_code = $ret->{exit};
     } elsif ($ret->{exit} == $self->{constant_cb}->(name => 'SSH_AGAIN')) { # AGAIN means timeout
-        $self->{output}->add_option_msg(short_msg => sprintf('command execution timeout'));
-        $self->{output}->option_exit();
+        $self->{output}->option_exit(short_msg => 'command execution timeout');
     } else {
-        $self->{output}->add_option_msg(short_msg =>
+        $self->{output}->option_exit(short_msg =>
             sprintf(
                 'command execution error: %s',
                 $self->{ssh}->error(GetErrorSession => 1)
-            )
-        );
-        $self->{output}->option_exit();
+            ));
     }
 
     return ($content, $exit_code);

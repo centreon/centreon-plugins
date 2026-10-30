@@ -128,7 +128,7 @@ SSH abstraction layer for SSH CLI, Plink and libSSH backends
 =item B<--ssh-backend>
 
 Define the backend you want to use.
-It can be: C<sshcli> (default), C<plink> and C<libssh>.
+It can be: C<sshcli> (default for most plugins), C<plink> and C<libssh>.
 
 =item B<--ssh-username>
 
