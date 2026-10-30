@@ -24,7 +24,7 @@ runs:
         DISTRIB: ${{ inputs.distrib }}
         STABILITY: ${{ inputs.stability }}
       run: |
-        dnf install -y zstd perl epel-release 'dnf-command(config-manager)' perl-App-cpanminus
+        dnf install -y zstd perl epel-release 'dnf-command(config-manager)'
         dnf config-manager --set-enabled powertools || true # alma 8
         dnf config-manager --set-enabled crb || true # alma 9
         # Map stability to repo channel: stable → stable, testing → testing, anything else → unstable
@@ -67,7 +67,7 @@ runs:
       run: |
         export DEBIAN_FRONTEND=noninteractive
         apt-get update
-        apt-get install -y zstd perl wget gpg apt-utils procps build-essential cpanminus
+        apt-get install -y zstd perl wget gpg apt-utils procps build-essential
         wget -O- https://apt-key.centreon.com | gpg --dearmor | tee /etc/apt/trusted.gpg.d/centreon.gpg > /dev/null 2>&1
         # Map stability to repo channel: stable → stable, testing → testing, anything else → unstable
         case "$STABILITY" in
@@ -168,23 +168,23 @@ runs:
           dpkg_info=$(dpkg-deb -I $package 2>&1) || { echo "Error: dpkg-deb failed for $package" >> $error_log; true; }
           dependencies=$(echo "$dpkg_info" | grep Depends | sed 's/Depends: //' | sed 's/,//g' | sed 's/ ([^)]*)//g') || true
           for dependency in $dependencies; do
-            # If the dependency exists in the Debian repository, don't check the local dependencies
-            dependency_info=$(apt-cache policy $dependency)
-            if [[ -n $dependency_info ]]; then
-              echo "Dependency $dependency exists in debian repository."
-            else
-              # If the dependency has been built in the same workflow, install it
-              for dependency_package in $(find . -maxdepth 1 -regex "\.\/${dependency}_[0-9].*all\.deb" -o -regex "\.\/${dependency}_[0-9].*${ARCH}\.deb"); do
+            # If the dependency has been built in the same workflow, install it rather than the version
+            # already published in the repositories, as the package may rely on its fixes
+            dependency_packages=$(find . -maxdepth 1 -regex "\.\/${dependency}_[0-9].*all\.deb" -o -regex "\.\/${dependency}_[0-9].*${ARCH}\.deb")
+            if [[ -n $dependency_packages ]]; then
+              for dependency_package in $dependency_packages; do
                 echo "Installing dependency: $dependency_package"
                 error_output=$(apt-get install -y "$dependency_package" 2>&1) || { echo "$error_output" >> $error_log; echo "Error during installation of the dependency $dependency" >> $error_log; true; }
               done
+            else
+              echo "Dependency $dependency will be installed from the repositories."
             fi
           done
           # Install package, then uninstall it with all his dependencies
           echo "Package installation..."
           error_output=$(apt-get install -y $package 2>&1) || { echo "$error_output" >> $error_log; echo "Error during installation of the package $package" >> $error_log; true; }
           echo "Package installation done."
-          script_name=$(echo $package | sed 's/.\/lib//' | sed 's/-perl_[0-9\.-]*-deb.*\.deb//')
+          script_name=$(echo $package | sed 's/.\/lib//' | sed 's/-perl_.*\.deb$//')
           if [[ -f ./tests/cpan-libraries/$script_name.pl ]]; then
               echo "Testing package..."
               error_output=$(perl tests/cpan-libraries/$script_name.pl 2>&1) || { echo "$error_output" >> $error_log; echo "Error during the usage test of the package $package" >> $error_log; true; }
