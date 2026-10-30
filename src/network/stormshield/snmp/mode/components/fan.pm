@@ -40,11 +40,8 @@ my $oid_fanEntry_ha   = '.1.3.6.1.4.1.11256.1.11.13.1';   # snsNodeFanEntry
 sub load {
     my ($self) = @_;
 
-    if ($self->{is_ha}) {
-        push @{$self->{request}}, { oid => $oid_fanEntry_ha };
-    } else {
-        push @{$self->{request}}, { oid => $oid_fanEntry_single };
-    }
+    push @{$self->{request}}, { oid => $oid_fanEntry_ha } if ($self->{is_ha});
+    push @{$self->{request}}, { oid => $oid_fanEntry_single };
 }
 
 sub check {
@@ -54,14 +51,15 @@ sub check {
     $self->{components}->{fan} = { name => 'fans', total => 0, skip => 0 };
     return if ($self->check_filter(section => 'fan'));
 
-    my $nodes   = $self->{is_ha} ? $self->{ha_nodes} : ['0'];
+    my $use_ha  = $self->use_ha_table(oid => $oid_fanEntry_ha);
+    my $nodes   = $use_ha ? $self->{ha_nodes} : ['0'];
     my $serials = $self->{ha_serials};
 
     foreach my $node_id (@$nodes) {
-        my $label_prefix = $self->{is_ha} ? $serials->{$node_id} . '_' : '';
+        my $label_prefix = $use_ha ? $serials->{$node_id} . '_' : '';
         my %fans_data    = ();
 
-        if ($self->{is_ha}) {
+        if ($use_ha) {
             foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_fanEntry_ha}})) {
                 if ($oid =~ /^$oid_fan_name_ha\.$node_id\.(\d+)$/) {
                     $fans_data{$1}{name} = $self->{results}->{$oid_fanEntry_ha}->{$oid};
@@ -100,16 +98,6 @@ sub check {
                 )
             );
 
-            if (defined $fan->{rpm}) {
-                $self->{output}->perfdata_add(
-                    nlabel    => 'hardware.fan.speed.rpm',
-                    unit      => 'rpm',
-                    instances => $instance,
-                    value     => $fan->{rpm},
-                    min       => 0
-                );
-            }
-
             my $exit = $self->get_severity(section => 'fan', value => $status);
             if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
                 $self->{output}->output_add(
@@ -117,6 +105,25 @@ sub check {
                     short_msg => sprintf("Fan '%s' status is '%s'", $instance, $status)
                 );
             }
+
+            next if (!defined($fan->{rpm}));
+
+            my ($exit2, $warn, $crit) = $self->get_severity_numeric(section => 'fan', instance => $instance, value => $fan->{rpm});
+            if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
+                $self->{output}->output_add(
+                    severity  => $exit2,
+                    short_msg => sprintf("Fan '%s' speed is '%s' rpm", $instance, $fan->{rpm})
+                );
+            }
+            $self->{output}->perfdata_add(
+                nlabel    => 'hardware.fan.speed.rpm',
+                unit      => 'rpm',
+                instances => $instance,
+                value     => $fan->{rpm},
+                warning   => $warn,
+                critical  => $crit,
+                min       => 0
+            );
         }
     }
 }
