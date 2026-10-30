@@ -38,11 +38,8 @@ my $oid_psuEntry_ha    = '.1.3.6.1.4.1.11256.1.11.10.1';   # snsNodePowerSupplyE
 sub load {
     my ($self) = @_;
 
-    if ($self->{is_ha}) {
-        push @{$self->{request}}, { oid => $oid_psuEntry_ha };
-    } else {
-        push @{$self->{request}}, { oid => $oid_psuEntry_single };
-    }
+    push @{$self->{request}}, { oid => $oid_psuEntry_ha } if ($self->{is_ha});
+    push @{$self->{request}}, { oid => $oid_psuEntry_single };
 }
 
 sub check {
@@ -52,14 +49,15 @@ sub check {
     $self->{components}->{psu} = { name => 'psu', total => 0, skip => 0 };
     return if ($self->check_filter(section => 'psu'));
 
-    my $nodes   = $self->{is_ha} ? $self->{ha_nodes} : ['0'];
+    my $use_ha  = $self->use_ha_table(oid => $oid_psuEntry_ha);
+    my $nodes   = $use_ha ? $self->{ha_nodes} : ['0'];
     my $serials = $self->{ha_serials};
 
     foreach my $node_id (@$nodes) {
-        my $label_prefix = $self->{is_ha} ? $serials->{$node_id} . '_' : '';
+        my $label_prefix = $use_ha ? $serials->{$node_id} . '_' : '';
         my %psus_data    = ();
 
-        if ($self->{is_ha}) {
+        if ($use_ha) {
             foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_psuEntry_ha}})) {
                 if ($oid =~ /^$oid_psu_powered_ha\.$node_id\.(\d+)$/) {
                     $psus_data{$1}{powered} = $self->{results}->{$oid_psuEntry_ha}->{$oid};

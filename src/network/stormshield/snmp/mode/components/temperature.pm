@@ -32,11 +32,8 @@ my $oid_cpu_temp_ha = '.1.3.6.1.4.1.11256.1.11.12.1.2'; # snsNodeCpuTemp
 sub load {
     my ($self) = @_;
 
-    if ($self->{is_ha}) {
-        push @{$self->{request}}, { oid => $oid_cpu_temp_ha };
-    } else {
-        push @{$self->{request}}, { oid => $oid_cpu_temp_single };
-    }
+    push @{$self->{request}}, { oid => $oid_cpu_temp_ha } if ($self->{is_ha});
+    push @{$self->{request}}, { oid => $oid_cpu_temp_single };
 }
 
 sub check {
@@ -46,44 +43,41 @@ sub check {
     $self->{components}->{temperature} = { name => 'temperatures', total => 0, skip => 0 };
     return if ($self->check_filter(section => 'temperature'));
 
-    my $nodes   = $self->{is_ha} ? $self->{ha_nodes} : ['0'];
+    my $use_ha  = $self->use_ha_table(oid => $oid_cpu_temp_ha);
+    my $nodes   = $use_ha ? $self->{ha_nodes} : ['0'];
     my $serials = $self->{ha_serials};
 
     foreach my $node_id (@$nodes) {
-        my $label_prefix = $self->{is_ha} ? $serials->{$node_id} . '_' : '';
+        my $label_prefix = $use_ha ? $serials->{$node_id} . '_' : '';
 
-        my @cpu_ids   = ();
         my %cpu_temps = ();
-
-        if ($self->{is_ha}) {
-            foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_cpu_temp_ha}})) {
+        if ($use_ha) {
+            foreach my $oid (keys %{$self->{results}->{$oid_cpu_temp_ha}}) {
                 next if ($oid !~ /^$oid_cpu_temp_ha\.$node_id\.(\d+)$/);
-                my $cpu_id = $1;
-                push @cpu_ids, $cpu_id;
-                $cpu_temps{$cpu_id} = $self->{results}->{$oid_cpu_temp_ha}->{$oid};
-                $self->{components}->{temperature}->{total}++;
+                $cpu_temps{$1} = $self->{results}->{$oid_cpu_temp_ha}->{$oid};
             }
         } else {
-            foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_cpu_temp_single}})) {
+            foreach my $oid (keys %{$self->{results}->{$oid_cpu_temp_single}}) {
                 next if ($oid !~ /^$oid_cpu_temp_single\.(\d+)$/);
-                my $cpu_id = $1;
-                push @cpu_ids, $cpu_id;
-                $cpu_temps{$cpu_id} = $self->{results}->{$oid_cpu_temp_single}->{$oid};
-                $self->{components}->{temperature}->{total}++;
+                $cpu_temps{$1} = $self->{results}->{$oid_cpu_temp_single}->{$oid};
             }
         }
 
-        next if (scalar @cpu_ids == 0);
-        @cpu_ids = sort { $a <=> $b } @cpu_ids;
-
-        my $cpu_sum = 0;
-        foreach my $cpu_id (@cpu_ids) {
+        my ($cpu_sum, $cpu_count) = (0, 0);
+        foreach my $cpu_id (sort { $a <=> $b } keys %cpu_temps) {
             my $temp     = $cpu_temps{$cpu_id};
             my $instance = $label_prefix . 'cpu' . $cpu_id;
 
+            # absent CPUs are reported with a 0 value
+            if ($temp == 0) {
+                $self->{output}->output_add(long_msg => sprintf("skipping temperature '%s': value is 0", $instance));
+                next;
+            }
             next if ($self->check_filter(section => 'temperature', instance => $instance));
 
+            $self->{components}->{temperature}->{total}++;
             $cpu_sum += $temp;
+            $cpu_count++;
 
             $self->{output}->output_add(
                 long_msg => sprintf(
@@ -92,15 +86,7 @@ sub check {
                 )
             );
 
-            $self->{output}->perfdata_add(
-                nlabel    => 'hardware.cpu.temperature.celsius',
-                unit      => 'C',
-                instances => $instance,
-                value     => $temp,
-                min       => 0
-            );
-
-            my ($exit) = $self->get_severity_numeric(
+            my ($exit, $warn, $crit) = $self->get_severity_numeric(
                 section  => 'temperature',
                 instance => $instance,
                 value    => $temp
@@ -113,16 +99,25 @@ sub check {
                     )
                 );
             }
+
+            $self->{output}->perfdata_add(
+                nlabel    => 'hardware.cpu.temperature.celsius',
+                unit      => 'C',
+                instances => $instance,
+                value     => $temp,
+                warning   => $warn,
+                critical  => $crit,
+                min       => 0
+            );
         }
 
-        my $cpu_avg      = int($cpu_sum / scalar(@cpu_ids));
-        my $avg_instance = $label_prefix . 'cpu_average_temp';
+        next if ($cpu_count == 0);
 
         $self->{output}->perfdata_add(
             nlabel    => 'hardware.cpu.average.temperature.celsius',
             unit      => 'C',
-            instances => $avg_instance,
-            value     => $cpu_avg,
+            instances => $label_prefix . 'cpu_average_temp',
+            value     => int($cpu_sum / $cpu_count),
             min       => 0
         );
     }

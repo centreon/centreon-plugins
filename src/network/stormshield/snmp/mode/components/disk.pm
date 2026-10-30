@@ -44,11 +44,8 @@ my $oid_diskEntry_ha        = '.1.3.6.1.4.1.11256.1.11.11.1';   # snsNodeDiskEnt
 sub load {
     my ($self) = @_;
 
-    if ($self->{is_ha}) {
-        push @{$self->{request}}, { oid => $oid_diskEntry_ha };
-    } else {
-        push @{$self->{request}}, { oid => $oid_diskEntry_single, end => $mapping_single->{position}->{oid} };
-    }
+    push @{$self->{request}}, { oid => $oid_diskEntry_ha } if ($self->{is_ha});
+    push @{$self->{request}}, { oid => $oid_diskEntry_single, end => $mapping_single->{position}->{oid} };
 }
 
 sub check {
@@ -58,14 +55,15 @@ sub check {
     $self->{components}->{disk} = { name => 'disks', total => 0, skip => 0 };
     return if ($self->check_filter(section => 'disk'));
 
-    my $nodes   = $self->{is_ha} ? $self->{ha_nodes} : ['0'];
+    my $use_ha  = $self->use_ha_table(oid => $oid_diskEntry_ha);
+    my $nodes   = $use_ha ? $self->{ha_nodes} : ['0'];
     my $serials = $self->{ha_serials};
 
     foreach my $node_id (@$nodes) {
-        my $label_prefix = $self->{is_ha} ? $serials->{$node_id} . '_' : '';
+        my $label_prefix = $use_ha ? $serials->{$node_id} . '_' : '';
         my %disks_data   = ();
 
-        if ($self->{is_ha}) {
+        if ($use_ha) {
             foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_diskEntry_ha}})) {
                 if ($oid =~ /^$oid_disk_name_ha\.$node_id\.(\d+)$/) {
                     $disks_data{$1}{name} = $self->{results}->{$oid_diskEntry_ha}->{$oid};
@@ -100,7 +98,7 @@ sub check {
             $self->{components}->{disk}->{total}++;
 
             my $smart  = $disk->{smartResult} // 'N/A';
-            my $name   = $label_prefix . $disk->{name}        // $instance;
+            my $name   = defined($disk->{name}) ? $label_prefix . $disk->{name} : $instance;
             $self->{output}->output_add(
                 long_msg => sprintf(
                     "disk '%s' smart result is '%s' [isRaid: %s, raidStatus: %s, position: %s]",
