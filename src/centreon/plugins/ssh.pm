@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -30,7 +30,7 @@ sub new {
 
     if (!defined($options{noptions}) || $options{noptions} != 1) {
         $options{options}->add_options(arguments => {
-            'ssh-backend:s'  => { name => 'ssh_backend', default => 'sshcli' },
+            'ssh-backend:s'  => { name => 'ssh_backend' },
             'ssh-port:s'     => { name => 'ssh_port' },
             'ssh-priv-key:s' => { name => 'ssh_priv_key' },
             'ssh-username:s' => { name => 'ssh_username' },
@@ -60,6 +60,9 @@ sub new {
     );
     $self->{backend_libssh} = centreon::plugins::backend::ssh::libssh->new(%options);
 
+    $self->{default_backend} = defined($options{default_backend}) && $options{default_backend} ne '' ?
+        $options{default_backend} : 'sshcli';
+
     $self->{output} = $options{output};
     return $self;
 }
@@ -73,7 +76,7 @@ sub check_options {
         $default_port = $options{default_ssh_port};
     }
     $self->{ssh_port} = defined($options{option_results}->{ssh_port}) && $options{option_results}->{ssh_port} =~ /(\d+)/ ? $1 : $default_port;
-    $self->{ssh_backend} = 'sshcli'
+    $self->{ssh_backend} = $self->{default_backend}
         if (!defined($options{option_results}->{ssh_backend}) || $options{option_results}->{ssh_backend} eq '');
     if (!defined($self->{'backend_' . $self->{ssh_backend}})) {
         $self->{output}->add_option_msg(short_msg => 'unknown ssh backend: ' . $self->{ssh_backend});
@@ -100,6 +103,12 @@ sub execute {
     return $self->{'backend_' . $self->{ssh_backend}}->execute(%options);
 }
 
+sub execute_scenario {
+    my ($self, %options) = @_;
+
+    return $self->{'backend_' . $self->{ssh_backend}}->execute_scenario(%options);
+}
+
 1;
 
 __END__
@@ -119,7 +128,7 @@ SSH abstraction layer for SSH CLI, Plink and libSSH backends
 =item B<--ssh-backend>
 
 Define the backend you want to use.
-It can be: C<sshcli> (default), C<plink> and C<libssh>.
+It can be: C<sshcli> (default for most plugins), C<plink> and C<libssh>.
 
 =item B<--ssh-username>
 

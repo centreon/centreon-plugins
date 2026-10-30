@@ -190,6 +190,7 @@ ldap
 LDP
 --legacy-api-beta
 libSSH
+LIBSSH
 Libvirt
 license-instances-usage-prct
 Loggly
@@ -247,6 +248,7 @@ NagVis
 --nagvis-perfdata
 nanocores
 Netasq
+NetBackup
 Netconf
 Netscaler
 net-snmp
@@ -298,6 +300,7 @@ pfSense
 physicaldrive
 PKCS1
 Plink
+PLINK
 Podman
 Postgres
 powershell
@@ -357,6 +360,7 @@ SRX
 SSDCapacity
 SSG
 SSH
+SSHCLI
 Stackdriver
 standAlone
 statefile
@@ -419,6 +423,7 @@ VDSL2
 VE
 Veeam
 VeloCloud
+Veritas
 vhost
 VIRSHCLI
 VM
