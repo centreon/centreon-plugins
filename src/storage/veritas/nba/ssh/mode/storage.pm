@@ -56,7 +56,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{partitions} = [
-        { label => 'status', type => COUNTER_KIND_TEXT, warning_default => '%{status} =~ /Degraded/i', critical_default => '%{status} =~ /Not Accessible/i', set => {
+        { label => 'status', type => COUNTER_KIND_TEXT, warning_default => '%{status} =~ /Degraded/i', critical_default => '%{status} !~ /^(Optimal|Degraded|Not Configured)$/i', set => {
                 key_values => [ { name => 'status' }, { name => 'name' } ],
                 output_template => 'status: %s',
                 closure_custom_perfdata => sub { return 0; },
@@ -210,7 +210,7 @@ You can use the following variables: C<%{status}>, C<%{name}>
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (default: C<'%{status} =~ /Not Accessible/i'>).
+Define the conditions to match for the status to be CRITICAL (default: C<'%{status} !~ /^(Optimal|Degraded|Not Configured)$/i'>).
 You can use the following variables: C<%{status}>, C<%{name}>
 
 =item B<--warning-space-usage>
