@@ -101,6 +101,15 @@ sub snmp_execute {
     $self->{results} = $self->{snmp}->get_multiple_table(oids => $self->{request});
 }
 
+# Some SNS versions (e.g. 4.7.x) populate snsNodeTable but not the per-node
+# component tables: fall back to the single-node tables (polled node only).
+sub use_ha_table {
+    my ($self, %options) = @_;
+
+    return 0 if (!$self->{is_ha});
+    return (defined($self->{results}->{ $options{oid} }) && scalar(keys %{$self->{results}->{ $options{oid} }}) > 0) ? 1 : 0;
+}
+
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_absent => 1, force_new_perfdata => 1);
@@ -119,6 +128,8 @@ __END__
 
 Check hardware components (temperature, fan, PSU, disk).
 Automatically detects single-node and high-availability (HA) cluster configurations.
+On HA clusters, if the per-node tables of a component are not available, the
+single-node tables are used instead (only the polled node is then checked).
 
 =over 8
 
