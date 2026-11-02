@@ -40,7 +40,6 @@ sub new {
         'hardware'         => 'network::stormshield::snmp::mode::hardware',
         'health'           => 'network::stormshield::snmp::mode::health',
         'interfaces'       => 'snmp_standard::mode::interfaces',
-        'interfaces-disco' => 'network::stormshield::snmp::mode::networkstats', # Deprecated: use network-stats
         'licenses'         => 'network::stormshield::snmp::mode::licenses',
         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
         'load'             => 'snmp_standard::mode::loadaverage',
@@ -48,7 +47,6 @@ sub new {
         'memory-detailed'  => 'network::stormshield::snmp::mode::memorydetailed',
         'network-stats'    => 'network::stormshield::snmp::mode::networkstats',
         'qos'              => 'network::stormshield::snmp::mode::qos',
-        'router-disco'     => 'network::stormshield::snmp::mode::routerobjects', # Deprecated: use router-objects
         'router-objects'   => 'network::stormshield::snmp::mode::routerobjects',
         'storage'          => 'snmp_standard::mode::storage',
         'swap'             => 'snmp_standard::mode::swap',
