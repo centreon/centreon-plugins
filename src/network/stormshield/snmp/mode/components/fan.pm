@@ -84,7 +84,7 @@ sub check {
 
         foreach my $fan_id (sort { $a <=> $b } keys %fans_data) {
             my $fan      = $fans_data{$fan_id};
-            my $instance = $label_prefix . $fan->{name};
+            my $instance = $label_prefix . ($fan->{name} // 'fan' . $fan_id);
 
             next if ($self->check_filter(section => 'fan', instance => $instance));
             $self->{components}->{fan}->{total}++;
