@@ -88,7 +88,7 @@ runs:
 
             console.log(data);
 
-            if (["get-environment", "get-plugins", "package", "deliver-packages"].includes(failed_job)) {
+            if (["get-environment", "get-plugins", "package", "deliver"].includes(failed_job)) {
               ticket_squad_id = 10524
               ticket_board_id = 184
               squad_name = "DEVSECOPS"
