@@ -33,7 +33,7 @@ declare -A TOTAL_COUNT_BY_REPO
 
 for repo in $(printf '%s\n' "${E_REPOSITORY[@]}" | sort -u); do
   PRESENT_BY_REPO[$repo]=$(mktemp)
-  version_href=$(pulp rpm repository show --name "$repo" 2>/dev/null | jq -r '.latest_version_href // empty')
+  version_href=$(latest_version_href rpm "$repo")
   if [[ -z "$version_href" ]]; then
     echo "[WARN] Repository $repo does not exist or has no version"
     continue
@@ -45,7 +45,7 @@ for repo in $(printf '%s\n' "${E_REPOSITORY[@]}" | sort -u); do
   )"
   pages=0
   while [[ -n "$url" ]] && ((pages < 20)); do
-    page=$(curl -fsSL -H "Authorization: Bearer $PULP_TOKEN" "$url") || {
+    page=$(curl -fsSL --retry 3 --retry-delay 5 -H "Authorization: Bearer $PULP_TOKEN" "$url") || {
       echo "[WARN] presence page fetch failed for $repo ($url)" >&2
       break
     }
