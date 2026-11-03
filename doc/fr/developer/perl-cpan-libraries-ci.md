@@ -4,7 +4,7 @@
 
 Certains modules Perl requis par les plugins ne sont pas disponibles dans les dépôts officiels des distributions Linux supportées (AlmaLinux, Debian, Ubuntu). Le workflow `perl-cpan-libraries` construit et livre ces bibliothèques manquantes sous forme de paquets natifs `.rpm` et `.deb`, afin qu'elles puissent être installées comme des paquets système standards aux côtés des plugins.
 
-Le pipeline est **intelligent** : avant de construire quoi que ce soit, il vérifie si une bibliothèque est déjà disponible dans les dépôts officiels de la distribution ou dans le dépôt Artifactory stable de Centreon. Seules les bibliothèques véritablement absentes ou dans une mauvaise version sont packagées.
+Le pipeline est **intelligent** : avant de construire quoi que ce soit, il vérifie si une bibliothèque est déjà disponible dans les dépôts officiels de la distribution ou dans le dépôt Pulp de Centreon. Seules les bibliothèques véritablement absentes ou dans une mauvaise version sont packagées.
 
 ---
 
@@ -18,7 +18,7 @@ flowchart TD
     ENV --> CHK[check-official-repos\n8 distributions en parallèle]
     ENV --> GPI[get-packaging-images\n9 images en parallèle]
 
-    CHK --> GEN[generate-matrices\nFusion des partiels + filtrage Artifactory stable]
+    CHK --> GEN[generate-matrices\nFusion des partiels + filtrage Pulp Centreon]
     GEN --> PRPM[package-rpm\njusqu'à 50 en parallèle]
     GEN --> PDEB[package-deb\njusqu'à 50 en parallèle]
     GPI --> PRPM
@@ -33,7 +33,7 @@ flowchart TD
     SIGN --> TEST[test-packages\n9 distributions]
     CDEB --> TEST
 
-    TEST --> DP[deliver-packages\n8 distributions]
+    TEST --> DP[deliver-packages-pulp\n8 distributions]
     DP --> SKIP[set-skip-label]
 
     style TRIGGER fill:#555,color:#fff
@@ -129,7 +129,7 @@ Le pipeline évite les builds inutiles grâce à un processus de filtrage en deu
 flowchart TD
     LIB[Bibliothèque dans cpan-libraries.json] --> A{Disponible dans\nle dépôt officiel de la distrib\nà la bonne version ?}
     A -->|Oui| SKIP1[Ignorée — aucun build nécessaire]
-    A -->|Non| B{Déjà présente dans\nArtifactory stable\nde Centreon ?}
+    A -->|Non| B{Déjà présente dans\nle dépôt Pulp\nde Centreon ?}
     B -->|Oui, même version| SKIP2[Ignorée — déjà livrée]
     B -->|Non / version différente| BUILD[Construire et packager]
 ```
@@ -142,9 +142,9 @@ S'exécute à l'intérieur du conteneur Docker de la distribution réelle (ex. `
 
 Utilise `cpanminus` pour résoudre le nom de distribution CPAN et la version de chaque module. Produit un fichier `partial-matrix-{distrib}.json` listant uniquement les bibliothèques à construire pour cette distribution.
 
-### Niveau 2 — Vérification de l'Artifactory stable Centreon (`generate-matrices`)
+### Niveau 2 : vérification du dépôt Pulp de Centreon (`generate-matrices`)
 
-Après la collecte de toutes les matrices partielles, `generate-matrices.py` interroge en plus le dépôt Artifactory public de Centreon (`packages.centreon.com`) pour chaque bibliothèque. Si le paquet est déjà présent dans le dépôt stable à la version attendue, il est exclu de la matrice de build.
+Après la collecte de toutes les matrices partielles, `generate-matrices.py` lit en plus les métadonnées publiques du dépôt Pulp de Centreon (`packages.centreon.com`) pour chaque bibliothèque. Si le paquet est déjà présent à la version attendue (dans `stable` pour les builds `testing` et `stable`, dans `unstable` sinon), il est exclu de la matrice de build.
 
 Cela évite les rebuilds redondants lors d'une re-exécution du workflow sur une branche où aucune bibliothèque n'a réellement changé.
 
@@ -187,7 +187,7 @@ Ces images contiennent les outils nécessaires pour construire des paquets (rpmb
 ### `generate-matrices`
 
 1. Télécharge tous les artifacts `partial-matrix-*.json`.
-2. Interroge optionnellement le dépôt Artifactory stable de Centreon pour exclure les paquets déjà livrés.
+2. Interroge optionnellement le dépôt Pulp de Centreon pour exclure les paquets déjà livrés.
 3. Génère deux matrices plates (sans produit croisé, `include` uniquement) :
    - `matrix_rpm` : une entrée par combinaison (bibliothèque, distribution RPM) à construire
    - `matrix_deb` : une entrée par combinaison (bibliothèque, cible DEB) à construire
@@ -258,9 +258,9 @@ Utilise l'action `.github/actions/test-cpan-libs`, qui installe tous les paquets
 
 En cas d'échec, un artifact de log d'erreur est uploadé sous le nom `install_error_log_{distrib}-{arch}`.
 
-### `deliver-packages`
+### `deliver-packages-pulp`
 
-Uploade tous les paquets vers le dépôt Artifactory de Centreon sous le module `perl-cpan-libraries`.
+Livre tous les paquets dans le dépôt Pulp de Centreon sous le module `perl-cpan-libraries`, avec l'action `package-delivery-pulp` en `testing` et `unstable`, et l'action `promote-to-stable-pulp` en `stable`. Les paquets livrés ou promus sont ensuite vérifiés sur Pulp : un paquet manquant fait échouer le job.
 
 **Conditions :**
 - `stability` est `testing` ou `unstable`, **OU** `stability == 'stable'` avec un événement `push` (pas `workflow_dispatch`)
@@ -277,8 +277,8 @@ Ajoute le label `skip-workflow-perl-cpan-libraries` à la PR après une livraiso
 | Clé | Contenu | Produit par | Consommé par |
 |---|---|---|---|
 | `{image}-{sha}-{run_id}` | Archive tar de l'image Docker | `get-packaging-images` | `package-rpm`, `package-deb` |
-| `{sha}-{run_id}-rpm-{distrib}` | Fichiers `.rpm` signés | `sign-rpm` | `test-packages`, `deliver-packages` |
-| `{sha}-{run_id}-deb-{distrib}` | Fichiers `.deb` | `download-and-cache-deb` | `test-packages`, `deliver-packages` |
+| `{sha}-{run_id}-rpm-{distrib}` | Fichiers `.rpm` signés | `sign-rpm` | `test-packages`, `deliver-packages-pulp` |
+| `{sha}-{run_id}-deb-{distrib}` | Fichiers `.deb` | `download-and-cache-deb` | `test-packages`, `deliver-packages-pulp` |
 
 ---
 

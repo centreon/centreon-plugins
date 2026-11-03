@@ -121,41 +121,6 @@ jobs:
           path: ./*.rpm
           retention-days: 1
 
-  deliver-packages:
-    needs: [get-environment, sign-rpm]
-    if: |
-      needs.get-environment.outputs.skip_workflow == 'false' &&
-      (contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) || ( needs.get-environment.outputs.stability == 'stable' && github.event_name != 'workflow_dispatch')) &&
-      ! cancelled() &&
-      ! contains(needs.*.result, 'failure') &&
-      ! contains(needs.*.result, 'cancelled')
-    runs-on: ubuntu-24.04
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - distrib: el8
-            package_extension: rpm
-          - distrib: el9
-            package_extension: rpm
-          - distrib: el10
-            package_extension: rpm
-
-    name: deliver ${{ matrix.distrib }}
-    steps:
-      - name: Checkout sources
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
-      - name: Delivery
-        uses: ./.github/actions/package-delivery
-        with:
-          module_name: plink
-          distrib: ${{ matrix.distrib }}
-          cache_key: ${{ github.sha }}-${{ github.run_id }}-${{ matrix.package_extension }}-${{ matrix.distrib }}
-          stability: ${{ needs.get-environment.outputs.stability }}
-          release_type: ${{ needs.get-environment.outputs.release_type }}
-          artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
-
   deliver-packages-pulp:
     needs: [get-environment, sign-rpm]
     if: |
@@ -219,7 +184,7 @@ jobs:
           audience: ${{ vars.PULP_OIDC_AUDIENCE }}
 
   set-skip-label:
-    needs: [get-environment, deliver-packages]
+    needs: [get-environment, deliver-packages-pulp]
     if: |
       needs.get-environment.outputs.skip_workflow == 'false' &&
       ! cancelled() &&
