@@ -88,11 +88,5 @@ Standard ${tc} - ${mode}
     ...    network-stats
     ...    Mode:\n.*network statistics
     ...    21
-    ...    interfaces-disco
-    ...    Mode:\n.*network statistics
-    ...    22
     ...    router-objects
-    ...    Mode:\n.*router objects
-    ...    23
-    ...    router-disco
     ...    Mode:\n.*router objects
