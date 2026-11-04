@@ -738,6 +738,14 @@ folded into that one service's output and perfdata, plus an aggregated router ob
 
 =over 8
 
+=item B<--include-name>
+
+Filter router objects by name (can be a regexp).
+
+=item B<--exclude-name>
+
+Exclude router objects by name (can be a regexp).
+
 =item B<--warning-principal-count>
 
 Warning threshold on the number of Principal gateways currently DOWN for the router.
@@ -779,14 +787,6 @@ Warning threshold on jitter (in milliseconds), applied to C<snsRouteJitter> for 
 =item B<--critical-jitter>
 
 Critical threshold on jitter (in milliseconds), applied to C<snsRouteJitter> for each gateway of the router.
-
-=item B<--include-name>
-
-Filter router objects by name (can be a regexp).
-
-=item B<--exclude-name>
-
-Exclude router objects by name (can be a regexp).
 
 =back
 
