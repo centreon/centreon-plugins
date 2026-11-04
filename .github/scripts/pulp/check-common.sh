@@ -29,6 +29,21 @@ wait_for_slot() {
   done
 }
 
+# latest_version_href <rpm|deb> <repository>: print the repository's latest version
+# href (empty when it has none). The lookup is retried: a transient API error must
+# not read as a missing repository, which fails the whole verification.
+latest_version_href() {
+  local type=$1 name=$2 attempt out
+  for attempt in 1 2 3; do
+    if out=$(pulp "$type" repository show --name "$name" 2>/dev/null); then
+      jq -r '.latest_version_href // empty' <<< "$out"
+      return 0
+    fi
+    ((attempt < 3)) && sleep 5
+  done
+  return 0
+}
+
 # accumulated per-package result rows and the aggregate failure flag
 ROWS=()
 PRESENT_OK=0

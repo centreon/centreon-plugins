@@ -274,7 +274,7 @@ def filter_to_includes(libs, pkg_key, cpanm_infos, available):
 
 _DEB_VERSION_RE = re.compile(r"^([0-9v][0-9.]*)(?:[+\-]|$)")
 
-# Public pulp content host: plain repo metadata only (repomd.xml, Packages), no Artifactory API
+# Public pulp content host: plain repo metadata only (repomd.xml, Packages), no authenticated API
 _ALLOWED_REPOSITORY_HOSTS = {"packages.centreon.com"}
 
 
