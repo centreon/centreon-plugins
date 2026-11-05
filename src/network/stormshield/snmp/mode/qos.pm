@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2024-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,7 +24,9 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use Digest::MD5 qw(md5_hex);
+use Digest::SHA qw(sha256_hex);
+use centreon::plugins::constants qw(:counters :values);
+use centreon::plugins::misc qw(is_excluded);
 
 sub custom_qos_output {
     my ($self, %options) = @_;
@@ -49,13 +51,14 @@ sub custom_qos_calc {
     
     $self->{result_values}->{label} = $options{extra_options}->{label_ref};
     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
-    $self->{result_values}->{traffic} = $options{new_datas}->{$self->{instance} . '_traffic_' . $self->{result_values}->{label}};
+    my $traffic_key = $self->{instance} . '_traffic_' . $self->{result_values}->{label};
+    $self->{result_values}->{traffic} = ($options{new_datas}->{$traffic_key} - $options{old_datas}->{$traffic_key}) / $options{delta_time};
 
     if ($options{new_datas}->{$self->{instance} . '_speed_' . $self->{result_values}->{label}} > 0) {
         $self->{result_values}->{speed} = $options{new_datas}->{$self->{instance} . '_speed_' . $self->{result_values}->{label}};
         $self->{result_values}->{traffic_prct} = $self->{result_values}->{traffic} * 100 / $self->{result_values}->{speed};
     } elsif ($options{extra_options}->{type} eq 'percent') {
-        return -10;
+        return NO_VALUE;
     }
     return 0;
 }
@@ -64,7 +67,7 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'qos', type => 1, cb_prefix_output => 'prefix_qos_output', message_multiple => 'All QoS are ok', skipped_code => { -10 => 1 } }
+        { name => 'qos', type => COUNTER_TYPE_INSTANCE, prefix_output => "QoS '%{display}' ", message_multiple => 'All QoS are ok', skipped_code => { NO_VALUE() => 1 } }
     ];
 
     $self->{maps_counters}->{qos} = [
@@ -135,18 +138,14 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => { 
-        'filter-name:s' => { name => 'filter_name' },
-        'speed-in:s'    => { name => 'speed_in' },
-        'speed-out:s'   => { name => 'speed_out' }
+        'include-name:s' => { name => 'include_name', default => '' },
+        'exclude-name:s' => { name => 'exclude_name', default => '' },
+        'filter-name:s'  => { redirect => 'include_name' },
+        'speed-in:s'     => { name => 'speed_in' },
+        'speed-out:s'    => { name => 'speed_out' }
     });
 
     return $self;
-}
-
-sub prefix_qos_output {
-    my ($self, %options) = @_;
-    
-    return "QoS '" . $options{instance_value}->{display} . "' ";
 }
 
 my $mapping = {
@@ -164,8 +163,7 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     if ($options{snmp}->is_snmpv1()) {
-        $self->{output}->add_option_msg(short_msg => 'Need to use SNMP v2c or v3.');
-        $self->{output}->option_exit();
+        $self->{output}->option_exit(short_msg => 'Need to use SNMP v2c or v3.');
     }
 
     my $snmp_result = $options{snmp}->get_table(
@@ -179,18 +177,13 @@ sub manage_selection {
         my $instance = $1;
 
         my $name = $snmp_result->{$_};
-        if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $name !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $name . "': no matching filter.", debug => 1);
-            next;
-        }
+        next if (is_excluded($name, $self->{option_results}->{include_name}, $self->{option_results}->{exclude_name}, output => $self->{output}));
 
         $self->{qos}->{$instance} = { display => $name };
     }
 
     if (scalar(keys %{$self->{qos}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => 'No QoS found.');
-        $self->{output}->option_exit();
+        $self->{output}->option_exit(short_msg => 'No QoS found.');
     }
 
     $options{snmp}->load(oids => [
@@ -205,8 +198,8 @@ sub manage_selection {
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $_);
 
         foreach (('in', 'out')) {
-            $result->{'speed_' . $_} = defined($self->{option_results}->{'speed_' . $_}) && $self->{option_results}->{'speed_' . $_} =~ /(\d+)/ ?
-                ($1 * 1000 * 1000): (defined($result->{'speed_' . $_}) ? ($result->{'speed_' . $_} * 1024 * 8) : 0);
+            $result->{'speed_' . $_} = defined($self->{option_results}->{'speed_' . $_}) && $self->{option_results}->{'speed_' . $_} =~ /(\d+)/
+                ? ($1 * 1000 * 1000) : (defined($result->{'speed_' . $_}) ? ($result->{'speed_' . $_} * 1024 * 8) : 0);
             $result->{'traffic_' . $_} *= 8;
             $result->{'traffic_' . $_ . '_peak'} *= 8;
         }
@@ -216,9 +209,12 @@ sub manage_selection {
         };
     }
 
-    $self->{cache_name} = 'stormshield_' . $self->{mode} . '_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' .
-        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
-        (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('all'));
+    $self->{cache_name} = 'stormshield_' . $self->{mode} . '_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port()
+        . '_' . sha256_hex(
+            ($self->{option_results}->{filter_counters} // '')
+            . '_' . $self->{option_results}->{include_name}
+            . '_' . $self->{option_results}->{exclude_name}
+        );
 }
 
 1;
@@ -231,9 +227,13 @@ Check QoS usage.
 
 =over 8
 
-=item B<--filter-name>
+=item B<--include-name>
 
-Filter by QoS name (can be a regexp).
+Filter by QoS name (can be a regexp). Option C<--filter-name> is a deprecated alias.
+
+=item B<--exclude-name>
+
+Exclude QoS by name (can be a regexp).
 
 =item B<--speed-in>
 
@@ -243,11 +243,53 @@ Set interface speed for incoming traffic (in Mb).
 
 Set interface speed for outgoing traffic (in Mb).
 
-=item B<--warning-*>  B<--critical-*>
+=item B<--warning-traffic-in>
 
-Thresholds.
-Can be: 'traffic-in', 'traffic-in-prct', 'traffic-in-peak',
-'traffic-out', 'traffic-out-prct', 'traffic-out-peak'.
+Threshold in b/s.
+
+=item B<--critical-traffic-in>
+
+Threshold in b/s.
+
+=item B<--warning-traffic-in-prct>
+
+Threshold in percentage of the incoming speed.
+
+=item B<--critical-traffic-in-prct>
+
+Threshold in percentage of the incoming speed.
+
+=item B<--warning-traffic-in-peak>
+
+Threshold in b/s.
+
+=item B<--critical-traffic-in-peak>
+
+Threshold in b/s.
+
+=item B<--warning-traffic-out>
+
+Threshold in b/s.
+
+=item B<--critical-traffic-out>
+
+Threshold in b/s.
+
+=item B<--warning-traffic-out-prct>
+
+Threshold in percentage of the outgoing speed.
+
+=item B<--critical-traffic-out-prct>
+
+Threshold in percentage of the outgoing speed.
+
+=item B<--warning-traffic-out-peak>
+
+Threshold in b/s.
+
+=item B<--critical-traffic-out-peak>
+
+Threshold in b/s.
 
 =back
 

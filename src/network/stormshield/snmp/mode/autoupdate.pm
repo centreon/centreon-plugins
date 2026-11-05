@@ -17,17 +17,16 @@
 # limitations under the License.
 #
 
-package network::stormshield::snmp::mode::auto_update;
+package network::stormshield::snmp::mode::autoupdate;
 
 use base qw(centreon::plugins::templates::counter);
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
-use centreon::plugins::misc qw(is_empty);
 
 use strict;
 use warnings;
 use DateTime;
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 use centreon::plugins::constants qw(:counters);
-use centreon::plugins::misc;
+use centreon::plugins::misc qw(is_empty);
 
 my %STATES_TO_READABLE = (
     'Uptodate'         => 'is up to date',
@@ -45,9 +44,10 @@ sub custom_auto_update_output {
     my $state = $self->{result_values}->{state};
     my $display = $self->{result_values}->{display};
 
-    return "$display " . $STATES_TO_READABLE{$state} if $STATES_TO_READABLE{$state};
-    return "$display " . $state
-        . " (Last Update: " . ($self->{result_values}->{last_date} // 'N/A') . ")";
+    my $output = "$display " . ($STATES_TO_READABLE{$state} // $state);
+    $output .= " (Last Update: " . ($self->{result_values}->{last_date} // 'N/A') . ")"
+        if ($state !~ /^(Uptodate|Disabled|NeverStarted)$/);
+    return $output;
 }
 
 sub set_counters {
@@ -178,14 +178,14 @@ sub process_table {
 
         my $name     = is_empty($snmp_result->{"$name_oid.$index"}) ? 'N/A' : $snmp_result->{"$name_oid.$index"};
         my $state    = is_empty($snmp_result->{"$state_oid.$index"}) ? 'N/A' : $snmp_result->{"$state_oid.$index"};
-        my $lastDate = is_empty($snmp_result->{"$date_oid.$index"}) ? 'N/A' : $snmp_result->{"$date_oid.$index"};
+        my $last_date = is_empty($snmp_result->{"$date_oid.$index"}) ? 'N/A' : $snmp_result->{"$date_oid.$index"};
 
         my $normalized_state = ($state =~ /^(Uptodate|Failed|Disabled|Broken|Partially Failed)$/) ? $state : 'NeverStarted';
 
         $self->{updates}->{$prefix . '_' . $index} = {
             display   => $prefix . ': ' . $name,
             state     => $normalized_state,
-            last_date => $lastDate
+            last_date => $last_date
         };
     }
 }

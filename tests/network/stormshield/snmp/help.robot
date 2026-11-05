@@ -84,3 +84,9 @@ Standard ${tc} - ${mode}
     ...    19
     ...    ha-cluster
     ...    Mode:\n.*ha.cluster
+    ...    20
+    ...    network-stats
+    ...    Mode:\n.*network statistics
+    ...    21
+    ...    router-objects
+    ...    Mode:\n.*router objects
