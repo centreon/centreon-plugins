@@ -1,5 +1,5 @@
 #
-# Copyright 2025 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -25,6 +25,8 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
+use centreon::plugins::misc qw(is_not_empty);
+use centreon::plugins::constants qw(:counters :values);
 
 sub custom_interface_status_output {
     my ($self, %options) = @_;
@@ -50,11 +52,11 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'interfaces', type => 1, cb_prefix_output => 'prefix_interface_output', message_multiple => 'All interfaces are ok', skipped_code => { -10 => 1 } }
+        { name => 'interfaces', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_interface_output', message_multiple => 'All interfaces are ok', skipped_code => { NO_VALUE() => 1 } }
     ];
 
     $self->{maps_counters}->{interfaces} = [
-        { label => 'interface-status', type => 2, critical_default => '%{name} ne "lo" and %{admstatus} eq "up" and %{opstatus} ne "up"', set => {
+        { label => 'interface-status', type => COUNTER_KIND_TEXT, critical_default => '%{name} ne "lo" and %{admstatus} eq "up" and %{opstatus} ne "up"', set => {
                 key_values => [ { name => 'opstatus' }, { name => 'admstatus' }, { name => 'name' } ],
                 closure_custom_output => $self->can('custom_interface_status_output'),
                 closure_custom_perfdata => sub { return 0; },
@@ -77,19 +79,43 @@ sub new {
     return $self;
 }
 
-sub manage_selection {
+sub get_network_info {
     my ($self, %options) = @_;
 
     my $interfaces = $options{custom}->query(queries => ['node_network_info']);
 
+    my $flags;
+    foreach my $interface (@$interfaces) {
+        next if (defined($interface->{metric}->{adminstate})); # adminstate label only exists since node_exporter 1.6.0
+
+        if (!defined($flags)) {
+            $flags = {};
+            my $results = $options{custom}->query(queries => ['node_network_flags']);
+            foreach (@$results) {
+                $flags->{ $_->{metric}->{instance} . $_->{metric}->{device} } = $_->{value}->[1];
+            }
+        }
+
+        my $flag = $flags->{ $interface->{metric}->{instance} . $interface->{metric}->{device} };
+        $interface->{metric}->{adminstate} = !defined($flag) ? 'unknown' : ($flag & 1) ? 'up' : 'down';
+    }
+
+    return $interfaces;
+}
+
+sub manage_selection {
+    my ($self, %options) = @_;
+
+    my $interfaces = $self->get_network_info(custom => $options{custom});
+
     my $instances = {};
     $self->{interfaces} = {};
     foreach my $interface (@$interfaces) {
-        next if (defined($self->{option_results}->{filter_instance}) && $self->{option_results}->{filter_instance} ne '' &&
-            $interface->{metric}->{instance} !~ /$self->{option_results}->{filter_instance}/);
-        next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $interface->{metric}->{device} !~ /$self->{option_results}->{filter_name}/);
- 
+        next if (is_not_empty($self->{option_results}->{filter_instance})
+            && $interface->{metric}->{instance} !~ /$self->{option_results}->{filter_instance}/);
+        next if (is_not_empty($self->{option_results}->{filter_name})
+            && $interface->{metric}->{device} !~ /$self->{option_results}->{filter_name}/);
+
         $instances->{ $interface->{metric}->{instance} } = 1;
         $self->{interfaces}->{ $interface->{metric}->{instance} . $interface->{metric}->{device} } = {
             instance => $interface->{metric}->{instance},
@@ -111,13 +137,13 @@ sub disco_format {
 sub disco_show {
     my ($self, %options) = @_;
 
-    my $interfaces = $options{custom}->query(queries => ['node_network_info']);
-    foreach my $interface (@$interfaces) {
+    $self->manage_selection(custom => $options{custom});
+    foreach (sort { $a->{instance} cmp $b->{instance} || $a->{name} cmp $b->{name} } values %{$self->{interfaces}}) {
         $self->{output}->add_disco_entry(
-            instance => $interface->{metric}->{instance},
-            name => $interface->{metric}->{device},
-            opstatus => $interface->{metric}->{operstate},
-            admstatus => $interface->{metric}->{adminstate}
+            instance  => $_->{instance},
+            name      => $_->{name},
+            opstatus  => $_->{opstatus},
+            admstatus => $_->{admstatus}
         );
     }
 }
@@ -130,6 +156,7 @@ __END__
 =head1 MODE
 
 Check interfaces.
+This mode also supports service discovery (C<--disco-format>, C<--disco-show>).
 
 =over 8
 
