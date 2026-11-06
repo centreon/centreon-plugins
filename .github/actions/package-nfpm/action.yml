@@ -125,6 +125,10 @@ runs:
           sed -i "s/@APACHE_USER@/$APACHE_USER/g" $BASENAME
           sed -i "s/@APACHE_GROUP@/$APACHE_GROUP/g" $BASENAME
           sed -i "s/@COMMIT_HASH@/$COMMIT_HASH/g" $BASENAME
+          if grep -nE '@[A-Z][A-Z0-9_]*@' $BASENAME; then
+            echo "::error file=$FILE::unsubstituted placeholder(s) in rendered nfpm config"
+            exit 1
+          fi
           nfpm package --config $BASENAME --packager $PACKAGE_EXTENSION
           cd -
           mv $DIRNAME/*.$PACKAGE_EXTENSION ./
