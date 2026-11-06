@@ -50,38 +50,41 @@ for PLUGIN in $(jq -r 'to_entries[] | select(.value.build == true) | .key' $plug
     fatpack_contents=$(printf '  - src: "../../build/%s/*"\n    dst: "/usr/lib/centreon/plugins/"\n    file_info:\n      mode: 0775' "$PLUGIN")
   fi
 
-awk -v contents="$contents" \
-  -v fatpack_contents="$fatpack_contents" \
-  -v pkg_summary="$pkg_summary" \
-  -v plugin="$PLUGIN" \
-  -v conflicts="$conflicts" \
-  -v replaces="$replaces" \
-  -v provides="$provides" \
-  -v deb_deps="$deb_dependencies" \
-  -v deb_conflicts="$deb_conflicts" \
-  -v deb_replaces="$deb_replaces" \
-  -v deb_provides="$deb_provides" \
-  -v rpm_deps="$rpm_dependencies" \
-  -v rpm_conflicts="$rpm_conflicts" \
-  -v rpm_replaces="$rpm_replaces" \
-  -v rpm_provides="$rpm_provides" \
-'{
-  gsub(/@PLUGIN_NAME@/, plugin)
-  gsub(/@SUMMARY@/, pkg_summary)
-  gsub(/@FATPACK_CONTENTS@/, fatpack_contents)
-  gsub(/@CONTENTS@/, contents)
-  gsub(/@CONFLICTS@/, conflicts)
-  gsub(/@REPLACES@/, replaces)
-  gsub(/@PROVIDES@/, provides)
-  gsub(/@DEB_DEPENDENCIES@/, deb_deps)
-  gsub(/@DEB_CONFLICTS@/, deb_conflicts)
-  gsub(/@DEB_REPLACES@/, deb_replaces)
-  gsub(/@DEB_PROVIDES@/, deb_provides)
-  gsub(/@RPM_DEPENDENCIES@/, rpm_deps)
-  gsub(/@RPM_CONFLICTS@/, rpm_conflicts)
-  gsub(/@RPM_REPLACES@/, rpm_replaces)
-  gsub(/@RPM_PROVIDES@/, rpm_provides)
-  print
+  # values go through the environment and are replaced literally: awk -v eats backslashes and
+  # gsub turns "&" into the matched token
+  TPL_PLUGIN_NAME="$PLUGIN" \
+  TPL_SUMMARY="$pkg_summary" \
+  TPL_FATPACK_CONTENTS="$fatpack_contents" \
+  TPL_CONTENTS="$contents" \
+  TPL_CONFLICTS="$conflicts" \
+  TPL_REPLACES="$replaces" \
+  TPL_PROVIDES="$provides" \
+  TPL_DEB_DEPENDENCIES="$deb_dependencies" \
+  TPL_DEB_CONFLICTS="$deb_conflicts" \
+  TPL_DEB_REPLACES="$deb_replaces" \
+  TPL_DEB_PROVIDES="$deb_provides" \
+  TPL_RPM_DEPENDENCIES="$rpm_dependencies" \
+  TPL_RPM_CONFLICTS="$rpm_conflicts" \
+  TPL_RPM_REPLACES="$rpm_replaces" \
+  TPL_RPM_PROVIDES="$rpm_provides" \
+  awk '
+function replace(line, token, value,    out, i) {
+  out = ""
+  while ((i = index(line, token)) > 0) {
+    out = out substr(line, 1, i - 1) value
+    line = substr(line, i + length(token))
+  }
+  return out line
+}
+BEGIN {
+  n = split("PLUGIN_NAME SUMMARY FATPACK_CONTENTS CONTENTS CONFLICTS REPLACES PROVIDES DEB_DEPENDENCIES DEB_CONFLICTS DEB_REPLACES DEB_PROVIDES RPM_DEPENDENCIES RPM_CONFLICTS RPM_REPLACES RPM_PROVIDES", tokens, " ")
+}
+{
+  line = $0
+  for (t = 1; t <= n; t++) {
+    line = replace(line, "@" tokens[t] "@", ENVIRON["TPL_" tokens[t]])
+  }
+  print line
 }' .github/packaging/centreon-plugin.yaml.template > .github/packaging/$PLUGIN.yaml
 
   if [ "$skip_default_dependencies" = "true" ]; then
