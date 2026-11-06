@@ -138,12 +138,12 @@ sub disco_show {
     my ($self, %options) = @_;
 
     $self->manage_selection(custom => $options{custom});
-    foreach (sort { $a->{instance} cmp $b->{instance} || $a->{name} cmp $b->{name} } values %{$self->{interfaces}}) {
+    foreach my $id (sort keys %{$self->{interfaces}}) {
         $self->{output}->add_disco_entry(
-            instance  => $_->{instance},
-            name      => $_->{name},
-            opstatus  => $_->{opstatus},
-            admstatus => $_->{admstatus}
+            instance  => $self->{interfaces}->{$id}->{instance},
+            name      => $self->{interfaces}->{$id}->{name},
+            opstatus  => $self->{interfaces}->{$id}->{opstatus},
+            admstatus => $self->{interfaces}->{$id}->{admstatus}
         );
     }
 }
