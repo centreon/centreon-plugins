@@ -27,6 +27,7 @@ use warnings;
 use centreon::plugins::constants qw/:values :counters/;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 use centreon::plugins::misc qw/is_excluded convert_bytes_ng/;
+use centreon::common::kubernetes::misc qw/to_millicores/;
 use List::Util qw/uniq/;
 
 sub custom_usage_perfdata {
@@ -43,13 +44,11 @@ sub custom_usage_perfdata {
     $self->{output}->perfdata_add(
         nlabel => 'resource.used',
         value => $self->{result_values}->{used},
-        instances => $self->{result_values}->{name},
         instances => [ $self->{result_values}->{name}, $self->{result_values}->{resource} ]
     );
     $self->{output}->perfdata_add(
         nlabel => 'resource.hard',
         value => $self->{result_values}->{hard},
-        instances => $self->{result_values}->{name},
         instances => [ $self->{result_values}->{name}, $self->{result_values}->{resource} ]
     );
 }
@@ -122,9 +121,14 @@ sub manage_selection {
             my $hard_display = $hard->{$resource} // 0;
             my $used_display = $used->{$resource} // 0;
 
-            my $need_format = $resource =~ /(memory|storage)/;
-            my $hard_value = $need_format ? convert_bytes_ng(value => $hard_display) : $hard_display;
-            my $used_value = $need_format ? convert_bytes_ng(value => $used_display) : $used_display;
+            my ($hard_value, $used_value) = ($hard_display, $used_display);
+            if ($resource =~ /(?:memory|storage|hugepages-)/) {
+                $hard_value = convert_bytes_ng(value => $hard_display);
+                $used_value = convert_bytes_ng(value => $used_display);
+            } elsif ($resource =~ /(?:^|\.)cpu$/) {
+                $hard_value = to_millicores(value => $hard_display) / 1000;
+                $used_value = to_millicores(value => $used_display) / 1000;
+            }
 
             my $usage_percent = $hard_value ? ($used_value / $hard_value) * 100 : 0;
 
