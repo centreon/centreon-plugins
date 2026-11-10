@@ -1,0 +1,11 @@
+ NOMESESSIONE      NOMEUTENTE              ID  STATO    TIPO        DISPOSITIVO
+>console           Utente1                  1  Attivo   wdcon
+ rdp-tcp#2         Utente2                  2  Attivo   wdtshare    rdpdr
+ rdp-tcp                                65536  Ascolto  wdtshare
+                   Utente3                  3  Disc                 COM1
+ services                                   0  Disc
+                                            4  Inattivo
+
+ Totale sessioni create      : 9
+ Totale sessioni disconnesse : 4
+ Totale sessioni riconnesse  : 1

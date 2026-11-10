@@ -1,0 +1,11 @@
+ SESSION           UTILISATEUR             ID  ÉTAT     TYPE        PÉRIPHÉRIQUE
+>console           Utilisateur1             1  Actif    wdcon
+ rdp-tcp#2         Utilisateur2             2  Actif    wdtshare    rdpdr
+ rdp-tcp                                65536  Écouter  wdtshare
+                   Utilisateur3             3  Déco                 COM1
+ services                                   0  Déco
+                                            4  Inactif
+
+ Nombre total de sessions créées       : 9
+ Nombre total de sessions déconnectées : 4
+ Nombre total de sessions reconnectées : 1

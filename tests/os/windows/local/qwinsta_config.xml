@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+    <qwinsta language="custom">
+        <created>Total sessions created</created>
+        <disconnected>Total sessions disconnected</disconnected>
+        <reconnected>Total sessions reconnected</reconnected>
+        <activestate>Active|Listen</activestate>
+        <disconnectedstate>Disc|Idle</disconnectedstate>
+        <header_sessionname>SESSIONNAME</header_sessionname>
+        <header_state>STATE</header_state>
+    </qwinsta>
+</root>
