@@ -1,0 +1,350 @@
+{
+  "uuid": "ed9e57a0-df65-4270-8779-2c3ed783b61d",
+  "lastMigration": 32,
+  "name": "Incus",
+  "endpointPrefix": "",
+  "latency": 0,
+  "port": 3000,
+  "hostname": "",
+  "folders": [],
+  "routes": [
+    {
+      "uuid": "74c0ee44-6fc2-46fa-a787-a0b8532418a6",
+      "type": "http",
+      "documentation": "recursion=2 serves t/fixtures/instances-full.json (instance-usage, snapshots). Any other recursion serves t/fixtures/instances.json. t/fixtures/cluster-disabled.json and t/fixtures/forbidden.json stay available for extra cases.",
+      "method": "get",
+      "endpoint": "1.0/instances",
+      "responses": [
+        {
+          "uuid": "d0b18d95-be22-4e2b-8aad-ca94db12515f",
+          "body": "{\n  \"type\": \"sync\",\n  \"status\": \"Success\",\n  \"status_code\": 200,\n  \"metadata\": [\n    {\n      \"name\": \"foo\",\n      \"status\": \"Running\",\n      \"type\": \"container\",\n      \"project\": \"foo\",\n      \"location\": \"server01\",\n      \"architecture\": \"x86_64\",\n      \"snapshots\": [\n        {\n          \"name\": \"foo\",\n          \"created_at\": \"2021-03-23T20:00:00-04:00\"\n        },\n        {\n          \"name\": \"snap0\",\n          \"created_at\": \"2021-03-23T17:38:37.753398689-04:00\"\n        }\n      ],\n      \"state\": {\n        \"status\": \"Running\",\n        \"pid\": 7281,\n        \"processes\": 50,\n        \"cpu\": {\n          \"usage\": 3637691016,\n          \"allocated_time\": 4000000000\n        },\n        \"memory\": {\n          \"usage\": 73248768,\n          \"total\": 12297557,\n          \"usage_peak\": 73785344,\n          \"swap_usage\": 12297557,\n          \"swap_usage_peak\": 12297557\n        },\n        \"disk\": {\n          \"root\": {\n            \"usage\": 502239232,\n            \"total\": 502239232\n          }\n        },\n        \"network\": {\n          \"lo\": {\n            \"counters\": {\n              \"bytes_received\": 192021,\n              \"bytes_sent\": 10888579\n            }\n          },\n          \"vethbbcd39c7\": {\n            \"host_name\": \"vethbbcd39c7\",\n            \"hwaddr\": \"10:66:6a:0c:ee:dd\",\n            \"mtu\": 1500,\n            \"state\": \"up\",\n            \"type\": \"broadcast\",\n            \"counters\": {\n              \"bytes_received\": 192021,\n              \"bytes_sent\": 10888579\n            }\n          }\n        }\n      }\n    },\n    {\n      \"name\": \"c1\",\n      \"status\": \"Stopped\",\n      \"type\": \"container\",\n      \"project\": \"default\",\n      \"location\": \"server01\",\n      \"state\": {\n        \"status\": \"Stopped\",\n        \"cpu\": {\n          \"usage\": 3637691016,\n          \"allocated_time\": 4000000000\n        }\n      },\n      \"snapshots\": []\n    },\n    {\n      \"name\": \"backup0\",\n      \"status\": \"Running\",\n      \"type\": \"container\",\n      \"project\": \"default\",\n      \"location\": \"server01\",\n      \"state\": {\n        \"status\": \"Running\",\n        \"cpu\": {\n          \"usage\": 3637691016,\n          \"allocated_time\": 0\n        },\n        \"memory\": {\n          \"usage\": 73248768,\n          \"total\": 0\n        }\n      },\n      \"snapshots\": []\n    }\n  ]\n}\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "recursion 2",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "recursion",
+              "value": "2",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": true,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "a9309cc2-e154-421b-831c-22b0b00c4414",
+          "body": "{\n  \"type\": \"sync\",\n  \"status\": \"Success\",\n  \"status_code\": 200,\n  \"metadata\": [\n    {\n      \"name\": \"foo\",\n      \"status\": \"Running\",\n      \"type\": \"container\",\n      \"project\": \"foo\",\n      \"location\": \"server01\",\n      \"architecture\": \"x86_64\"\n    },\n    {\n      \"name\": \"c1\",\n      \"status\": \"Stopped\",\n      \"type\": \"container\",\n      \"project\": \"default\",\n      \"location\": \"server01\",\n      \"architecture\": \"x86_64\"\n    },\n    {\n      \"name\": \"snap0\",\n      \"status\": \"Frozen\",\n      \"type\": \"virtual-machine\",\n      \"project\": \"default\",\n      \"location\": \"server01\",\n      \"architecture\": \"x86_64\"\n    },\n    {\n      \"name\": \"backup0\",\n      \"status\": \"Error\",\n      \"type\": \"container\",\n      \"project\": \"default\",\n      \"location\": \"server01\",\n      \"architecture\": \"x86_64\"\n    }\n  ]\n}\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "recursion 1",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": true,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
+    },
+    {
+      "uuid": "a338a67d-301c-4180-993d-a1574f600fcd",
+      "type": "http",
+      "documentation": "t/fixtures/storage-pools.json",
+      "method": "get",
+      "endpoint": "1.0/storage-pools",
+      "responses": [
+        {
+          "uuid": "cad3e6f6-1482-4508-8b8c-7aa15a5f7159",
+          "body": "{\n  \"type\": \"sync\",\n  \"status\": \"Success\",\n  \"status_code\": 200,\n  \"metadata\": [\n    {\n      \"name\": \"local\",\n      \"driver\": \"zfs\",\n      \"description\": \"Local SSD pool\",\n      \"status\": \"Created\",\n      \"locations\": [\"server01\", \"server02\", \"server03\"],\n      \"used_by\": [\"/1.0/profiles/default\", \"/1.0/instances/c1\"]\n    }\n  ]\n}\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "pools",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": true,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
+    },
+    {
+      "uuid": "88b7dc32-2177-455c-a9ea-4259082be1f3",
+      "type": "http",
+      "documentation": "t/fixtures/storage-resources.json",
+      "method": "get",
+      "endpoint": "1.0/storage-pools/local/resources",
+      "responses": [
+        {
+          "uuid": "9d2f460c-62e0-4c5b-9d19-1ae3bcfaac87",
+          "body": "{\n  \"type\": \"sync\",\n  \"status\": \"Success\",\n  \"status_code\": 200,\n  \"metadata\": {\n    \"space\": {\n      \"used\": 343537419776,\n      \"total\": 420100937728\n    },\n    \"inodes\": {\n      \"used\": 23937695,\n      \"total\": 30709993797\n    }\n  }\n}\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "local resources",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": true,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
+    },
+    {
+      "uuid": "94de963c-75e6-4c94-8c4b-15007b51019d",
+      "type": "http",
+      "documentation": "t/fixtures/warnings.json",
+      "method": "get",
+      "endpoint": "1.0/warnings",
+      "responses": [
+        {
+          "uuid": "6a68628e-abc7-4718-8678-abd0f050c4e2",
+          "body": "{\n  \"type\": \"sync\",\n  \"status\": \"Success\",\n  \"status_code\": 200,\n  \"metadata\": [\n    {\n      \"uuid\": \"e9e9da0d-2538-4351-8047-46d4a8ae4dbb\",\n      \"status\": \"new\",\n      \"severity\": \"low\",\n      \"count\": 1,\n      \"entity_url\": \"/1.0/instances/c1?project=default\",\n      \"first_seen_at\": \"2021-03-23T17:38:37.753398689-04:00\",\n      \"last_seen_at\": \"2021-03-23T17:38:37.753398689-04:00\",\n      \"last_message\": \"Couldn't find the CGroup blkio.weight, disk priority will be ignored\",\n      \"location\": \"server01\",\n      \"project\": \"default\",\n      \"type\": \"Couldn't find CGroup\"\n    },\n    {\n      \"uuid\": \"39c61a48-cc17-40ae-8248-4f7b4cadedf4\",\n      \"status\": \"acknowledged\",\n      \"severity\": \"low\",\n      \"count\": 1,\n      \"entity_url\": \"/1.0/instances/c1?project=default\",\n      \"first_seen_at\": \"2021-03-23T17:38:37.753398689-04:00\",\n      \"last_seen_at\": \"2021-03-23T17:38:37.753398689-04:00\",\n      \"last_message\": \"Couldn't find the CGroup blkio.weight, disk priority will be ignored\",\n      \"location\": \"server01\",\n      \"project\": \"default\",\n      \"type\": \"Couldn't find CGroup\"\n    }\n  ]\n}\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "warnings",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": true,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
+    },
+    {
+      "uuid": "77d75c86-5ae8-4fb5-9ea7-7440b3ffc33f",
+      "type": "http",
+      "documentation": "t/fixtures/networks.json",
+      "method": "get",
+      "endpoint": "1.0/networks",
+      "responses": [
+        {
+          "uuid": "21693ac5-c012-4dc8-82ea-2bbd0b2b20e7",
+          "body": "{\n  \"type\": \"sync\",\n  \"status\": \"Success\",\n  \"status_code\": 200,\n  \"metadata\": [\n    {\n      \"name\": \"mybr0\",\n      \"description\": \"My new bridge\",\n      \"type\": \"bridge\",\n      \"managed\": true,\n      \"status\": \"Created\",\n      \"project\": \"project1\",\n      \"locations\": [\"server01\", \"server02\", \"server03\"],\n      \"used_by\": [\"/1.0/profiles/default\", \"/1.0/instances/c1\"]\n    },\n    {\n      \"name\": \"lo\",\n      \"managed\": false,\n      \"status\": \"\",\n      \"used_by\": []\n    }\n  ]\n}\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "networks",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": true,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
+    },
+    {
+      "uuid": "c6fdf3a0-5ec9-48cc-85b7-d2d445ee583b",
+      "type": "http",
+      "documentation": "t/fixtures/cluster-enabled.json. The disabled case is t/fixtures/cluster-disabled.json.",
+      "method": "get",
+      "endpoint": "1.0/cluster",
+      "responses": [
+        {
+          "uuid": "45a527d5-7be1-4e19-8634-876345538bcf",
+          "body": "{\n  \"type\": \"sync\",\n  \"status\": \"Success\",\n  \"status_code\": 200,\n  \"metadata\": {\n    \"enabled\": true,\n    \"member_config\": [],\n    \"server_name\": \"server01\"\n  }\n}\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "cluster enabled",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": true,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
+    },
+    {
+      "uuid": "854a8012-c03b-4e9a-90cc-4f38c5b93988",
+      "type": "http",
+      "documentation": "t/fixtures/cluster-members.json",
+      "method": "get",
+      "endpoint": "1.0/cluster/members",
+      "responses": [
+        {
+          "uuid": "3f7aa42a-fc69-4090-9681-b7bdd335afd8",
+          "body": "{\n  \"type\": \"sync\",\n  \"status\": \"Success\",\n  \"status_code\": 200,\n  \"metadata\": [\n    {\n      \"server_name\": \"server01\",\n      \"status\": \"Online\",\n      \"message\": \"fully operational\",\n      \"architecture\": \"x86_64\",\n      \"url\": \"https://10.0.0.1:8443\",\n      \"database\": true,\n      \"roles\": [\"database\"],\n      \"groups\": [\"group1\", \"group2\"],\n      \"failure_domain\": \"rack1\",\n      \"description\": \"AMD Epyc 32c/64t\"\n    }\n  ]\n}\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "members",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": true,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
+    },
+    {
+      "uuid": "fde84699-a2c8-4b21-a07e-35de458e3733",
+      "type": "http",
+      "documentation": "t/fixtures/operations.json",
+      "method": "get",
+      "endpoint": "1.0/operations",
+      "responses": [
+        {
+          "uuid": "b79585c7-7e6a-4e23-8e8a-c2a5b9e671a8",
+          "body": "{\n  \"type\": \"sync\",\n  \"status\": \"Success\",\n  \"status_code\": 200,\n  \"metadata\": {\n    \"running\": [\n      {\n        \"id\": \"6916c8a6-9b7d-4abd-90b3-aedfec7ec7da\",\n        \"class\": \"websocket\",\n        \"description\": \"Executing command\",\n        \"status\": \"Running\",\n        \"created_at\": \"2021-03-23T17:38:37.753398689-04:00\",\n        \"updated_at\": \"2021-03-23T17:38:37.753398689-04:00\",\n        \"location\": \"server01\",\n        \"may_cancel\": false,\n        \"err\": \"\",\n        \"resources\": {\n          \"instances\": [\n            \"/1.0/instances/foo\"\n          ]\n        }\n      },\n      {\n        \"id\": \"e9e9da0d-2538-4351-8047-46d4a8ae4dbb\",\n        \"class\": \"task\",\n        \"description\": \"Executing command\",\n        \"status\": \"Running\",\n        \"created_at\": \"2021-03-23T20:00:00-04:00\",\n        \"updated_at\": \"2021-03-23T20:00:00-04:00\",\n        \"location\": \"server01\",\n        \"may_cancel\": false,\n        \"err\": \"\"\n      }\n    ],\n    \"success\": [\n      {\n        \"id\": \"3b2c5f1e-7a40-4c8e-9d61-2f0a8b9c4e11\",\n        \"class\": \"task\",\n        \"description\": \"Creating instance\",\n        \"status\": \"Success\",\n        \"created_at\": \"2021-03-23T10:00:00-04:00\",\n        \"updated_at\": \"2021-03-23T10:00:05-04:00\",\n        \"location\": \"server01\",\n        \"may_cancel\": false,\n        \"err\": \"\"\n      }\n    ]\n  }\n}\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "operations",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": true,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
+    }
+  ],
+  "rootChildren": [
+    {
+      "type": "route",
+      "uuid": "74c0ee44-6fc2-46fa-a787-a0b8532418a6"
+    },
+    {
+      "type": "route",
+      "uuid": "a338a67d-301c-4180-993d-a1574f600fcd"
+    },
+    {
+      "type": "route",
+      "uuid": "88b7dc32-2177-455c-a9ea-4259082be1f3"
+    },
+    {
+      "type": "route",
+      "uuid": "94de963c-75e6-4c94-8c4b-15007b51019d"
+    },
+    {
+      "type": "route",
+      "uuid": "77d75c86-5ae8-4fb5-9ea7-7440b3ffc33f"
+    },
+    {
+      "type": "route",
+      "uuid": "c6fdf3a0-5ec9-48cc-85b7-d2d445ee583b"
+    },
+    {
+      "type": "route",
+      "uuid": "854a8012-c03b-4e9a-90cc-4f38c5b93988"
+    },
+    {
+      "type": "route",
+      "uuid": "fde84699-a2c8-4b21-a07e-35de458e3733"
+    }
+  ],
+  "proxyMode": false,
+  "proxyHost": "",
+  "proxyRemovePrefix": false,
+  "tlsOptions": {
+    "enabled": false,
+    "type": "CERT",
+    "pfxPath": "",
+    "certPath": "",
+    "keyPath": "",
+    "caPath": "",
+    "passphrase": ""
+  },
+  "cors": true,
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json"
+    },
+    {
+      "key": "Access-Control-Allow-Origin",
+      "value": "*"
+    },
+    {
+      "key": "Access-Control-Allow-Methods",
+      "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+    },
+    {
+      "key": "Access-Control-Allow-Headers",
+      "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+    }
+  ],
+  "proxyReqHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "proxyResHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "data": [],
+  "callbacks": []
+}

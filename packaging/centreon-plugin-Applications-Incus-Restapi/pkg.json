@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Incus-Restapi",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_incus_restapi.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "apps/incus/restapi/"
+    ]
+}
