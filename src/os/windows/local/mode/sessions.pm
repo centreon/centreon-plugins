@@ -26,12 +26,13 @@ use strict;
 use warnings;
 use Digest::MD5 qw(md5_hex);
 use XML::Simple;
+use centreon::plugins::constants qw(:counters);
 
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output',  },
+        { name => 'global', type => COUNTER_TYPE_GLOBAL, prefix_output => 'Sessions ' },
     ];
     
     $self->{maps_counters}->{global} = [
@@ -76,12 +77,6 @@ sub set_counters {
             }
         }
     ];
-}
-
-sub prefix_global_output {
-    my ($self, %options) = @_;
-    
-    return "Sessions ";
 }
 
 sub new {
@@ -175,63 +170,92 @@ END_FILE
     return $content->{qwinsta}->{$self->{option_results}->{language}};
 }
 
+# Split a line on whitespace.
+# Returns the list of words, each one as [ value, column where it starts ].
+sub split_words {
+    my ($line) = @_;
+
+    my @words;
+    push @words, [ $1, $-[1] ] while ($line =~ /(\S+)/g);
+    return @words;
+}
+
+# Spread the words found between two anchors over two optional adjacent columns,
+# given the start column of their headers.
+# Two words fill both columns. A single word goes to the column whose header
+# starts closest to it (the right one on a tie, the left one if there is no
+# right header).
+# Returns the values of the two columns, undef for an empty cell.
+sub fill_columns {
+    my ($words, $left_pos, $right_pos) = @_;
+
+    return map { $_->[0] } @$words if (@$words != 1);
+
+    my ($value, $pos) = @{$words->[0]};
+    return ($value, undef) if (!defined($right_pos) || $pos - $left_pos < $right_pos - $pos);
+    return (undef, $value);
+}
+
+# Parse the sessions table of the qwinsta output. Example (labels are localized):
+#
+#    SESSIONNAME     USERNAME        ID STATE    TYPE    DEVICE
+#    console         Administrator1  0 Active    wdcon
+#   >rdp-tcp#1       User1           1 Active    wdtshare  rdpdr
+#    rdp-tcp                         2 Listen    wdtshare
+#                    User4           4 Disc              COM1
+#
+# Columns cannot be split on multiple spaces: some labels or values are separated
+# by a single space ('ID STATE') and empty cells are left blank. So each line is
+# split on any whitespace and the ID, always present, is used as an anchor:
+#   - before the ID: SESSIONNAME and/or USERNAME (both optional),
+#   - the ID and the STATE,
+#   - after the STATE: TYPE and/or DEVICE (both optional).
+# When only one of two optional columns is filled, the column is found from the
+# position of the value compared to the headers (see fill_columns).
+#
+# Returns an array ref of hashes, one per session, keyed by the header labels.
+# Missing values are set to '-'.
 sub read_qwinsta {
     my ($self, %options) = @_;
 
     $self->{output}->output_add(long_msg => $options{stdout}, debug => 1);
+    # The sessions table is everything before the counters section
     if ($options{stdout} !~ /^(.*?)$options{config}->{created}/si) {
         $self->{output}->add_option_msg(short_msg => "Cannot find information in command output");
         $self->{output}->option_exit();
     }
-    my $sessions = $1;
+    my @lines = split(/\n/, $1);
 
-    my @lines = split /\n/, $sessions;
-    my $header = shift @lines;
+    # The first line is the header: column labels and their start positions.
+    # Labels fall back on the column index if the header is incomplete.
+    my @header = split_words(shift(@lines));
+    my @labels = map { defined($header[$_]) ? $header[$_]->[0] : $_ } (0..5);
+    my @header_pos = map { $_->[1] } @header;
 
-    # Try to parse columns by splitting on two or more spaces which is more
-    # robust with localized headers (multibyte chars) than byte-position parsing.
-    my @hdrs = map { my $h = $_; $h =~ s/^\s+|\s+$//g; $h } grep { $_ ne '' } split(/\s{2,}/, $header);
-    my $session_data = [];
+    my $sessions = [];
     foreach my $line (@lines) {
-        $line =~ s/^>/ /;
-        my $data = {};
+        # qwinsta prefixes the current session with '>' (e.g. '>rdp-tcp#1').
+        # Replace it by a space, rather than removing it, so that the words keep
+        # their position in the line, used to find their column.
+        $line =~ s/^(\s*)>/$1 /;
+        my @words = split_words($line);
 
-        my @cols = map { my $c = $_; $c =~ s/^\s+|\s+$//g; $c } grep { defined($_) && $_ ne '' } split(/\s{2,}/, $line);
+        # The ID is the first number followed by a non-number (the state), within
+        # the first 3 words. Lines without ID (blank lines, counters title) are skipped.
+        my ($id_idx) = grep {
+            $_ < $#words && $words[$_]->[0] =~ /^\d+$/ && $words[$_ + 1]->[0] !~ /^\d+$/
+        } (0..2);
+        next if (!defined($id_idx));
 
-        # If splitting worked and headers/cols count match, map directly.
-        if (scalar(@hdrs) && scalar(@cols) && scalar(@hdrs) <= scalar(@cols)) {
-            for (my $i = 0; $i <= $#hdrs; $i++) {
-                $data->{$hdrs[$i]} = defined($cols[$i]) && $cols[$i] ne '' ? $cols[$i] : '-';
-            }
-        } else {
-            # Fallback to previous behaviour: try to extract tokens by whitespace
-            my @tokens = grep { $_ ne '' } split(/\s+/, $line);
-            # Heuristic: find the index of the numeric ID token
-            my $id_idx = -1;
-            for (my $i = 0; $i <= $#tokens; $i++) {
-                if ($tokens[$i] =~ /^\d+$/) { $id_idx = $i; }
-            }
-            # Map tokens to common columns when possible
-            if ($id_idx >= 0) {
-                my $id = $tokens[$id_idx];
-                my $state = $tokens[$id_idx + 1] // '-';
-                my $type = $tokens[$id_idx + 2] // '-';
-                my $device = $tokens[$id_idx + 3] // '-';
-                my $username = ($id_idx - 1 >= 0) ? $tokens[$id_idx - 1] : '-';
-                my $sessionname = join(' ', @tokens[0 .. ($id_idx - ($username ne '-' ? 2 : 1))]) || '-';
-                $data->{$hdrs[0] // 'SESSIONNAME'} = $sessionname;
-                $data->{$hdrs[1] // 'USERNAME'} = $username;
-                $data->{$hdrs[2] // 'ID'} = $id;
-                $data->{$hdrs[3] // 'STATE'} = $state;
-                $data->{$hdrs[4] // 'TYPE'} = $type;
-                $data->{$hdrs[5] // 'DEVICE'} = $device;
-            }
-        }
+        my ($sessionname, $username) = fill_columns([ @words[0 .. $id_idx - 1] ], @header_pos[0, 1]);
+        my ($id, $state) = map { $_->[0] } @words[$id_idx, $id_idx + 1];
+        my ($type, $device) = fill_columns([ @words[$id_idx + 2 .. $#words] ], @header_pos[4, 5]);
 
-        push @$session_data, $data;
+        my @values = ($sessionname, $username, $id, $state, $type, $device);
+        push @$sessions, { map { $labels[$_] => $values[$_] // '-' } (0..5) };
     }
 
-    return $session_data;
+    return $sessions;
 }
 
 sub read_qwinsta_counters {
@@ -335,11 +359,45 @@ Timeout in seconds for the command (default: 30).
 
 Filter session name (can be a regexp).
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-sessions-created>
 
-Thresholds.
-Can be: 'sessions-created', 'sessions-disconnected', 
-'sessions-reconnected', 'sessions-active', 'sessions-disconnected-current'.
+Threshold for the number of sessions created since the last check.
+
+=item B<--critical-sessions-created>
+
+Threshold for the number of sessions created since the last check.
+
+=item B<--warning-sessions-disconnected>
+
+Threshold for the number of sessions disconnected since the last check.
+
+=item B<--critical-sessions-disconnected>
+
+Threshold for the number of sessions disconnected since the last check.
+
+=item B<--warning-sessions-reconnected>
+
+Threshold for the number of sessions reconnected since the last check.
+
+=item B<--critical-sessions-reconnected>
+
+Threshold for the number of sessions reconnected since the last check.
+
+=item B<--warning-sessions-active>
+
+Threshold for the number of currently active sessions.
+
+=item B<--critical-sessions-active>
+
+Threshold for the number of currently active sessions.
+
+=item B<--warning-sessions-disconnected-current>
+
+Threshold for the number of currently disconnected sessions.
+
+=item B<--critical-sessions-disconnected-current>
+
+Threshold for the number of currently disconnected sessions.
 
 =back
 

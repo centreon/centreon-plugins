@@ -1,0 +1,23 @@
+#!/bin/bash
+
+# Simulates the qwinsta command by printing a captured output.
+# Usage: qwinsta /COUNTER [language] [options...]
+#   language: en (default), de, fr, it
+#   options:  2      second output (higher counters), to check the counters delta
+#             crlf   Windows line endings (CRLF)
+#             cp850  as on a Windows console: CRLF line endings and CP850 encoding
+#             slow   answer after 5 seconds, to check the command timeout
+
+lang=${2:-en}
+output=1
+convert=''
+for option in "${@:3}"; do
+    case $option in
+        2) output=2 ;;
+        crlf) convert='s/\n/\r\n/' ;;
+        cp850) convert='$_ = encode("cp850", decode("UTF-8", $_)); s/\n/\r\n/' ;;
+        slow) sleep 5 ;;
+    esac
+done
+
+perl -MEncode -pe "$convert" "$(dirname "$0")/qwinsta_result_${lang}_${output}.txt"
