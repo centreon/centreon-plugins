@@ -158,12 +158,82 @@
       "responseMode": null,
       "streamingMode": null,
       "streamingInterval": 0
+    },
+    {
+      "uuid": "abcdef00-0000-0000-0000-000000000001",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "legacy/api/v1/query",
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0,
+      "responses": [
+        {
+          "uuid": "abcdef00-0000-0000-0000-000000000002",
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"node_network_info\",\n                    \"device\": \"lo\",\n                    \"instance\": \"127.0.0.1:9101\",\n                    \"job\": \"node-exporter\",\n                    \"operstate\": \"unknown\"\n                },\n                \"value\": [\n                    1700000000,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"node_network_info\",\n                    \"device\": \"eth0\",\n                    \"instance\": \"127.0.0.1:9101\",\n                    \"job\": \"node-exporter\",\n                    \"operstate\": \"up\"\n                },\n                \"value\": [\n                    1700000000,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"node_network_info\",\n                    \"device\": \"eth1\",\n                    \"instance\": \"127.0.0.1:9101\",\n                    \"job\": \"node-exporter\",\n                    \"operstate\": \"down\"\n                },\n                \"value\": [\n                    1700000000,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"node_network_info\",\n                    \"device\": \"eth2\",\n                    \"instance\": \"127.0.0.1:9101\",\n                    \"job\": \"node-exporter\",\n                    \"operstate\": \"down\"\n                },\n                \"value\": [\n                    1700000000,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"node_network_info\",\n                    \"device\": \"eth3\",\n                    \"instance\": \"127.0.0.1:9101\",\n                    \"job\": \"node-exporter\",\n                    \"operstate\": \"up\"\n                },\n                \"value\": [\n                    1700000000,\n                    \"1\"\n                ]\n            }\n        ]\n    }\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "Interfaces without adminstate label",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "node_network_info",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "abcdef00-0000-0000-0000-000000000003",
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"node_network_flags\",\n                    \"device\": \"lo\",\n                    \"instance\": \"127.0.0.1:9101\",\n                    \"job\": \"node-exporter\"\n                },\n                \"value\": [\n                    1700000000,\n                    \"9\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"node_network_flags\",\n                    \"device\": \"eth0\",\n                    \"instance\": \"127.0.0.1:9101\",\n                    \"job\": \"node-exporter\"\n                },\n                \"value\": [\n                    1700000000,\n                    \"4099\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"node_network_flags\",\n                    \"device\": \"eth1\",\n                    \"instance\": \"127.0.0.1:9101\",\n                    \"job\": \"node-exporter\"\n                },\n                \"value\": [\n                    1700000000,\n                    \"4098\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"node_network_flags\",\n                    \"device\": \"eth2\",\n                    \"instance\": \"127.0.0.1:9101\",\n                    \"job\": \"node-exporter\"\n                },\n                \"value\": [\n                    1700000000,\n                    \"4099\"\n                ]\n            }\n        ]\n    }\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "Interfaces flags",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "node_network_flags",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ]
     }
   ],
   "rootChildren": [
     {
       "type": "route",
       "uuid": "9cbcd2b9-5a5e-4e25-938d-4278396bbef7"
+    },
+    {
+      "type": "route",
+      "uuid": "abcdef00-0000-0000-0000-000000000001"
     }
   ],
   "proxyMode": false,
