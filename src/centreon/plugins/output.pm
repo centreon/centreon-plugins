@@ -1682,7 +1682,7 @@ instead of an UNKNOWN state.
 Replace short output and exit code based on a "if" condition using the following variables:
 short_output, exit_code.
 Variables must be written either %{variable} or %(variable).
-Example: adding --change-output-adv='%(short_ouput) =~ /UNKNOWN: No daemon/,OK: No daemon,OK' will 
+Example: adding --change-output-adv='%(short_output) =~ /UNKNOWN: No daemon/,OK: No daemon,OK' will 
 change the following specific UNKNOWN result to an OK result.
 
 =item B<--range-perfdata>
