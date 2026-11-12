@@ -266,7 +266,7 @@ lookup_prcs() {
 
 # candidates already published in the stable suite need no new association;
 # when EVERYTHING already reached stable (a rerun after the modify), only the
-# publication may be missing: republish and stop.
+# publication may be missing: publish it if needed and stop.
 UNPROMOTED_HREFS=()
 while read -r PACKAGE; do
   sha=$(echo "$PACKAGE" | jq -r '.sha256')
@@ -276,7 +276,7 @@ while read -r PACKAGE; do
 done < <(echo "$PACKAGES" | jq -c '.[]')
 rm -f "$STABLE_SHAS_FILE"
 if ((${#UNPROMOTED_HREFS[@]} == 0)); then
-  echo "[INFO] All $PACKAGES_COUNT package(s) are already promoted to $STABLE_SUITE; republishing only"
+  echo "[INFO] All $PACKAGES_COUNT package(s) are already promoted to $STABLE_SUITE; publishing only if needed"
   while read -r PACKAGE; do
     manifest_add "$(echo "$PACKAGE" | jq -c \
       --arg repository "$STABLE_REPOSITORY_NAME" --arg base_path "${LEGACY_STABLE_BASE_PATH:-$PULP_STABLE_DOMAIN/$STABLE_BASE_PATH}" \
@@ -284,7 +284,7 @@ if ((${#UNPROMOTED_HREFS[@]} == 0)); then
       '{filename: (.relative_path | sub(".*/"; "")), name: .package, version, arch: .architecture, sha256, repository: $repository, base_path: $base_path, suite: $suite, relative_path}')"
   done < <(echo "$PACKAGES" | jq -c '.[]')
   ensure_legacy_suite_associations
-  create_publication deb "$STABLE_REPOSITORY_NAME" --structured
+  create_publication deb "$STABLE_REPOSITORY_NAME" --structured --skip-if-published
   echo "::notice::Packages are available with: deb $PULP_CONTENT_URL/${LEGACY_STABLE_BASE_PATH:-$PULP_STABLE_DOMAIN/$STABLE_BASE_PATH}/ $STABLE_SUITE main"
   manifest_write "$MODULE_NAME" "${DISTRIB:-}" "deb" "$STABILITY" "promote" "$PULP_CONTENT_URL"
   exit 0

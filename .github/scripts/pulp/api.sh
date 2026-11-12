@@ -118,13 +118,25 @@ pulp_upload() {
 # - "Worker has gone missing": the task worker pod was terminated mid-task
 #   (scale-down, node consolidation)
 # Re-running the operation converges, so callers retry on rc 2.
-# 0=completed, 2=retryable failure, 1=failed or timed out.
+# 0=completed, 2=retryable failure, 1=failed, unexpected state or timed out.
+# Separate queue/run budgets (seconds): a queued task is not failing, it can
+# sit behind a task whose worker was stopped mid-task until pulp reaps it.
+[[ "${PULP_TASK_WAITING_TIMEOUT:-}" =~ ^[1-9][0-9]*$ ]] || PULP_TASK_WAITING_TIMEOUT=3600
+[[ "${PULP_TASK_RUNNING_TIMEOUT:-}" =~ ^[1-9][0-9]*$ ]] || PULP_TASK_RUNNING_TIMEOUT=2700
+[[ "${PULP_TASK_BLOCKERS_LOG_INTERVAL:-}" =~ ^[1-9][0-9]*$ ]] || PULP_TASK_BLOCKERS_LOG_INTERVAL=300
+PULP_TASK_MAX_POLL_FAILURES=100
 wait_task_race() {
-  local task_href=$1 body state error attempt
-  for ((attempt = 0; attempt < 600; attempt++)); do
+  local task_href=$1 body state error now poll_failures=0
+  local started_at running_since="" next_blockers_log="$PULP_TASK_BLOCKERS_LOG_INTERVAL"
+  started_at=$(date +%s)
+  while true; do
     refresh_pulp_token
-    body=$(curl -fsSL -H "Authorization: Bearer $PULP_TOKEN" "$PULP_URL$task_href" 2>/dev/null) || body=""
-    state=$(echo "$body" | jq -r '.state' 2>/dev/null) || state=""
+    body=$(curl -fsSL --max-time 30 -H "Authorization: Bearer $PULP_TOKEN" "${PULP_URL}${task_href}" 2>/dev/null) || body=""
+    state=$(echo "$body" | jq -r '.state // empty' 2>/dev/null) || state=""
+    now=$(date +%s)
+    if [[ -n "$state" ]]; then
+      poll_failures=0
+    fi
     case "$state" in
       completed)
         return 0
@@ -141,13 +153,72 @@ wait_task_race() {
         echo "::error::Task $task_href $state: $error"
         return 1
         ;;
+      running | canceling)
+        [[ -n "$running_since" ]] || running_since="$now"
+        ;;
+      waiting) ;;
+      "")
+        poll_failures=$((poll_failures + 1))
+        if ((poll_failures >= PULP_TASK_MAX_POLL_FAILURES)); then
+          echo "::error::Cannot poll task $task_href ($poll_failures failed polls in a row)"
+          return 1
+        fi
+        ;;
       *)
-        sleep 3
+        echo "::error::Task $task_href ended in unexpected state $state"
+        return 1
         ;;
     esac
+    # a failed poll counts against the current phase
+    if [[ -n "$running_since" ]]; then
+      if ((now - running_since >= PULP_TASK_RUNNING_TIMEOUT)); then
+        echo "::error::Task $task_href still running after $((PULP_TASK_RUNNING_TIMEOUT / 60)) min"
+        return 1
+      fi
+    elif ((now - started_at >= PULP_TASK_WAITING_TIMEOUT)); then
+      echo "::error::Task $task_href still waiting for its resources after $((PULP_TASK_WAITING_TIMEOUT / 60)) min"
+      log_task_blockers "$task_href" "$body"
+      return 1
+    elif ((now - started_at >= next_blockers_log)); then
+      if ((poll_failures > 0)); then
+        echo "[WARN] Task $task_href: its last $poll_failures poll(s) failed"
+      else
+        echo "[INFO] Task $task_href has been waiting for $(((now - started_at) / 60)) min"
+        log_task_blockers "$task_href" "$body"
+      fi
+      next_blockers_log=$((next_blockers_log + PULP_TASK_BLOCKERS_LOG_INTERVAL))
+    fi
+    sleep 3
   done
-  echo "::error::Task $task_href did not complete in time (~30 min)"
-  return 1
+}
+
+# best effort: log the tasks ahead of a task on its reserved resources (a
+# shared hold only waits for exclusive holders); never fails the caller
+log_task_blockers() {
+  local task_href=$1 body=$2 created filter resource blockers
+  created=$(echo "$body" | jq -r '.pulp_created // empty' 2>/dev/null) || created=""
+  [[ -n "$created" ]] || return 0
+  if [[ -n "$(echo "$body" | jq -r '.unblocked_at // empty' 2>/dev/null)" ]]; then
+    echo "[INFO] Task $task_href is unblocked and waits for a free worker"
+    return 0
+  fi
+  refresh_pulp_token
+  while read -r filter resource; do
+    blockers=$(
+      curl -fsSL --max-time 30 -H "Authorization: Bearer $PULP_TOKEN" -G \
+        --data-urlencode "$filter=$resource" \
+        --data-urlencode "state__in=running,canceling,waiting" \
+        --data-urlencode "pulp_created__lt=$created" \
+        --data-urlencode "ordering=pulp_created" \
+        --data-urlencode "fields=pulp_href,name,state,pulp_created,started_at" \
+        --data-urlencode "limit=20" \
+        "$PULP_URL/$PULP_DOMAIN/api/v3/tasks/" 2>/dev/null |
+        jq -r '.results[] | "  \(.state) \(.name) (created \(.pulp_created), started \(.started_at // "-")) \(.pulp_href)"' 2>/dev/null
+    ) || blockers=""
+    echo "[INFO] Tasks ahead on $resource:"
+    echo "${blockers:-  none visible}"
+  done < <(echo "$body" | jq -r '.reserved_resources_record[]?
+    | if startswith("shared:") then "exclusive_resources \(ltrimstr("shared:"))" else "reserved_resources \(.)" end' 2>/dev/null)
 }
 
 # check that a named pulp resource exists through the REST list api,
@@ -237,6 +308,29 @@ content_curl() {
   curl -H "Authorization: Bearer $PULP_TOKEN" "$@"
 }
 
+# whether the repository's latest version already has a publication (a
+# structured one with --structured); any lookup failure answers no
+latest_version_published() {
+  local plugin=$1 publication_path=$2 repository=$3 latest count="" structured=false
+  shift 3
+  [[ "$*" == *"--structured"* ]] && structured=true
+  refresh_pulp_token
+  latest=$(pulp "$plugin" repository show --name "$repository" 2>/dev/null | jq -r '.latest_version_href // empty') || latest=""
+  if [[ -n "$latest" ]]; then
+    count=$(
+      curl -fsSL --retry 3 --retry-delay 5 -H "Authorization: Bearer $PULP_TOKEN" -G \
+        --data-urlencode "repository_version=$latest" --data-urlencode "limit=100" \
+        "$PULP_URL/$PULP_DOMAIN/api/v3/publications/$publication_path/" 2>/dev/null |
+        jq --argjson structured "$structured" '[.results[] | select(($structured | not) or .structured == true)] | length' 2>/dev/null
+    ) || count=""
+  fi
+  if [[ ! "$count" =~ ^[0-9]+$ ]]; then
+    echo "[INFO] Cannot check the publication state of $repository, publishing"
+    return 1
+  fi
+  ((count > 0))
+}
+
 create_publication() {
   local plugin=$1 repository=$2
   shift 2
@@ -250,6 +344,12 @@ create_publication() {
     *) echo "::error::create_publication: unsupported plugin $plugin" >&2; return 1 ;;
   esac
   local repo_href body_json response code body task attempt outer rc
+  # --skip-if-published: only if this run did not modify $repository, since a
+  # stale read right after a modify could return the previous, published version
+  if [[ "$*" == *"--skip-if-published"* ]] && latest_version_published "$plugin" "$publication_path" "$repository" "$@"; then
+    echo "[INFO] The latest version of $repository is already published, skipping the publication"
+    return 0
+  fi
   # outer retry: the publication task itself can die server-side for
   # retryable reasons (task worker terminated mid-task, version race)
   for outer in 1 2 3; do

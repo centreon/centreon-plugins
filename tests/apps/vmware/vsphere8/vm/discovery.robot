@@ -25,12 +25,29 @@ Discovery ${tc}
 
     Ctn Run Command Without Connector And Check Result As Regexp    ${command}    ${expected_result}
 
-    Examples:    tc    extra_options    expected_result    --
-    ...    1    ${EMPTY}
+    Examples:
+    ...    tc
+    ...    extra_options
+    ...    expected_result
+    ...    --
+    ...    1
+    ...    ${EMPTY}
     ...    "discovered_items":3
-    ...    2    --filter-power-states=POWERED_ON
+    ...    2
+    ...    --filter-power-states=POWERED_ON
     ...    "discovered_items":2
-    ...    3    --filter-power-states=POWERED_OFF
+    ...    3
+    ...    --filter-power-states=POWERED_OFF
     ...    "discovered_items":1
-    ...    4    --filter-folders=My_Dir
+    ...    4
+    ...    --filter-folders=My_Dir
     ...    "discovered_items":1
+    ...    5
+    ...    --filter-power-states=POWERED_OFF --no-tags
+    ...    \\{"clean_hostname":"web-server-01",[^}]*"ip_address":"",[^}]*"power_state":"POWERED_OFF","vm_hostname":"","vm_name":"web-server-01"
+    ...    6
+    ...    --filter-power-states=POWERED_ON --no-tags
+    ...    \\{"clean_hostname":"172.16.2.1",[^}]*"ip_address":"172.16.2.1",[^}]*"vm_hostname":"web-server-01","vm_name":"db-server-01"
+    ...    7
+    ...    --no-identity --no-tags
+    ...    ^(?!.*"clean_hostname":"").*\\{"clean_hostname":"db-server-01",[^}]*"ip_address":"",[^}]*"vm_hostname":"","vm_name":"db-server-01"

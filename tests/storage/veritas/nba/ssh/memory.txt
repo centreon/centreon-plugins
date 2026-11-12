@@ -1,0 +1,41 @@
+Last login: Thu Jan  1 00:00:00 2026 from 10.0.0.1
+
+
+It has been detected that you have not enabled Call Home.
+
+It is strongly recommended that you enable Call Home. Enabling Call Home
+helps to connect your appliance with the Veritas AutoSupport server and
+upload software information. Veritas Support uses this information to
+resolve any issues that you may report.
+
+Appliance  Media server appliance configuration.
+Exit       Log out and exit from the current shell.
+Manage     Manage NetBackup appliance.
+Monitor    Monitor NetBackup appliance activities.
+Network    Network Administration.
+Reports    Examine the running and historical state of the host.
+Settings   Change NetBackup appliance settings.
+Shell      Shell operations.
+Support    NetBackup Support.
+
+ABCDE123.Main_Menu> Monitor
+Entering appliance monitoring view...
+
+Beacon         Flashes or stops flashing the lights.
+Exit           Log out and exit from the current shell.
+Hardware       Hardware Monitor.
+MemoryStatus   Report memory usage statistics in KB.
+NetworkStatus  Report interface statistics.
+Return         Return to the previous menu.
+SDCS           Symantec Data Center Security
+Shell          Shell operations.
+Top            Display top process information.
+Uptime         Display uptime statistics for this host.
+Who            Display who is currently logged into this host.
+
+ABCDE123.Monitor> MemoryStatus
+              total        used        free      shared  buff/cache   available
+Mem:      262873544   122588148     3147172      142120   137138224   137563492
+Swap:      66674684    14492760    52181924
+Total:    329548228   137080908    55329096
+

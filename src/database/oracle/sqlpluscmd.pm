@@ -1,5 +1,5 @@
 #
-# Copyright 2018 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -23,7 +23,7 @@ package database::oracle::sqlpluscmd;
 use strict;
 use warnings;
 use centreon::plugins::misc;
-use Digest::MD5 qw(md5_hex);
+use Digest::SHA qw(sha256_hex);
 use File::Temp qw(tempfile);
 use Data::Dumper;
 
@@ -110,6 +110,7 @@ sub check_options {
     $self->{local_connexion} = $self->{option_results}->{local_connexion};
     $self->{sqlplus_cmd} = $self->{option_results}->{sqlplus_cmd};
     $self->{container} = defined($self->{option_results}->{container}[0]) ? $self->{option_results}->{container}[0] : undef;
+    $self->{type} = $self->{option_results}->{type} ? shift(@{$self->{option_results}->{type}}) : '';
 
     $self->{timeout} = 30;
     if (defined($self->{option_results}->{timeout}) && $self->{option_results}->{timeout} =~ /^\d+$/ &&
@@ -190,6 +191,12 @@ sub check_options {
     return 1;
 }
 
+sub is_rman {
+      my ($self, %options) = @_;                                               
+
+      return ($self->{type} // '') eq 'rman_catalog';
+}
+
 sub is_version_minimum {
     my ($self, %options) = @_;
     # $options{version} = string version to check
@@ -218,7 +225,7 @@ sub get_unique_id4save {
     my ($self, %options) = @_;
 
     my $msg = $self->{sid};
-    return md5_hex($msg);
+    return sha256_hex($msg);
 }
 
 sub quote {
@@ -418,7 +425,7 @@ sqlpluscmd class
 
 =item B<--sqlplus-cmd>
 
-sqlplus command (default: 'sqlplus').
+C<sqlplus> command (default: C<sqlplus>).
 
 =item B<--oracle-home>
 
@@ -426,7 +433,7 @@ Oracle Database Server Home.
 
 =item B<--tnsadmin-home>
 
-Oracle TNS Admin Home. Where to locate tnsnames.ora file (default: ${ORACLE_HOME}/network/admin)
+Oracle TNS Admin Home. Where to locate tnsnames.ora file (default: C<${ORACLE_HOME}/network/admin>)
 
 =item B<--tnsnames-sid>
 
@@ -446,11 +453,11 @@ Database password.
 
 =item B<--sysdba>
 
-Use a sysdba connexion, need to be execute under the oracle local user on the server, and use a local connexion.
+Use a C<sysdba> connection, need to be executed under the oracle local user on the server, and use a local connection.
 
 =item B<--local-connexion>
 
-Use a local connexion, don't need listener.
+Use a local connection, don't need listener.
 
 =item B<--sql-errors-exit>
 
@@ -461,9 +468,5 @@ Exit code for DB Errors (default: unknown)
 Timeout in seconds for commands
 
 =back
-
-=head1 DESCRIPTION
-
-B<sql>.
 
 =cut

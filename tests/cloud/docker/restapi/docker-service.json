@@ -17,7 +17,7 @@
             "responses": [
                 {
                     "uuid": "6d05fd6f-f99c-4312-94b7-91649e03e743",
-                    "body": "[\r\n  {\r\n    \"ID\": \"123\",\r\n    \"Spec\": {\r\n      \"Name\": \"centreon1\",\r\n      \"Mode\": {\r\n        \"Replicated\": {\r\n          \"Replicas\": 1\r\n        }\r\n      }\r\n    }\r\n  },\r\n  {\r\n    \"ID\": \"456\",\r\n    \"Spec\": {\r\n      \"Name\": \"centreon2\",\r\n      \"Mode\": {\r\n        \"Replicated\": {\r\n          \"Replicas\": 3\r\n        }\r\n      }\r\n    }\r\n  },\r\n  {\r\n    \"ID\": \"789\",\r\n    \"Spec\": {\r\n      \"Name\": \"centreon3\",\r\n      \"Mode\": {\r\n        \"Replicated\": {\r\n          \"Replicas\": 2\r\n        }\r\n      }\r\n    }\r\n  },\r\n  {\r\n    \"ID\": \"101112\",\r\n    \"Spec\": {\r\n      \"Name\": \"centreon4\",\r\n      \"Mode\": {\r\n        \"Replicated\": {\r\n          \"Replicas\": 2\r\n        }\r\n      }\r\n    }\r\n  }\r\n]",
+                    "body": "[\r\n  {\r\n    \"ID\": \"123\",\r\n    \"Spec\": {\r\n      \"Name\": \"centreon1\",\r\n      \"Mode\": {\r\n        \"Replicated\": {\r\n          \"Replicas\": 1\r\n        }\r\n      }\r\n    }\r\n  },\r\n  {\r\n    \"ID\": \"456\",\r\n    \"Spec\": {\r\n      \"Name\": \"centreon2\",\r\n      \"Mode\": {\r\n        \"Replicated\": {\r\n          \"Replicas\": 3\r\n        }\r\n      }\r\n    }\r\n  },\r\n  {\r\n    \"ID\": \"789\",\r\n    \"Spec\": {\r\n      \"Name\": \"centreon3\",\r\n      \"Mode\": {\r\n        \"Replicated\": {\r\n          \"Replicas\": 2\r\n        }\r\n      }\r\n    }\r\n  },\r\n  {\r\n    \"ID\": \"101112\",\r\n    \"Spec\": {\r\n      \"Name\": \"centreon4\",\r\n      \"Mode\": {\r\n        \"Replicated\": {\r\n          \"Replicas\": 2\r\n        }\r\n      }\r\n    }\r\n  },\r\n  {\r\n    \"ID\": \"131415\",\r\n    \"Spec\": {\r\n      \"Name\": \"centreon5\",\r\n      \"Mode\": {\r\n        \"Global\": {}\r\n      }\r\n    }\r\n  }\r\n]",
                     "latency": 0,
                     "statusCode": 200,
                     "label": "",
@@ -31,6 +31,33 @@
                     "disableTemplating": false,
                     "fallbackTo404": false,
                     "default": true,
+                    "crudKey": "id",
+                    "callbacks": []
+                },
+                {
+                    "uuid": "cbd2b609-29a5-4245-89ac-5258df52120c",
+                    "body": "[\r\n  {\r\n    \"ID\": \"123\",\r\n    \"Spec\": {\r\n      \"Name\": \"centreon1\",\r\n      \"Mode\": {\r\n        \"Replicated\": {\r\n          \"Replicas\": 1\r\n        }\r\n      }\r\n    },\r\n    \"ServiceStatus\": {\r\n      \"RunningTasks\": 1,\r\n      \"DesiredTasks\": 1,\r\n      \"CompletedTasks\": 0\r\n    }\r\n  },\r\n  {\r\n    \"ID\": \"456\",\r\n    \"Spec\": {\r\n      \"Name\": \"centreon2\",\r\n      \"Mode\": {\r\n        \"Replicated\": {\r\n          \"Replicas\": 3\r\n        }\r\n      }\r\n    },\r\n    \"ServiceStatus\": {\r\n      \"RunningTasks\": 2,\r\n      \"DesiredTasks\": 3,\r\n      \"CompletedTasks\": 0\r\n    }\r\n  },\r\n  {\r\n    \"ID\": \"789\",\r\n    \"Spec\": {\r\n      \"Name\": \"centreon3\",\r\n      \"Mode\": {\r\n        \"Replicated\": {\r\n          \"Replicas\": 2\r\n        }\r\n      }\r\n    },\r\n    \"ServiceStatus\": {\r\n      \"RunningTasks\": 2,\r\n      \"DesiredTasks\": 2,\r\n      \"CompletedTasks\": 0\r\n    }\r\n  },\r\n  {\r\n    \"ID\": \"101112\",\r\n    \"Spec\": {\r\n      \"Name\": \"centreon4\",\r\n      \"Mode\": {\r\n        \"Replicated\": {\r\n          \"Replicas\": 2\r\n        }\r\n      }\r\n    },\r\n    \"ServiceStatus\": {\r\n      \"RunningTasks\": 1,\r\n      \"DesiredTasks\": 2,\r\n      \"CompletedTasks\": 1\r\n    }\r\n  },\r\n  {\r\n    \"ID\": \"131415\",\r\n    \"Spec\": {\r\n      \"Name\": \"centreon5\",\r\n      \"Mode\": {\r\n        \"Global\": {}\r\n      }\r\n    },\r\n    \"ServiceStatus\": {\r\n      \"RunningTasks\": 1,\r\n      \"DesiredTasks\": 1,\r\n      \"CompletedTasks\": 0\r\n    }\r\n  }\r\n]",
+                    "latency": 0,
+                    "statusCode": 200,
+                    "label": "with ServiceStatus included",
+                    "headers": [],
+                    "bodyType": "INLINE",
+                    "filePath": "",
+                    "databucketID": "",
+                    "sendFileAsBody": false,
+                    "rules": [
+                        {
+                            "target": "query",
+                            "modifier": "status",
+                            "value": "true",
+                            "invert": false,
+                            "operator": "equals"
+                        }
+                    ],
+                    "rulesOperator": "OR",
+                    "disableTemplating": false,
+                    "fallbackTo404": false,
+                    "default": false,
                     "crudKey": "id",
                     "callbacks": []
                 }
@@ -48,7 +75,7 @@
             "responses": [
                 {
                     "uuid": "7df43074-a078-4f11-83ee-17db97090412",
-                    "body": "[\r\n  {\r\n    \"ID\": \"abc\",\r\n    \"ServiceID\": \"123\",\r\n    \"NodeID\": \"node1\",\r\n    \"Status\": {\r\n      \"Timestamp\": \"2026-05-12T00:00:00.290032978Z\",\r\n      \"State\": \"running\",\r\n      \"Message\": \"started\",\r\n      \"ContainerStatus\": {\r\n        \"ContainerID\": \"container1\",\r\n        \"PID\": 100\r\n      }\r\n    },\r\n    \"DesiredState\": \"running\"\r\n  },\r\n  {\r\n    \"ID\": \"def\",\r\n    \"ServiceID\": \"456\",\r\n    \"NodeID\": \"node1\",\r\n    \"Status\": {\r\n      \"Timestamp\": \"2026-05-12T00:00:00.290032978Z\",\r\n      \"State\": \"running\",\r\n      \"Message\": \"started\",\r\n      \"ContainerStatus\": {\r\n        \"ContainerID\": \"container1\",\r\n        \"PID\": 200\r\n      }\r\n    },\r\n    \"DesiredState\": \"running\"\r\n  },\r\n  {\r\n    \"ID\": \"ghi\",\r\n    \"ServiceID\": \"456\",\r\n    \"NodeID\": \"node1\",\r\n    \"Status\": {\r\n      \"Timestamp\": \"2026-05-12T00:00:00.290032978Z\",\r\n      \"State\": \"running\",\r\n      \"Message\": \"running\",\r\n      \"ContainerStatus\": {\r\n        \"ContainerID\": \"container1\",\r\n        \"PID\": 300\r\n      }\r\n    },\r\n    \"DesiredState\": \"running\"\r\n  },\r\n  {\r\n    \"ID\": \"jkl\",\r\n    \"ServiceID\": \"789\",\r\n    \"NodeID\": \"node1\",\r\n    \"Status\": {\r\n      \"Timestamp\": \"2026-05-12T00:00:00.290032978Z\",\r\n      \"State\": \"running\",\r\n      \"Message\": \"started\",\r\n      \"ContainerStatus\": {\r\n        \"ContainerID\": \"container1\",\r\n        \"PID\": 400\r\n      }\r\n    },\r\n    \"DesiredState\": \"running\"\r\n  },\r\n  {\r\n    \"ID\": \"mno\",\r\n    \"ServiceID\": \"789\",\r\n    \"NodeID\": \"node1\",\r\n    \"Status\": {\r\n      \"Timestamp\": \"2026-05-12T00:00:00.290032978Z\",\r\n      \"State\": \"failed\",\r\n      \"Message\": \"failed\",\r\n      \"ContainerStatus\": {\r\n        \"ContainerID\": \"container1\",\r\n        \"PID\": 500\r\n      }\r\n    },\r\n    \"DesiredState\": \"running\"\r\n  },\r\n  {\r\n    \"ID\": \"pqr\",\r\n    \"ServiceID\": \"789\",\r\n    \"NodeID\": \"node1\",\r\n    \"Status\": {\r\n      \"Timestamp\": \"2026-05-12T00:00:00.290032978Z\",\r\n      \"State\": \"running\",\r\n      \"Message\": \"running\",\r\n      \"ContainerStatus\": {\r\n        \"ContainerID\": \"container1\",\r\n        \"PID\": 600\r\n      }\r\n    },\r\n    \"DesiredState\": \"running\"\r\n  },\r\n    {\r\n    \"ID\": \"stu\",\r\n    \"ServiceID\": \"101112\",\r\n    \"NodeID\": \"node1\",\r\n    \"Status\": {\r\n      \"Timestamp\": \"2026-05-12T00:00:00.290032978Z\",\r\n      \"State\": \"running\",\r\n      \"Message\": \"started\",\r\n      \"ContainerStatus\": {\r\n        \"ContainerID\": \"container1\",\r\n        \"PID\": 700\r\n      }\r\n    },\r\n    \"DesiredState\": \"running\"\r\n  },\r\n  {\r\n    \"ID\": \"vwx\",\r\n    \"ServiceID\": \"101112\",\r\n    \"NodeID\": \"node1\",\r\n    \"Status\": {\r\n      \"Timestamp\": \"2026-05-12T00:00:00.290032978Z\",\r\n      \"State\": \"complete\",\r\n      \"Message\": \"complete\",\r\n      \"ContainerStatus\": {\r\n        \"ContainerID\": \"container1\",\r\n        \"PID\": 800\r\n      }\r\n    },\r\n    \"DesiredState\": \"running\"\r\n  }\r\n]",
+                    "body": "[\r\n  {\r\n    \"ID\": \"abc\",\r\n    \"ServiceID\": \"123\",\r\n    \"NodeID\": \"node1\",\r\n    \"Status\": {\r\n      \"Timestamp\": \"2026-05-12T00:00:00.290032978Z\",\r\n      \"State\": \"running\",\r\n      \"Message\": \"started\",\r\n      \"ContainerStatus\": {\r\n        \"ContainerID\": \"container1\",\r\n        \"PID\": 100\r\n      }\r\n    },\r\n    \"DesiredState\": \"running\"\r\n  },\r\n  {\r\n    \"ID\": \"def\",\r\n    \"ServiceID\": \"456\",\r\n    \"NodeID\": \"node1\",\r\n    \"Status\": {\r\n      \"Timestamp\": \"2026-05-12T00:00:00.290032978Z\",\r\n      \"State\": \"running\",\r\n      \"Message\": \"started\",\r\n      \"ContainerStatus\": {\r\n        \"ContainerID\": \"container1\",\r\n        \"PID\": 200\r\n      }\r\n    },\r\n    \"DesiredState\": \"running\"\r\n  },\r\n  {\r\n    \"ID\": \"ghi\",\r\n    \"ServiceID\": \"456\",\r\n    \"NodeID\": \"node1\",\r\n    \"Status\": {\r\n      \"Timestamp\": \"2026-05-12T00:00:00.290032978Z\",\r\n      \"State\": \"running\",\r\n      \"Message\": \"running\",\r\n      \"ContainerStatus\": {\r\n        \"ContainerID\": \"container1\",\r\n        \"PID\": 300\r\n      }\r\n    },\r\n    \"DesiredState\": \"running\"\r\n  },\r\n  {\r\n    \"ID\": \"jkl\",\r\n    \"ServiceID\": \"789\",\r\n    \"NodeID\": \"node1\",\r\n    \"Status\": {\r\n      \"Timestamp\": \"2026-05-12T00:00:00.290032978Z\",\r\n      \"State\": \"running\",\r\n      \"Message\": \"started\",\r\n      \"ContainerStatus\": {\r\n        \"ContainerID\": \"container1\",\r\n        \"PID\": 400\r\n      }\r\n    },\r\n    \"DesiredState\": \"running\"\r\n  },\r\n  {\r\n    \"ID\": \"mno\",\r\n    \"ServiceID\": \"789\",\r\n    \"NodeID\": \"node1\",\r\n    \"Status\": {\r\n      \"Timestamp\": \"2026-05-12T00:00:00.290032978Z\",\r\n      \"State\": \"failed\",\r\n      \"Message\": \"failed\",\r\n      \"ContainerStatus\": {\r\n        \"ContainerID\": \"container1\",\r\n        \"PID\": 500\r\n      }\r\n    },\r\n    \"DesiredState\": \"running\"\r\n  },\r\n  {\r\n    \"ID\": \"pqr\",\r\n    \"ServiceID\": \"789\",\r\n    \"NodeID\": \"node1\",\r\n    \"Status\": {\r\n      \"Timestamp\": \"2026-05-12T00:00:00.290032978Z\",\r\n      \"State\": \"running\",\r\n      \"Message\": \"running\",\r\n      \"ContainerStatus\": {\r\n        \"ContainerID\": \"container1\",\r\n        \"PID\": 600\r\n      }\r\n    },\r\n    \"DesiredState\": \"running\"\r\n  },\r\n    {\r\n    \"ID\": \"stu\",\r\n    \"ServiceID\": \"101112\",\r\n    \"NodeID\": \"node1\",\r\n    \"Status\": {\r\n      \"Timestamp\": \"2026-05-12T00:00:00.290032978Z\",\r\n      \"State\": \"running\",\r\n      \"Message\": \"started\",\r\n      \"ContainerStatus\": {\r\n        \"ContainerID\": \"container1\",\r\n        \"PID\": 700\r\n      }\r\n    },\r\n    \"DesiredState\": \"running\"\r\n  },\r\n  {\r\n    \"ID\": \"vwx\",\r\n    \"ServiceID\": \"101112\",\r\n    \"NodeID\": \"node1\",\r\n    \"Status\": {\r\n      \"Timestamp\": \"2026-05-12T00:00:00.290032978Z\",\r\n      \"State\": \"complete\",\r\n      \"Message\": \"complete\",\r\n      \"ContainerStatus\": {\r\n        \"ContainerID\": \"container1\",\r\n        \"PID\": 800\r\n      }\r\n    },\r\n    \"DesiredState\": \"running\"\r\n  },\r\n  {\r\n    \"ID\": \"yz\",\r\n    \"ServiceID\": \"131415\",\r\n    \"NodeID\": \"node2\",\r\n    \"Status\": {\r\n      \"Timestamp\": \"2026-05-12T00:00:00.290032978Z\",\r\n      \"State\": \"complete\",\r\n      \"Message\": \"complete\",\r\n      \"ContainerStatus\": {\r\n        \"ContainerID\": \"container2\",\r\n        \"PID\": 900\r\n      }\r\n    },\r\n    \"DesiredState\": \"running\"\r\n  }\r\n]",
                     "latency": 0,
                     "statusCode": 200,
                     "label": "",
@@ -184,9 +211,183 @@
                     "default": false,
                     "crudKey": "id",
                     "callbacks": []
+                },
+                {
+                    "uuid": "e357538b-c4fd-400f-a50e-46fad20c0bea",
+                    "body": "{\r\n  \"ID\": \"131415\",\r\n  \"Spec\": {\r\n    \"Name\": \"centreon5\",\r\n    \"TaskTemplate\": {\r\n      \"RestartPolicy\": {\r\n        \"Condition\": \"any\",\r\n        \"MaxAttempts\": 0\r\n      }\r\n    }\r\n  }\r\n}",
+                    "latency": 0,
+                    "statusCode": 200,
+                    "label": "",
+                    "headers": [],
+                    "bodyType": "INLINE",
+                    "filePath": "",
+                    "databucketID": "",
+                    "sendFileAsBody": false,
+                    "rules": [
+                        {
+                            "target": "params",
+                            "modifier": "serviceId",
+                            "value": "131415",
+                            "invert": false,
+                            "operator": "equals"
+                        }
+                    ],
+                    "rulesOperator": "OR",
+                    "disableTemplating": false,
+                    "fallbackTo404": false,
+                    "default": false,
+                    "crudKey": "id",
+                    "callbacks": []
                 }
             ],
             "responseMode": null,
+            "streamingMode": null,
+            "streamingInterval": 0
+        },
+        {
+            "uuid": "d7d69f13-e79e-4673-8499-79458a8bf4e6",
+            "type": "http",
+            "documentation": "",
+            "method": "get",
+            "endpoint": "containers/json",
+            "responses": [
+                {
+                    "uuid": "4b5a36d6-8ca5-4991-ba2f-50f8616f49c8",
+                    "body": "[\n  {\n    \"Id\": \"container1\",\n    \"Names\": [\n      \"/containerName1\"\n    ],\n    \"State\": \"running\"\n  },\n  {\n    \"Id\": \"container2\",\n    \"Names\": [\n      \"/containerName2\"\n    ],\n    \"State\": \"running\"\n  }\n]",
+                    "latency": 0,
+                    "statusCode": 200,
+                    "label": "",
+                    "headers": [],
+                    "bodyType": "INLINE",
+                    "filePath": "",
+                    "databucketID": "",
+                    "sendFileAsBody": false,
+                    "rules": [],
+                    "rulesOperator": "OR",
+                    "disableTemplating": false,
+                    "fallbackTo404": false,
+                    "default": true,
+                    "crudKey": "id",
+                    "callbacks": []
+                }
+            ],
+            "responseMode": null,
+            "streamingMode": null,
+            "streamingInterval": 0
+        },
+        {
+            "uuid": "7dae825b-b8d0-45ae-9ada-8503b55c1f6f",
+            "type": "http",
+            "documentation": "",
+            "method": "get",
+            "endpoint": "containers/container1/stats",
+            "responses": [
+                {
+                    "uuid": "2a746b91-835d-44e6-8b80-19a54ad27478",
+                    "body": "{\r\n  \"name\": \"containerName1\",\r\n  \"id\": \"container1\",\r\n  \"blkio_stats\": {\r\n    \"io_service_bytes_recursive\": [\r\n      {\r\n        \"major\": 254,\r\n        \"minor\": 0,\r\n        \"op\": \"read\",\r\n        \"value\": 7593984\r\n      },\r\n      {\r\n        \"major\": 254,\r\n        \"minor\": 0,\r\n        \"op\": \"write\",\r\n        \"value\": 100\r\n      }\r\n    ],\r\n    \"io_serviced_recursive\": null,\r\n    \"io_queue_recursive\": null,\r\n    \"io_service_time_recursive\": null,\r\n    \"io_wait_time_recursive\": null,\r\n    \"io_merged_recursive\": null,\r\n    \"io_time_recursive\": null,\r\n    \"sectors_recursive\": null\r\n  },\r\n  \"cpu_stats\": {\r\n    \"cpu_usage\": {\r\n      \"total_usage\": 29912000,\r\n      \"percpu_usage\": [\r\n        29912000\r\n      ],\r\n      \"usage_in_kernelmode\": 21994000,\r\n      \"usage_in_usermode\": 7918000\r\n    },\r\n    \"system_cpu_usage\": 20,\r\n    \"online_cpus\": 5,\r\n    \"throttling_data\": {\r\n      \"periods\": 0,\r\n      \"throttled_periods\": 0,\r\n      \"throttled_time\": 0\r\n    }\r\n  },\r\n  \"memory_stats\": {\r\n    \"usage\": 82175795,\r\n    \"max_usage\": 0,\r\n    \"stats\": {\r\n      \"inactive_file\": 2510848\r\n    },\r\n    \"limit\": 8217579520\r\n  },\r\n  \"networks\": {\r\n    \"eth0\": {\r\n      \"rx_bytes\": 5338,\r\n      \"rx_dropped\": 0,\r\n      \"rx_errors\": 0,\r\n      \"rx_packets\": 36,\r\n      \"tx_bytes\": 648,\r\n      \"tx_dropped\": 0,\r\n      \"tx_errors\": 0,\r\n      \"tx_packets\": 8\r\n    },\r\n    \"eth5\": {\r\n      \"rx_bytes\": 4641,\r\n      \"rx_dropped\": 0,\r\n      \"rx_errors\": 0,\r\n      \"rx_packets\": 26,\r\n      \"tx_bytes\": 690,\r\n      \"tx_dropped\": 0,\r\n      \"tx_errors\": 0,\r\n      \"tx_packets\": 9\r\n    }\r\n  }\r\n}",
+                    "latency": 0,
+                    "statusCode": 200,
+                    "label": "",
+                    "headers": [],
+                    "bodyType": "INLINE",
+                    "filePath": "",
+                    "databucketID": "",
+                    "sendFileAsBody": false,
+                    "rules": [],
+                    "rulesOperator": "OR",
+                    "disableTemplating": false,
+                    "fallbackTo404": false,
+                    "default": true,
+                    "crudKey": "id",
+                    "callbacks": []
+                },
+                {
+                    "uuid": "0634049c-c1c4-4d0b-aa4b-92a4360c0382",
+                    "body": "{\r\n  \"name\": \"containerName1\",\r\n  \"id\": \"container1\",\r\n  \"blkio_stats\": {\r\n    \"io_service_bytes_recursive\": [\r\n      {\r\n        \"major\": 254,\r\n        \"minor\": 0,\r\n        \"op\": \"read\",\r\n        \"value\": 7593984\r\n      },\r\n      {\r\n        \"major\": 254,\r\n        \"minor\": 0,\r\n        \"op\": \"write\",\r\n        \"value\": 100\r\n      }\r\n    ],\r\n    \"io_serviced_recursive\": null,\r\n    \"io_queue_recursive\": null,\r\n    \"io_service_time_recursive\": null,\r\n    \"io_wait_time_recursive\": null,\r\n    \"io_merged_recursive\": null,\r\n    \"io_time_recursive\": null,\r\n    \"sectors_recursive\": null\r\n  },\r\n  \"cpu_stats\": {\r\n    \"cpu_usage\": {\r\n      \"total_usage\": 29913000,\r\n      \"percpu_usage\": [\r\n        29913000\r\n      ],\r\n      \"usage_in_kernelmode\": 21994000,\r\n      \"usage_in_usermode\": 7918000\r\n    },\r\n    \"system_cpu_usage\": 5,\r\n    \"online_cpus\": 5,\r\n    \"throttling_data\": {\r\n      \"periods\": 0,\r\n      \"throttled_periods\": 0,\r\n      \"throttled_time\": 0\r\n    }\r\n  },\r\n  \"memory_stats\": {\r\n    \"usage\": 82175795,\r\n    \"max_usage\": 0,\r\n    \"stats\": {\r\n      \"inactive_file\": 2510848\r\n    },\r\n    \"limit\": 8217579520\r\n  },\r\n  \"networks\": {\r\n    \"eth0\": {\r\n      \"rx_bytes\": 2338,\r\n      \"rx_dropped\": 0,\r\n      \"rx_errors\": 0,\r\n      \"rx_packets\": 36,\r\n      \"tx_bytes\": 648,\r\n      \"tx_dropped\": 0,\r\n      \"tx_errors\": 0,\r\n      \"tx_packets\": 8\r\n    },\r\n    \"eth5\": {\r\n      \"rx_bytes\": 6641,\r\n      \"rx_dropped\": 0,\r\n      \"rx_errors\": 0,\r\n      \"rx_packets\": 26,\r\n      \"tx_bytes\": 690,\r\n      \"tx_dropped\": 0,\r\n      \"tx_errors\": 0,\r\n      \"tx_packets\": 9\r\n    }\r\n  }\r\n}",
+                    "latency": 0,
+                    "statusCode": 200,
+                    "label": " ",
+                    "headers": [],
+                    "bodyType": "INLINE",
+                    "filePath": "",
+                    "databucketID": "",
+                    "sendFileAsBody": false,
+                    "rules": [
+                        {
+                            "target": "query",
+                            "modifier": "containerId",
+                            "value": "container2",
+                            "invert": false,
+                            "operator": "equals"
+                        }
+                    ],
+                    "rulesOperator": "OR",
+                    "disableTemplating": false,
+                    "fallbackTo404": false,
+                    "default": false,
+                    "crudKey": "id",
+                    "callbacks": []
+                }
+            ],
+            "responseMode": "SEQUENTIAL",
+            "streamingMode": null,
+            "streamingInterval": 0
+        },
+        {
+            "uuid": "d9583155-b44e-457d-a701-6a61f09b37d6",
+            "type": "http",
+            "documentation": "",
+            "method": "get",
+            "endpoint": "containers/container2/stats",
+            "responses": [
+                {
+                    "uuid": "cffc05ee-9619-4d94-b8c0-d905623db1b4",
+                    "body": "{\r\n  \"name\": \"containerName2\",\r\n  \"id\": \"container2\",\r\n  \"blkio_stats\": {\r\n    \"io_service_bytes_recursive\": [\r\n      {\r\n        \"major\": 254,\r\n        \"minor\": 0,\r\n        \"op\": \"read\",\r\n        \"value\": 7593984\r\n      },\r\n      {\r\n        \"major\": 254,\r\n        \"minor\": 0,\r\n        \"op\": \"write\",\r\n        \"value\": 100\r\n      }\r\n    ],\r\n    \"io_serviced_recursive\": null,\r\n    \"io_queue_recursive\": null,\r\n    \"io_service_time_recursive\": null,\r\n    \"io_wait_time_recursive\": null,\r\n    \"io_merged_recursive\": null,\r\n    \"io_time_recursive\": null,\r\n    \"sectors_recursive\": null\r\n  },\r\n  \"cpu_stats\": {\r\n    \"cpu_usage\": {\r\n      \"total_usage\": 29912000,\r\n      \"percpu_usage\": [\r\n        29912000\r\n      ],\r\n      \"usage_in_kernelmode\": 21994000,\r\n      \"usage_in_usermode\": 7918000\r\n    },\r\n    \"system_cpu_usage\": 20,\r\n    \"online_cpus\": 5,\r\n    \"throttling_data\": {\r\n      \"periods\": 0,\r\n      \"throttled_periods\": 0,\r\n      \"throttled_time\": 0\r\n    }\r\n  },\r\n  \"memory_stats\": {\r\n    \"usage\": 82175795,\r\n    \"max_usage\": 0,\r\n    \"stats\": {\r\n      \"inactive_file\": 2510848\r\n    },\r\n    \"limit\": 8217579520\r\n  },\r\n  \"networks\": {\r\n    \"eth0\": {\r\n      \"rx_bytes\": 7338,\r\n      \"rx_dropped\": 0,\r\n      \"rx_errors\": 0,\r\n      \"rx_packets\": 36,\r\n      \"tx_bytes\": 648,\r\n      \"tx_dropped\": 0,\r\n      \"tx_errors\": 0,\r\n      \"tx_packets\": 8\r\n    },\r\n    \"eth5\": {\r\n      \"rx_bytes\": 2641,\r\n      \"rx_dropped\": 0,\r\n      \"rx_errors\": 0,\r\n      \"rx_packets\": 26,\r\n      \"tx_bytes\": 690,\r\n      \"tx_dropped\": 0,\r\n      \"tx_errors\": 0,\r\n      \"tx_packets\": 9\r\n    }\r\n  }\r\n}",
+                    "latency": 0,
+                    "statusCode": 200,
+                    "label": "",
+                    "headers": [],
+                    "bodyType": "INLINE",
+                    "filePath": "",
+                    "databucketID": "",
+                    "sendFileAsBody": false,
+                    "rules": [],
+                    "rulesOperator": "OR",
+                    "disableTemplating": false,
+                    "fallbackTo404": false,
+                    "default": true,
+                    "crudKey": "id",
+                    "callbacks": []
+                },
+                {
+                    "uuid": "8ea9d497-5e12-4f98-a1fa-1a0043cd14f5",
+                    "body": "{\r\n  \"name\": \"containerName2\",\r\n  \"id\": \"container2\",\r\n  \"blkio_stats\": {\r\n    \"io_service_bytes_recursive\": [\r\n      {\r\n        \"major\": 254,\r\n        \"minor\": 0,\r\n        \"op\": \"read\",\r\n        \"value\": 7593984\r\n      },\r\n      {\r\n        \"major\": 254,\r\n        \"minor\": 0,\r\n        \"op\": \"write\",\r\n        \"value\": 100\r\n      }\r\n    ],\r\n    \"io_serviced_recursive\": null,\r\n    \"io_queue_recursive\": null,\r\n    \"io_service_time_recursive\": null,\r\n    \"io_wait_time_recursive\": null,\r\n    \"io_merged_recursive\": null,\r\n    \"io_time_recursive\": null,\r\n    \"sectors_recursive\": null\r\n  },\r\n  \"cpu_stats\": {\r\n    \"cpu_usage\": {\r\n      \"total_usage\": 29913000,\r\n      \"percpu_usage\": [\r\n        29913000\r\n      ],\r\n      \"usage_in_kernelmode\": 21994000,\r\n      \"usage_in_usermode\": 7918000\r\n    },\r\n    \"system_cpu_usage\": 5,\r\n    \"online_cpus\": 5,\r\n    \"throttling_data\": {\r\n      \"periods\": 0,\r\n      \"throttled_periods\": 0,\r\n      \"throttled_time\": 0\r\n    }\r\n  },\r\n  \"memory_stats\": {\r\n    \"usage\": 82175795,\r\n    \"max_usage\": 0,\r\n    \"stats\": {\r\n      \"inactive_file\": 2510848\r\n    },\r\n    \"limit\": 8217579520\r\n  },\r\n  \"networks\": {\r\n    \"eth0\": {\r\n      \"rx_bytes\": 5338,\r\n      \"rx_dropped\": 0,\r\n      \"rx_errors\": 0,\r\n      \"rx_packets\": 36,\r\n      \"tx_bytes\": 648,\r\n      \"tx_dropped\": 0,\r\n      \"tx_errors\": 0,\r\n      \"tx_packets\": 8\r\n    },\r\n    \"eth5\": {\r\n      \"rx_bytes\": 4641,\r\n      \"rx_dropped\": 0,\r\n      \"rx_errors\": 0,\r\n      \"rx_packets\": 26,\r\n      \"tx_bytes\": 690,\r\n      \"tx_dropped\": 0,\r\n      \"tx_errors\": 0,\r\n      \"tx_packets\": 9\r\n    }\r\n  }\r\n}",
+                    "latency": 0,
+                    "statusCode": 200,
+                    "label": " ",
+                    "headers": [],
+                    "bodyType": "INLINE",
+                    "filePath": "",
+                    "databucketID": "",
+                    "sendFileAsBody": false,
+                    "rules": [
+                        {
+                            "target": "query",
+                            "modifier": "containerId",
+                            "value": "container2",
+                            "invert": false,
+                            "operator": "equals"
+                        }
+                    ],
+                    "rulesOperator": "OR",
+                    "disableTemplating": false,
+                    "fallbackTo404": false,
+                    "default": false,
+                    "crudKey": "id",
+                    "callbacks": []
+                }
+            ],
+            "responseMode": "SEQUENTIAL",
             "streamingMode": null,
             "streamingInterval": 0
         }
@@ -203,6 +404,18 @@
         {
             "type": "route",
             "uuid": "0eb3a878-9fb2-4bed-85c2-5fc88512af2d"
+        },
+        {
+            "type": "route",
+            "uuid": "d7d69f13-e79e-4673-8499-79458a8bf4e6"
+        },
+        {
+            "type": "route",
+            "uuid": "7dae825b-b8d0-45ae-9ada-8503b55c1f6f"
+        },
+        {
+            "type": "route",
+            "uuid": "d9583155-b44e-457d-a701-6a61f09b37d6"
         }
     ],
     "proxyMode": false,

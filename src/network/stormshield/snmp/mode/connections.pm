@@ -73,8 +73,7 @@ sub set_counters {
         { label => 'policy-dummy', threshold => 0, set => {
                 key_values => [ { name => 'index' }, { name => 'name' }, { name => 'slot_name' },
                                 { name => 'active' }, { name => 'sync' } ],
-                output_template => "Policy: '%{name}', slot: '%{slot_name}', active: '%{active}', sync: %{sync}",
-                perfdatas => []
+                output_template => "Policy: '%{name}', slot: '%{slot_name}', active: '%{active}', sync: %{sync}"
             }
         }
     ];

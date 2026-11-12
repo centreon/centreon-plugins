@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,12 +24,13 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use centreon::plugins::constants qw(:counters);
 
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'containers', type => 1, cb_prefix_output => 'prefix_containers_output',
+        { name => 'containers', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_containers_output',
           message_multiple => 'All containers load are ok' },
     ];
 
@@ -37,7 +38,6 @@ sub set_counters {
         { label => 'load', nlabel => 'container.load.count', set => {
                 key_values => [ { name => 'load' }, { name => 'container' }, { name => 'pod' }, { name => 'perf' } ],
                 output_template => 'Load: %.2f',
-                output_change_bytes => 1,
                 perfdatas => [
                     { label => 'load', value => 'load', template => '%.2f',
                       min => 0, label_extra_instance => 1, instance_use => 'perf' },
@@ -50,7 +50,10 @@ sub set_counters {
 sub prefix_containers_output {
     my ($self, %options) = @_;
 
-    return "Container '" . $options{instance_value}->{container} . "' [pod: " . $options{instance_value}->{pod} . "] ";
+    my ($pod, $container) = ($options{instance_value}->{pod}, $options{instance_value}->{container});
+    return "Pod '" . $pod . "' " if ($container eq '');
+    return "Container '" . $container . "' " if ($pod eq '');
+    return "Container '" . $container . "' [pod: " . $pod . "] ";
 }
 
 sub new {
@@ -59,8 +62,9 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "container:s"           => { name => 'container', default => 'container_name!~".*POD.*"' },
-        "pod:s"                 => { name => 'pod', default => 'pod_name=~".*"' },
+        "container:s"           => { name => 'container', default => 'container!~"|.*POD.*"' },
+        "pod:s"                 => { name => 'pod', default => 'pod=~".*"' },
+        "namespace:s"           => { name => 'namespace', default => 'namespace=~".*"' },
         "extra-filter:s@"       => { name => 'extra_filter' },
         "metric-overload:s@"    => { name => 'metric_overload' },
     });
@@ -81,7 +85,7 @@ sub check_options {
     }
 
     $self->{labels} = {};
-    foreach my $label (('container', 'pod')) {
+    foreach my $label (('container', 'pod', 'namespace')) {
         if ($self->{option_results}->{$label} !~ /^(\w+)[!~=]+\".*\"$/) {
             $self->{output}->add_option_msg(short_msg => "Need to specify --" . $label . " option as a PromQL filter.");
             $self->{output}->option_exit();
@@ -107,7 +111,7 @@ sub manage_selection {
         queries => [
             'label_replace({__name__=~"' . $self->{metrics}->{load} . '",' .
                 $self->{option_results}->{container} . ',' .
-                $self->{option_results}->{pod} .
+                $self->{option_results}->{pod} . ',' . $self->{option_results}->{namespace} .
                 $self->{extra_filter} . '}, "__name__", "load", "", "")'
         ],
         timeframe => $self->{prom_timeframe},
@@ -115,12 +119,19 @@ sub manage_selection {
     );
 
     foreach my $result (@{$results}) {
-        next if (!defined($result->{metric}->{$self->{labels}->{pod}}) || !defined($result->{metric}->{$self->{labels}->{container}}));
+        my $pod = $result->{metric}->{$self->{labels}->{pod}} // '';
+        my $container = $result->{metric}->{$self->{labels}->{container}} // '';
+        next if ($pod eq '' && $container eq '');
+        # without container label, keep the pod cgroup: the pause container has a name and would overwrite it
+        next if ($container eq '' && defined($result->{metric}->{name}));
+        my $namespace = $result->{metric}->{$self->{labels}->{namespace}} // '';
+        my $name = join("_", $namespace, $pod, $container);
+
         my $average = $options{custom}->compute(aggregation => 'average', values => $result->{values});
-        $self->{containers}->{$result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}}}->{container} = $result->{metric}->{$self->{labels}->{container}};
-        $self->{containers}->{$result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}}}->{pod} = $result->{metric}->{$self->{labels}->{pod}};
-        $self->{containers}->{$result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}}}->{perf} = $result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}};
-        $self->{containers}->{$result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}}}->{$result->{metric}->{__name__}} = $average;
+        $self->{containers}->{$name}->{container} = $container;
+        $self->{containers}->{$name}->{pod} = $pod;
+        $self->{containers}->{$name}->{perf} = join('_', grep { $_ ne '' } ($pod, $container));
+        $self->{containers}->{$name}->{$result->{metric}->{__name__}} = $average;
     }
     
     if (scalar(keys %{$self->{containers}}) <= 0) {
@@ -137,15 +148,58 @@ __END__
 
 Check containers load.
 
+The C<container_cpu_load_average_10s> metric is not exported by the cAdvisor built in the
+kubelet (C</metrics/cadvisor>): this mode needs a standalone cAdvisor.
+
+Each series matching the filters is reported as:
+
+=over 4
+
+=item * a pod, when it has no container label (pod cgroup). The pause container of the pod is ignored.
+These series are excluded by the default C<--container> filter.
+
+=item * a container of a pod, when it has both labels.
+
+=item * a container running outside Kubernetes, when it has no pod label.
+
+=back
+
 =over 8
 
 =item B<--container>
 
-Filter on a specific container (must be a PromQL filter, Default: 'container_name!~".*POD.*"')
+Filter on a specific container (must be a PromQL filter, default: 'container!~"|.*POD.*"').
 
 =item B<--pod>
 
-Filter on a specific pod (must be a PromQL filter, Default: 'pod_name=~".*"')
+Filter on a specific pod (must be a PromQL filter, default: 'pod=~".*"').
+
+The label filtered is the first word of the C<--container> and C<--pod> filters.
+The kubelet cAdvisor metrics label names depend on the platform version:
+
+=over 4
+
+=item * Kubernetes < 1.14: C<container_name> and C<pod_name> only.
+
+=item * Kubernetes 1.14 and 1.15: both C<container_name>/C<pod_name> and C<container>/C<pod>.
+
+=item * Kubernetes >= 1.16: C<container> and C<pod> only.
+
+=item * OpenShift: C<container_name> and C<pod_name> only up to 4.1 (Kubernetes 1.13),
+both label sets in 4.2 (Kubernetes 1.14), C<container> and C<pod> only from 4.3 (Kubernetes 1.16).
+
+=item * Rancher: depends on the Kubernetes version of the managed cluster. Kubernetes 1.16 is
+available from Rancher 2.3.0 (experimental), generally available in 2.3.2 and the default in 2.3.3.
+
+=back
+
+On older platforms, use for example: --container='container_name!~"|.*POD.*"' --pod='pod_name=~".*"'
+
+=item B<--namespace>
+
+Filter on a specific namespace (must be a PromQL filter, default: 'namespace=~".*"').
+Two pods with the same name in different namespaces are reported separately, but with the
+same output and performance data names: filter on the namespace to tell them apart.
 
 =item B<--warning-load>
 
@@ -157,13 +211,13 @@ Critical threshold.
 
 =item B<--extra-filter>
 
-Add a PromQL filter (can be defined multiple times)
+Add a PromQL filter (can be defined multiple times).
 
 Example : --extra-filter='name=~".*pretty.*"'
 
 =item B<--metric-overload>
 
-Overload default metrics name (can be defined multiple times)
+Overload default metrics name (can be defined multiple times).
 
 Example : --metric-overload='metric,^my_metric_name$'
 

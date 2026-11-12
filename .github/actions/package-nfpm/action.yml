@@ -118,6 +118,11 @@ runs:
         export RPM_SIGNING_KEY_ID="$RPM_GPG_SIGNING_KEY_ID"
         export NFPM_RPM_PASSPHRASE="$RPM_GPG_SIGNING_PASSPHRASE"
 
+        if [[ -z "$COMMIT_HASH" ]]; then
+          echo "::error::commit_hash input is empty"
+          exit 1
+        fi
+
         for FILE in $NFPM_FILE_PATTERN; do
           DIRNAME=$(dirname $FILE)
           BASENAME=$(basename $FILE)
@@ -125,6 +130,10 @@ runs:
           sed -i "s/@APACHE_USER@/$APACHE_USER/g" $BASENAME
           sed -i "s/@APACHE_GROUP@/$APACHE_GROUP/g" $BASENAME
           sed -i "s/@COMMIT_HASH@/$COMMIT_HASH/g" $BASENAME
+          if grep -nE '@[A-Z][A-Z0-9_]*@' $BASENAME; then
+            echo "::error file=$FILE::unsubstituted placeholder(s) in rendered nfpm config"
+            exit 1
+          fi
           nfpm package --config $BASENAME --packager $PACKAGE_EXTENSION
           cd -
           mv $DIRNAME/*.$PACKAGE_EXTENSION ./

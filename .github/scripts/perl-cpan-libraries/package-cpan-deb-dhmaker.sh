@@ -3,7 +3,6 @@
 #
 # Required environment variables:
 #   PKG_NAME             CPAN module name (e.g. JMX::Jmx4Perl)
-#   DISTRIB              Distribution (e.g. bookworm)
 #   REVISION             Package revision (e.g. 1)
 #   DISTRIB_SEPARATOR    Separator between revision and distrib suffix (+ or -)
 #   DISTRIB_SUFFIX       Distribution suffix in package name (e.g. deb12u1)
@@ -26,6 +25,10 @@ done
 
 ITERATION="${REVISION}${DISTRIB_SEPARATOR}${DISTRIB_SUFFIX}"
 
+# apt-file allows dh-make-perl to correctly map the dependencies
+command -v apt-file > /dev/null || apt-get install -y apt-file
+apt-file update
+
 # Run from a build subdirectory: dh-make-perl creates a source dir inside
 # the current directory and places the .deb one level up (i.e. in the current
 # directory).  We then move the .deb to /work so the runner can upload it.
@@ -34,7 +37,7 @@ cd /work/build
 
 # shellcheck disable=SC2086
 created_package=$(DEB_BUILD_OPTIONS="nocheck nodocs notest" dh-make-perl make \
-  --dist "$DISTRIB" --build $VERSION_FLAG \
+  --build $VERSION_FLAG \
   --revision "$ITERATION" \
   --cpan "$PKG_NAME" \
   | grep "building package" \

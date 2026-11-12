@@ -113,7 +113,6 @@ overrides:
     depends:
       - perl(Class::MethodMaker)
       - perl(Crypt::OpenSSL::AES)
-      - perl(Crypt::SSLeay)
       - perl(IO::Socket::INET6)
       - perl(JSON::XS)
       - perl(LWP::Protocol::https)
@@ -130,7 +129,6 @@ overrides:
     depends:
       - libclass-methodmaker-perl
       - libcrypt-openssl-aes-perl
-      - libcrypt-ssleay-perl
       - libio-socket-inet6-perl
       - libjson-xs-perl
       - liblwp-protocol-https-perl

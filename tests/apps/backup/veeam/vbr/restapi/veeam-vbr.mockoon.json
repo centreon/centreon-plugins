@@ -1,0 +1,538 @@
+{
+  "uuid": "abcdef00-0000-0000-0000-000000000001",
+  "lastMigration": 33,
+  "name": "Veeam Backup & Replication",
+  "endpointPrefix": "",
+  "latency": 0,
+  "port": 3000,
+  "hostname": "",
+  "folders": [],
+  "routes": [
+    {
+      "uuid": "abcdef00-0000-0000-0000-000000000009",
+      "type": "http",
+      "documentation": "",
+      "method": "post",
+      "endpoint": "api/oauth2/token",
+      "responses": [
+        {
+          "uuid": "abcdef00-0000-0000-0000-000000000007",
+          "body": "{\n  \"access_token\": \"abcdef0000000001\",\n  \"token_type\": \"bearer\",\n  \"refresh_token\": \"abcdef0000000002\",\n  \"expires_in\": 900,\n  \".issued\": \"2026-01-01T00:00:00Z\",\n  \".expires\": \"2026-01-01T00:15:00Z\",\n  \"username\": \"centreon\"\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "Token",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "x-api-version",
+              "value": "^1\\.\\d+-rev\\d+$",
+              "invert": false,
+              "operator": "regex"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "abcdef00-0000-0000-0000-000000000008",
+          "body": "{\n  \"errorCode\": \"BadRequest\",\n  \"message\": \"Unsupported x-api-version header value.\"\n}",
+          "latency": 0,
+          "statusCode": 400,
+          "label": "Missing or unsupported x-api-version header",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "abcdef00-0000-0000-0000-000000000010",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/v1/license",
+      "responses": [
+        {
+          "uuid": "abcdef00-0000-0000-0000-000000000002",
+          "body": "{\n  \"status\": \"Valid\",\n  \"type\": \"Perpetual\",\n  \"edition\": \"EnterprisePlus\",\n  \"cloudConnect\": \"Disabled\",\n  \"licensedTo\": \"Example Company\",\n  \"instanceLicenseSummary\": {\n    \"package\": \"Backup\",\n    \"licensedInstancesNumber\": 100,\n    \"usedInstancesNumber\": 4,\n    \"newInstancesNumber\": 0,\n    \"rentalInstancesNumber\": 0,\n    \"objects\": [\n      {\n        \"type\": \"Virtual Machines\",\n        \"count\": 1,\n        \"multiplier\": 1,\n        \"usedInstancesNumber\": 1\n      },\n      {\n        \"type\": \"Applications\",\n        \"count\": 3,\n        \"multiplier\": 1,\n        \"usedInstancesNumber\": 3\n      }\n    ]\n  },\n  \"supportId\": \"1234\",\n  \"autoUpdateEnabled\": true,\n  \"freeAgentInstanceConsumptionEnabled\": true,\n  \"IsMultiSection\": false,\n  \"proactiveSupportEnabled\": true\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "Perpetual license without expiration date",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "Host",
+              "value": "^perpetual\\.example\\.com(:\\d+)?$",
+              "invert": false,
+              "operator": "regex"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "abcdef00-0000-0000-0000-000000000003",
+          "body": "{\n  \"status\": \"Expired\",\n  \"type\": \"Subscription\",\n  \"edition\": \"Standard\",\n  \"cloudConnect\": \"Disabled\",\n  \"licensedTo\": \"Example Company\",\n  \"expirationDate\": \"2020-01-01T00:00:00Z\",\n  \"instanceLicenseSummary\": {\n    \"package\": \"Backup\",\n    \"licensedInstancesNumber\": 10,\n    \"usedInstancesNumber\": 12,\n    \"newInstancesNumber\": 0,\n    \"rentalInstancesNumber\": 0,\n    \"objects\": [\n      {\n        \"type\": \"Virtual Machines\",\n        \"count\": 1,\n        \"multiplier\": 1,\n        \"usedInstancesNumber\": 1\n      },\n      {\n        \"type\": \"Applications\",\n        \"count\": 11,\n        \"multiplier\": 1,\n        \"usedInstancesNumber\": 11\n      }\n    ]\n  },\n  \"supportId\": \"1234\",\n  \"autoUpdateEnabled\": true,\n  \"freeAgentInstanceConsumptionEnabled\": true,\n  \"IsMultiSection\": false,\n  \"proactiveSupportEnabled\": true\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "Expired license, expiration date at root level",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "Host",
+              "value": "^expired\\.example\\.com(:\\d+)?$",
+              "invert": false,
+              "operator": "regex"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "abcdef00-0000-0000-0000-000000000004",
+          "body": "not a json content",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "Invalid JSON",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "Host",
+              "value": "^invalid-json\\.example\\.com(:\\d+)?$",
+              "invert": false,
+              "operator": "regex"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "abcdef00-0000-0000-0000-000000000005",
+          "body": "{\n  \"errorCode\": \"AccessDenied\",\n  \"message\": \"Authorization header has been expected but not found (or found but is expired).\"\n}",
+          "latency": 0,
+          "statusCode": 401,
+          "label": "Unauthorized",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "Host",
+              "value": "^unauthorized\\.example\\.com(:\\d+)?$",
+              "invert": false,
+              "operator": "regex"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "abcdef00-0000-0000-0000-000000000006",
+          "body": "{\n  \"status\": \"Valid\",\n  \"type\": \"Subscription\",\n  \"edition\": \"EnterprisePlus\",\n  \"cloudConnect\": \"Disabled\",\n  \"licensedTo\": \"Example Company\",\n  \"instanceLicenseSummary\": {\n    \"package\": \"Backup\",\n    \"licensedInstancesNumber\": 100,\n    \"usedInstancesNumber\": 4,\n    \"newInstancesNumber\": 0,\n    \"rentalInstancesNumber\": 0,\n    \"objects\": [\n      {\n        \"type\": \"Virtual Machines\",\n        \"count\": 1,\n        \"multiplier\": 1,\n        \"usedInstancesNumber\": 1\n      },\n      {\n        \"type\": \"Applications\",\n        \"count\": 3,\n        \"multiplier\": 1,\n        \"usedInstancesNumber\": 3\n      }\n    ],\n    \"expirationDate\": \"{{dateTimeShift date=(now) days=30 format='yyyy-MM-dd\\'T\\'HH:mm:ss\\'Z\\''}}\"\n  },\n  \"supportId\": \"1234\",\n  \"autoUpdateEnabled\": true,\n  \"freeAgentInstanceConsumptionEnabled\": true,\n  \"IsMultiSection\": false,\n  \"proactiveSupportEnabled\": true\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "Valid license expiring in 30 days, expiration date in instances summary",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "abcdef00-0000-0000-0000-000000000018",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/v1/jobs/states",
+      "responses": [
+        {
+          "uuid": "abcdef00-0000-0000-0000-000000000011",
+          "body": "{\n  \"data\": [],\n  \"pagination\": {\n    \"total\": 0,\n    \"count\": 0,\n    \"skip\": 0,\n    \"limit\": 200\n  }\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "No jobs",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "Host",
+              "value": "^no-jobs\\.example\\.com(:\\d+)?$",
+              "invert": false,
+              "operator": "regex"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "abcdef00-0000-0000-0000-000000000012",
+          "body": "{\n  \"data\": [\n    {\n      \"type\": \"BackupCopy\",\n      \"status\": \"Stopped\",\n      \"lastResult\": \"Warning\",\n      \"workload\": \"Vm\",\n      \"id\": \"11111111-0000-0000-0000-000000000003\",\n      \"name\": \"Backup copy job\",\n      \"description\": \"Created by veeamadmin\",\n      \"lastRun\": \"2026-01-01T04:00:00-04:00\",\n      \"nextRun\": \"2026-01-02T04:00:00-04:00\",\n      \"nextRunPolicy\": \"Daily\",\n      \"repositoryId\": \"22222222-0000-0000-0000-000000000001\",\n      \"repositoryName\": \"Default Backup Repository\",\n      \"objectsCount\": 1,\n      \"sessionId\": \"33333333-0000-0000-0000-000000000003\",\n      \"highPriority\": false,\n      \"progressPercent\": 100,\n      \"sessionProgress\": {\n        \"bottleneck\": \"Proxy\",\n        \"duration\": \"00:26:04\",\n        \"processingRate\": \"18.3 MB/s\",\n        \"processedSize\": 17179869184,\n        \"readSize\": 8074035200,\n        \"transferredSize\": 3882512848,\n        \"progressPercent\": 100\n      },\n      \"isStorageSnapshot\": false\n    }\n  ],\n  \"pagination\": {\n    \"total\": 3,\n    \"count\": 1,\n    \"skip\": 2,\n    \"limit\": 2\n  }\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "Second page",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "Host",
+              "value": "^paginated\\.example\\.com(:\\d+)?$",
+              "invert": false,
+              "operator": "regex"
+            },
+            {
+              "target": "query",
+              "modifier": "skip",
+              "value": "2",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "abcdef00-0000-0000-0000-000000000013",
+          "body": "{\n  \"data\": [\n    {\n      \"type\": \"VSphereBackup\",\n      \"status\": \"Stopped\",\n      \"lastResult\": \"Success\",\n      \"workload\": \"Vm\",\n      \"id\": \"11111111-0000-0000-0000-000000000001\",\n      \"name\": \"Linux backup job\",\n      \"description\": \"Created by veeamadmin\",\n      \"lastRun\": \"2026-01-01T04:00:00-04:00\",\n      \"nextRun\": \"2026-01-02T04:00:00-04:00\",\n      \"nextRunPolicy\": \"Daily\",\n      \"repositoryId\": \"22222222-0000-0000-0000-000000000001\",\n      \"repositoryName\": \"Default Backup Repository\",\n      \"objectsCount\": 1,\n      \"sessionId\": \"33333333-0000-0000-0000-000000000001\",\n      \"highPriority\": false,\n      \"progressPercent\": 100,\n      \"sessionProgress\": {\n        \"bottleneck\": \"Proxy\",\n        \"duration\": \"00:26:04\",\n        \"processingRate\": \"18.3 MB/s\",\n        \"processedSize\": 17179869184,\n        \"readSize\": 8074035200,\n        \"transferredSize\": 3882512848,\n        \"progressPercent\": 100\n      },\n      \"isStorageSnapshot\": false\n    },\n    {\n      \"type\": \"VSphereBackup\",\n      \"status\": \"Running\",\n      \"lastResult\": \"None\",\n      \"workload\": \"Application\",\n      \"id\": \"11111111-0000-0000-0000-000000000002\",\n      \"name\": \"PostgreSQL backup\",\n      \"description\": \"Created by veeamadmin\",\n      \"lastRun\": \"2026-01-01T04:00:00-04:00\",\n      \"nextRun\": \"2026-01-02T04:00:00-04:00\",\n      \"nextRunPolicy\": \"Daily\",\n      \"repositoryId\": \"22222222-0000-0000-0000-000000000001\",\n      \"repositoryName\": \"Default Backup Repository\",\n      \"objectsCount\": 1,\n      \"sessionId\": \"33333333-0000-0000-0000-000000000002\",\n      \"highPriority\": false,\n      \"progressPercent\": 100,\n      \"sessionProgress\": {\n        \"bottleneck\": \"Proxy\",\n        \"duration\": \"00:26:04\",\n        \"processingRate\": \"18.3 MB/s\",\n        \"processedSize\": 17179869184,\n        \"readSize\": 8074035200,\n        \"transferredSize\": 3882512848,\n        \"progressPercent\": 100\n      },\n      \"isStorageSnapshot\": false\n    }\n  ],\n  \"pagination\": {\n    \"total\": 3,\n    \"count\": 2,\n    \"skip\": 0,\n    \"limit\": 2\n  }\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "First page",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "Host",
+              "value": "^paginated\\.example\\.com(:\\d+)?$",
+              "invert": false,
+              "operator": "regex"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "abcdef00-0000-0000-0000-000000000014",
+          "body": "{\n  \"data\": [\n    {\n      \"type\": \"VSphereBackup\",\n      \"status\": \"Stopped\",\n      \"lastResult\": \"Success\",\n      \"workload\": \"Vm\",\n      \"id\": \"11111111-0000-0000-0000-000000000001\",\n      \"name\": \"Linux backup job\",\n      \"description\": \"Created by veeamadmin\",\n      \"lastRun\": \"2026-01-01T04:00:00-04:00\",\n      \"nextRun\": \"2026-01-02T04:00:00-04:00\",\n      \"nextRunPolicy\": \"Daily\",\n      \"repositoryId\": \"22222222-0000-0000-0000-000000000001\",\n      \"repositoryName\": \"Default Backup Repository\",\n      \"objectsCount\": 1,\n      \"sessionId\": \"33333333-0000-0000-0000-000000000001\",\n      \"highPriority\": false,\n      \"progressPercent\": 100,\n      \"sessionProgress\": {\n        \"bottleneck\": \"Proxy\",\n        \"duration\": \"00:26:04\",\n        \"processingRate\": \"18.3 MB/s\",\n        \"processedSize\": 17179869184,\n        \"readSize\": 8074035200,\n        \"transferredSize\": 3882512848,\n        \"progressPercent\": 100\n      },\n      \"isStorageSnapshot\": false\n    },\n    {\n      \"type\": \"VSphereBackup\",\n      \"status\": \"Running\",\n      \"lastResult\": \"None\",\n      \"workload\": \"Application\",\n      \"id\": \"11111111-0000-0000-0000-000000000002\",\n      \"name\": \"PostgreSQL backup\",\n      \"description\": \"Created by veeamadmin\",\n      \"lastRun\": \"2026-01-01T04:00:00-04:00\",\n      \"nextRun\": \"2026-01-02T04:00:00-04:00\",\n      \"nextRunPolicy\": \"Daily\",\n      \"repositoryId\": \"22222222-0000-0000-0000-000000000001\",\n      \"repositoryName\": \"Default Backup Repository\",\n      \"objectsCount\": 1,\n      \"sessionId\": \"33333333-0000-0000-0000-000000000002\",\n      \"highPriority\": false,\n      \"progressPercent\": 100,\n      \"sessionProgress\": {\n        \"bottleneck\": \"Proxy\",\n        \"duration\": \"00:26:04\",\n        \"processingRate\": \"18.3 MB/s\",\n        \"processedSize\": 17179869184,\n        \"readSize\": 8074035200,\n        \"transferredSize\": 3882512848,\n        \"progressPercent\": 100\n      },\n      \"isStorageSnapshot\": false\n    },\n    {\n      \"type\": \"BackupCopy\",\n      \"status\": \"Stopped\",\n      \"lastResult\": \"Warning\",\n      \"workload\": \"Vm\",\n      \"id\": \"11111111-0000-0000-0000-000000000003\",\n      \"name\": \"Backup copy job\",\n      \"description\": \"Created by veeamadmin\",\n      \"lastRun\": \"2026-01-01T04:00:00-04:00\",\n      \"nextRun\": \"2026-01-02T04:00:00-04:00\",\n      \"nextRunPolicy\": \"Daily\",\n      \"repositoryId\": \"22222222-0000-0000-0000-000000000001\",\n      \"repositoryName\": \"Default Backup Repository\",\n      \"objectsCount\": 1,\n      \"sessionId\": \"33333333-0000-0000-0000-000000000003\",\n      \"highPriority\": false,\n      \"progressPercent\": 100,\n      \"sessionProgress\": {\n        \"bottleneck\": \"Proxy\",\n        \"duration\": \"00:26:04\",\n        \"processingRate\": \"18.3 MB/s\",\n        \"processedSize\": 17179869184,\n        \"readSize\": 8074035200,\n        \"transferredSize\": 3882512848,\n        \"progressPercent\": 100\n      },\n      \"isStorageSnapshot\": false\n    },\n    {\n      \"type\": \"LinuxAgentBackup\",\n      \"status\": \"Stopped\",\n      \"lastResult\": \"Failed\",\n      \"workload\": \"Server\",\n      \"id\": \"11111111-0000-0000-0000-000000000004\",\n      \"name\": \"Agent backup job\",\n      \"description\": \"Created by veeamadmin\",\n      \"lastRun\": \"2026-01-01T04:00:00-04:00\",\n      \"nextRun\": \"2026-01-02T04:00:00-04:00\",\n      \"nextRunPolicy\": \"Daily\",\n      \"repositoryId\": \"22222222-0000-0000-0000-000000000001\",\n      \"repositoryName\": \"Default Backup Repository\",\n      \"objectsCount\": 1,\n      \"sessionId\": \"33333333-0000-0000-0000-000000000004\",\n      \"highPriority\": false,\n      \"progressPercent\": 100,\n      \"sessionProgress\": {\n        \"bottleneck\": \"Proxy\",\n        \"duration\": \"00:26:04\",\n        \"processingRate\": \"18.3 MB/s\",\n        \"processedSize\": 17179869184,\n        \"readSize\": 8074035200,\n        \"transferredSize\": 3882512848,\n        \"progressPercent\": 100\n      },\n      \"isStorageSnapshot\": false\n    },\n    {\n      \"type\": \"VSphereBackup\",\n      \"status\": \"Disabled\",\n      \"lastResult\": \"Failed\",\n      \"workload\": \"Vm\",\n      \"id\": \"11111111-0000-0000-0000-000000000005\",\n      \"name\": \"Old backup job\",\n      \"description\": \"Created by veeamadmin\",\n      \"lastRun\": \"2026-01-01T04:00:00-04:00\",\n      \"nextRun\": \"2026-01-02T04:00:00-04:00\",\n      \"nextRunPolicy\": \"Daily\",\n      \"repositoryId\": \"22222222-0000-0000-0000-000000000001\",\n      \"repositoryName\": \"Default Backup Repository\",\n      \"objectsCount\": 1,\n      \"sessionId\": \"33333333-0000-0000-0000-000000000005\",\n      \"highPriority\": false,\n      \"progressPercent\": 100,\n      \"sessionProgress\": {\n        \"bottleneck\": \"Proxy\",\n        \"duration\": \"00:26:04\",\n        \"processingRate\": \"18.3 MB/s\",\n        \"processedSize\": 17179869184,\n        \"readSize\": 8074035200,\n        \"transferredSize\": 3882512848,\n        \"progressPercent\": 100\n      },\n      \"isStorageSnapshot\": false\n    }\n  ],\n  \"pagination\": {\n    \"total\": 5,\n    \"count\": 5,\n    \"skip\": 0,\n    \"limit\": 200\n  }\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "All jobs",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "abcdef00-0000-0000-0000-000000000019",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/v1/backupInfrastructure/repositories/states",
+      "responses": [
+        {
+          "uuid": "abcdef00-0000-0000-0000-000000000015",
+          "body": "{\n  \"data\": [],\n  \"pagination\": {\n    \"total\": 0,\n    \"count\": 0,\n    \"skip\": 0,\n    \"limit\": 200\n  }\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "No repositories",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "Host",
+              "value": "^no-repositories\\.example\\.com(:\\d+)?$",
+              "invert": false,
+              "operator": "regex"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "abcdef00-0000-0000-0000-000000000016",
+          "body": "{\n  \"data\": [\n    {\n      \"type\": \"WinLocal\",\n      \"id\": \"22222222-0000-0000-0000-000000000001\",\n      \"name\": \"Backup Repository 1\",\n      \"description\": \"Created by veeamadmin\",\n      \"hostId\": \"44444444-0000-0000-0000-000000000001\",\n      \"hostName\": \"backup01.example.com\",\n      \"path\": \"C:\\\\Backup Repository\",\n      \"capacityGB\": 299.4,\n      \"freeGB\": 217.8,\n      \"usedSpaceGB\": 173.4,\n      \"isOnline\": true,\n      \"isOutOfDate\": false\n    },\n    {\n      \"type\": \"WinLocal\",\n      \"id\": \"22222222-0000-0000-0000-000000000002\",\n      \"name\": \"Default Backup Repository\",\n      \"description\": \"Created by veeamadmin\",\n      \"hostId\": \"44444444-0000-0000-0000-000000000002\",\n      \"hostName\": \"backup02.example.com\",\n      \"path\": \"C:\\\\Backup\",\n      \"capacityGB\": 99.4,\n      \"freeGB\": 16.4,\n      \"usedSpaceGB\": 30.4,\n      \"isOnline\": true,\n      \"isOutOfDate\": true\n    },\n    {\n      \"type\": \"LinuxHardened\",\n      \"id\": \"22222222-0000-0000-0000-000000000003\",\n      \"name\": \"Hardened Repository\",\n      \"description\": \"Created by veeamadmin\",\n      \"hostId\": \"44444444-0000-0000-0000-000000000003\",\n      \"hostName\": \"backup03.example.com\",\n      \"path\": \"/mnt/backup\",\n      \"capacityGB\": 1024,\n      \"freeGB\": 100,\n      \"usedSpaceGB\": 900,\n      \"isOnline\": false,\n      \"isOutOfDate\": false\n    },\n    {\n      \"type\": \"AmazonS3\",\n      \"id\": \"22222222-0000-0000-0000-000000000004\",\n      \"name\": \"Object Storage Repository\",\n      \"description\": \"Created by veeamadmin\",\n      \"hostId\": \"44444444-0000-0000-0000-000000000004\",\n      \"hostName\": \"\",\n      \"path\": \"bucket01\",\n      \"capacityGB\": 0,\n      \"freeGB\": 0,\n      \"usedSpaceGB\": 12.5,\n      \"isOnline\": true,\n      \"isOutOfDate\": false\n    }\n  ],\n  \"pagination\": {\n    \"total\": 4,\n    \"count\": 4,\n    \"skip\": 0,\n    \"limit\": 200\n  }\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "Without scale-out extents",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "excludeExtents",
+              "value": "true",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "abcdef00-0000-0000-0000-000000000017",
+          "body": "{\n  \"data\": [\n    {\n      \"type\": \"WinLocal\",\n      \"id\": \"22222222-0000-0000-0000-000000000001\",\n      \"name\": \"Backup Repository 1\",\n      \"description\": \"Created by veeamadmin\",\n      \"hostId\": \"44444444-0000-0000-0000-000000000001\",\n      \"hostName\": \"backup01.example.com\",\n      \"path\": \"C:\\\\Backup Repository\",\n      \"capacityGB\": 299.4,\n      \"freeGB\": 217.8,\n      \"usedSpaceGB\": 173.4,\n      \"isOnline\": true,\n      \"isOutOfDate\": false\n    },\n    {\n      \"type\": \"WinLocal\",\n      \"id\": \"22222222-0000-0000-0000-000000000002\",\n      \"name\": \"Default Backup Repository\",\n      \"description\": \"Created by veeamadmin\",\n      \"hostId\": \"44444444-0000-0000-0000-000000000002\",\n      \"hostName\": \"backup02.example.com\",\n      \"path\": \"C:\\\\Backup\",\n      \"capacityGB\": 99.4,\n      \"freeGB\": 16.4,\n      \"usedSpaceGB\": 30.4,\n      \"isOnline\": true,\n      \"isOutOfDate\": true\n    },\n    {\n      \"type\": \"LinuxHardened\",\n      \"id\": \"22222222-0000-0000-0000-000000000003\",\n      \"name\": \"Hardened Repository\",\n      \"description\": \"Created by veeamadmin\",\n      \"hostId\": \"44444444-0000-0000-0000-000000000003\",\n      \"hostName\": \"backup03.example.com\",\n      \"path\": \"/mnt/backup\",\n      \"capacityGB\": 1024,\n      \"freeGB\": 100,\n      \"usedSpaceGB\": 900,\n      \"isOnline\": false,\n      \"isOutOfDate\": false\n    },\n    {\n      \"type\": \"AmazonS3\",\n      \"id\": \"22222222-0000-0000-0000-000000000004\",\n      \"name\": \"Object Storage Repository\",\n      \"description\": \"Created by veeamadmin\",\n      \"hostId\": \"44444444-0000-0000-0000-000000000004\",\n      \"hostName\": \"\",\n      \"path\": \"bucket01\",\n      \"capacityGB\": 0,\n      \"freeGB\": 0,\n      \"usedSpaceGB\": 12.5,\n      \"isOnline\": true,\n      \"isOutOfDate\": false\n    },\n    {\n      \"type\": \"LinuxLocal\",\n      \"id\": \"22222222-0000-0000-0000-000000000005\",\n      \"name\": \"Scale-out extent 1\",\n      \"description\": \"Created by veeamadmin\",\n      \"hostId\": \"44444444-0000-0000-0000-000000000005\",\n      \"hostName\": \"backup04.example.com\",\n      \"path\": \"/mnt/extent1\",\n      \"capacityGB\": 500,\n      \"freeGB\": 250,\n      \"usedSpaceGB\": 250,\n      \"isOnline\": true,\n      \"isOutOfDate\": false\n    }\n  ],\n  \"pagination\": {\n    \"total\": 5,\n    \"count\": 5,\n    \"skip\": 0,\n    \"limit\": 200\n  }\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "All repositories",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "abcdef00-0000-0000-0000-000000000022",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/v1/backupInfrastructure/managedServers",
+      "responses": [
+        {
+          "uuid": "abcdef00-0000-0000-0000-000000000020",
+          "body": "{\n  \"data\": [],\n  \"pagination\": {\n    \"total\": 0,\n    \"count\": 0,\n    \"skip\": 0,\n    \"limit\": 200\n  }\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "No managed servers",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "Host",
+              "value": "^no-servers\\.example\\.com(:\\d+)?$",
+              "invert": false,
+              "operator": "regex"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "abcdef00-0000-0000-0000-000000000021",
+          "body": "{\n  \"data\": [\n    {\n      \"sshSettings\": {\n        \"sshTimeOutMs\": 20000,\n        \"portRangeStart\": 2500,\n        \"portRangeEnd\": 3300,\n        \"serverSide\": false\n      },\n      \"type\": \"LinuxHost\",\n      \"id\": \"33333333-0000-0000-0000-000000000001\",\n      \"name\": \"linux01.example.com\",\n      \"description\": \"Created by veeamadmin\",\n      \"credentialsId\": \"55555555-0000-0000-0000-000000000001\",\n      \"status\": \"Available\",\n      \"credentialsStorageType\": \"Permanent\"\n    },\n    {\n      \"networkSettings\": {\n        \"components\": [\n          {\n            \"componentName\": \"InstallerSvc\",\n            \"port\": 6160\n          },\n          {\n            \"componentName\": \"TransportSvc\",\n            \"port\": 6162\n          }\n        ],\n        \"portRangeStart\": 2500,\n        \"portRangeEnd\": 3300,\n        \"serverSide\": false\n      },\n      \"type\": \"WindowsHost\",\n      \"id\": \"33333333-0000-0000-0000-000000000002\",\n      \"name\": \"windows01.example.com\",\n      \"description\": \"Created by veeamadmin\",\n      \"credentialsId\": \"55555555-0000-0000-0000-000000000002\",\n      \"status\": \"Available\",\n      \"credentialsStorageType\": \"Permanent\"\n    },\n    {\n      \"networkSettings\": {\n        \"components\": [\n          {\n            \"componentName\": \"InstallerSvc\",\n            \"port\": 6160\n          },\n          {\n            \"componentName\": \"TransportSvc\",\n            \"port\": 6162\n          }\n        ],\n        \"portRangeStart\": 2500,\n        \"portRangeEnd\": 3300,\n        \"serverSide\": false\n      },\n      \"type\": \"WindowsHost\",\n      \"id\": \"33333333-0000-0000-0000-000000000003\",\n      \"name\": \"windows02.example.com\",\n      \"description\": \"Created by veeamadmin\",\n      \"credentialsId\": \"55555555-0000-0000-0000-000000000002\",\n      \"status\": \"Unavailable\",\n      \"credentialsStorageType\": \"Permanent\"\n    },\n    {\n      \"viHostType\": \"VC\",\n      \"port\": 443,\n      \"type\": \"ViHost\",\n      \"id\": \"33333333-0000-0000-0000-000000000004\",\n      \"name\": \"vcenter01.example.com\",\n      \"description\": \"Created by veeamadmin\",\n      \"credentialsId\": \"55555555-0000-0000-0000-000000000002\",\n      \"status\": \"Available\"\n    }\n  ],\n  \"pagination\": {\n    \"total\": 4,\n    \"count\": 4,\n    \"skip\": 0,\n    \"limit\": 200\n  }\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "All managed servers",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    }
+  ],
+  "rootChildren": [
+    {
+      "type": "route",
+      "uuid": "abcdef00-0000-0000-0000-000000000009"
+    },
+    {
+      "type": "route",
+      "uuid": "abcdef00-0000-0000-0000-000000000010"
+    },
+    {
+      "type": "route",
+      "uuid": "abcdef00-0000-0000-0000-000000000018"
+    },
+    {
+      "type": "route",
+      "uuid": "abcdef00-0000-0000-0000-000000000019"
+    },
+    {
+      "type": "route",
+      "uuid": "abcdef00-0000-0000-0000-000000000022"
+    }
+  ],
+  "proxyMode": false,
+  "proxyHost": "",
+  "proxyRemovePrefix": false,
+  "tlsOptions": {
+    "enabled": false,
+    "type": "CERT",
+    "pfxPath": "",
+    "certPath": "",
+    "keyPath": "",
+    "caPath": "",
+    "passphrase": ""
+  },
+  "cors": true,
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json"
+    },
+    {
+      "key": "Access-Control-Allow-Origin",
+      "value": "*"
+    },
+    {
+      "key": "Access-Control-Allow-Methods",
+      "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+    },
+    {
+      "key": "Access-Control-Allow-Headers",
+      "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+    }
+  ],
+  "proxyReqHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "proxyResHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "data": [],
+  "callbacks": []
+}

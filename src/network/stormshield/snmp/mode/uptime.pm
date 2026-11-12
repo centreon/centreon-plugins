@@ -25,7 +25,7 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::plugins::constants qw/:counters :values/;
-use centreon::plugins::misc qw(is_not_empty);
+use centreon::plugins::misc qw(is_not_empty change_seconds);
 
 
 sub set_counters {
@@ -142,19 +142,7 @@ sub manage_selection {
 sub custom_uptime_output {
     my ($self, %options) = @_;
 
-    my $uptime_seconds = $self->{result_values}->{uptime};
-
-    my $days = $uptime_seconds / 86400;
-    my $hours = ($uptime_seconds % 86400) / 3600;
-    my $minutes = ($uptime_seconds % 3600) / 60;
-    my $seconds = $uptime_seconds % 60;
-
-    my $msg = sprintf(
-        "Uptime: %d days %02d hours %02d minutes %02d seconds",
-        $days, $hours, $minutes, $seconds
-    );
-
-    return $msg;
+    return 'Uptime: ' . change_seconds(value => $self->{result_values}->{uptime}, start => 'd');
 }
 
 1;

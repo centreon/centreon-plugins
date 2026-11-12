@@ -34,16 +34,16 @@ Auto-update ${tc}
     ...    --
     ...    1
     ...    ${EMPTY}
-    ...    CRITICAL: Update: Patterns is broken - Update: CustomPatterns has failed
+    ...    CRITICAL: Update: Patterns is broken (Last Update: 2026-02-16 18:29:14) - Update: CustomPatterns has failed (Last Update: N/A)
     ...    2
     ...    --unknown-status='${PERCENT}\\{state\\} eq "Failed"' --warning-status= --critical-status=
-    ...    UNKNOWN: Update: CustomPatterns has failed
+    ...    UNKNOWN: Update: CustomPatterns has failed (Last Update: N/A)
     ...    3
     ...    --warning-status='${PERCENT}\\{state\\} eq "Failed"' --critical-status= --unknown-status=
-    ...    WARNING: Update: CustomPatterns has failed
+    ...    WARNING: Update: CustomPatterns has failed (Last Update: N/A)
     ...    4
     ...    --critical-status='${PERCENT}\\{state\\} eq "Failed"' --unknown-status= --warning-status=
-    ...    CRITICAL: Update: CustomPatterns has failed
+    ...    CRITICAL: Update: CustomPatterns has failed (Last Update: N/A)
     ...    5
     ...    --critical-status= --unknown-status= --warning-status= --verbose
-    ...    OK: All Updates and Webservices are up to date Update: Antispam never started Update: Metadata never started Update: CustomWebServices is disabled Update: Patterns is broken Update: CustomPatterns has failed Update: AdvancedAV never started Update: URLFiltering never started Update: CompromisedUrls never started Update: Vaderetro never started Update: RootCertificates never started Update: IPData never started
+    ...    OK: All Updates and Webservices are up to date Update: Antispam never started Update: Metadata never started Update: CustomWebServices is disabled Update: Patterns is broken (Last Update: 2026-02-16 18:29:14) Update: CustomPatterns has failed (Last Update: N/A) Update: AdvancedAV never started Update: URLFiltering never started Update: CompromisedUrls never started Update: Vaderetro never started Update: RootCertificates never started Update: IPData never started

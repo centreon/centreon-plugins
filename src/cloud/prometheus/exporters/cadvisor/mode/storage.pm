@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,15 +24,16 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use centreon::plugins::constants qw(:counters :values);
 
 sub custom_usage_perfdata {
     my ($self, %options) = @_;
 
-    my $label = 'used';
+    my $nlabel = 'storage.space.usage.bytes';
     my $value_perf = $self->{result_values}->{used};
 
     if (defined($self->{instance_mode}->{option_results}->{free})) {
-        $label = 'free';
+        $nlabel = 'storage.space.free.bytes';
         $value_perf = $self->{result_values}->{free};
     }
     my %total_options = ();
@@ -42,13 +43,12 @@ sub custom_usage_perfdata {
     }
 
     $self->{output}->perfdata_add(
-        label => $label, unit => 'B',
-        nlabel => 'storage.space.usage.bytes',
+        nlabel => $nlabel, unit => 'B',
         value => $value_perf,
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, %total_options),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, %total_options),
         min => 0, max => $self->{result_values}->{total},
-        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
+        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{perf} : undef,
     );
 }
 
@@ -85,8 +85,7 @@ sub custom_usage_calc {
     my ($self, %options) = @_;
 
     $self->{result_values}->{label} = $self->{instance};
-    $self->{result_values}->{container} = $options{new_datas}->{$self->{instance} . '_container'};
-    $self->{result_values}->{pod} = $options{new_datas}->{$self->{instance} . '_pod'};
+    $self->{result_values}->{perf} = $options{new_datas}->{$self->{instance} . '_perf'};
     $self->{result_values}->{total} = $options{new_datas}->{$self->{instance} . '_limit'};    
     $self->{result_values}->{used} = $options{new_datas}->{$self->{instance} . '_used'};
     $self->{result_values}->{free} = $self->{result_values}->{total} - $self->{result_values}->{used};
@@ -107,18 +106,18 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'containers', type => 3, cb_prefix_output => 'prefix_containers_output', cb_long_output => 'long_output',
+        { name => 'containers', type => COUNTER_TYPE_MULTIPLE, cb_prefix_output => 'prefix_containers_output', cb_long_output => 'long_output',
           message_multiple => 'All containers storages usage are ok', indent_long_output => '    ',
             group => [
                 { name => 'storage', display_long => 1, cb_prefix_output => 'prefix_storage_output',
-                  message_multiple => 'All storages usage are ok', type => 1, skipped_code => { -10 => 1 } },
+                  message_multiple => 'All storages usage are ok', type => COUNTER_MULTIPLE_SUBINSTANCE, skipped_code => { NO_VALUE() => 1 } },
             ]
         }
     ];
 
     $self->{maps_counters}->{storage} = [
         { label => 'usage', set => {
-                key_values => [ { name => 'used' }, { name => 'limit' } ],
+                key_values => [ { name => 'used' }, { name => 'limit' }, { name => 'perf' } ],
                 closure_custom_calc => $self->can('custom_usage_calc'),
                 closure_custom_output => $self->can('custom_usage_output'),
                 closure_custom_perfdata => $self->can('custom_usage_perfdata'),
@@ -128,16 +127,22 @@ sub set_counters {
     ];
 }
 
-sub prefix_container_output {
+sub prefix_containers_output {
     my ($self, %options) = @_;
 
-    return "Container '" . $options{instance_value}->{container} . "' [pod: " . $options{instance_value}->{pod} . "] ";
+    my ($pod, $container) = ($options{instance_value}->{pod}, $options{instance_value}->{container});
+    return "Pod '" . $pod . "' " if ($container eq '');
+    return "Container '" . $container . "' " if ($pod eq '');
+    return "Container '" . $container . "' [pod: " . $pod . "] ";
 }
 
 sub long_output {
     my ($self, %options) = @_;
 
-    return "Checking container '" . $options{instance_value}->{container} . "' [pod: " . $options{instance_value}->{pod} . "]";
+    my ($pod, $container) = ($options{instance_value}->{pod}, $options{instance_value}->{container});
+    return "Checking pod '" . $pod . "'" if ($container eq '');
+    return "Checking container '" . $container . "'" if ($pod eq '');
+    return "Checking container '" . $container . "' [pod: " . $pod . "]";
 }
 
 sub prefix_storage_output {
@@ -148,12 +153,13 @@ sub prefix_storage_output {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "container:s"           => { name => 'container', default => 'container_name!~".*POD.*"' },
-        "pod:s"                 => { name => 'pod', default => 'pod_name=~".*"' },
+        "container:s"           => { name => 'container', default => 'container!~"|.*POD.*"' },
+        "pod:s"                 => { name => 'pod', default => 'pod=~".*"' },
+        "namespace:s"           => { name => 'namespace', default => 'namespace=~".*"' },
         "device:s"              => { name => 'device', default => 'device=~".*"' },
         "extra-filter:s@"       => { name => 'extra_filter' },
         "units:s"               => { name => 'units', default => '%' },
@@ -178,7 +184,7 @@ sub check_options {
     }
 
     $self->{labels} = {};
-    foreach my $label (('container', 'pod', 'device')) {
+    foreach my $label (('container', 'pod', 'namespace', 'device')) {
         if ($self->{option_results}->{$label} !~ /^(\w+)[!~=]+\".*\"$/) {
             $self->{output}->add_option_msg(short_msg => "Need to specify --" . $label . " option as a PromQL filter.");
             $self->{output}->option_exit();
@@ -201,24 +207,36 @@ sub manage_selection {
         queries => [
             'label_replace({__name__=~"' . $self->{metrics}->{used} . '",' .
                 $self->{option_results}->{container} . ',' .
-                $self->{option_results}->{pod} . ',' .
+                $self->{option_results}->{pod} . ',' . $self->{option_results}->{namespace} . ',' .
                 $self->{option_results}->{device} .
                 $self->{extra_filter} . '}, "__name__", "used", "", "")',
             'label_replace({__name__=~"' . $self->{metrics}->{limit} . '",' .
                 $self->{option_results}->{container} . ',' .
-                $self->{option_results}->{pod} . ',' .
+                $self->{option_results}->{pod} . ',' . $self->{option_results}->{namespace} . ',' .
                 $self->{option_results}->{device} .
                 $self->{extra_filter} . '}, "__name__", "limit", "", "")'
         ]
     );
 
     foreach my $result (@{$results}) {
-        next if (!defined($result->{metric}->{$self->{labels}->{pod}}) || !defined($result->{metric}->{$self->{labels}->{container}}));
-        $self->{containers}->{$result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}}}->{display} = $result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}};
-        $self->{containers}->{$result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}}}->{container} = $result->{metric}->{$self->{labels}->{container}};
-        $self->{containers}->{$result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}}}->{pod} = $result->{metric}->{$self->{labels}->{pod}};
-        $self->{containers}->{$result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}}}->{storage}->{$result->{metric}->{$self->{labels}->{device}}}->{display} = $result->{metric}->{$self->{labels}->{device}};
-        $self->{containers}->{$result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}}}->{storage}->{$result->{metric}->{$self->{labels}->{device}}}->{$result->{metric}->{__name__}} = ${$result->{value}}[1];
+        my $pod = $result->{metric}->{$self->{labels}->{pod}} // '';
+        my $container = $result->{metric}->{$self->{labels}->{container}} // '';
+        next if ($pod eq '' && $container eq '');
+        # without container label, keep the pod cgroup: the pause container has a name and would overwrite it
+        next if ($container eq '' && defined($result->{metric}->{name}));
+        my $namespace = $result->{metric}->{$self->{labels}->{namespace}} // '';
+        my $name = join("_", $namespace, $pod, $container);
+
+        $self->{containers}->{$name}->{display} = $name;
+        $self->{containers}->{$name}->{container} = $container;
+        $self->{containers}->{$name}->{pod} = $pod;
+
+        my $device = $result->{metric}->{$self->{labels}->{device}};
+        my $storage = $self->{containers}->{$name}->{storage}->{$device} //= {
+            display => $device,
+            perf    => [ grep { $_ ne '' } ($pod, $container, $device) ]
+        };
+        $storage->{$result->{metric}->{__name__}} = ${$result->{value}}[1];
     }
 
     if (scalar(keys %{$self->{containers}}) <= 0) {
@@ -235,19 +253,62 @@ __END__
 
 Check containers storages usage.
 
+The cAdvisor built in the kubelet (C</metrics/cadvisor>) does not export the disk usage of
+C<containerd> containers: this mode needs a standalone cAdvisor.
+
+Each series matching the filters is reported as:
+
+=over 4
+
+=item * a pod, when it has no container label (pod cgroup). The pause container of the pod is ignored.
+These series are excluded by the default C<--container> filter.
+
+=item * a container of a pod, when it has both labels.
+
+=item * a container running outside Kubernetes, when it has no pod label.
+
+=back
+
 =over 8
 
 =item B<--container>
 
-Filter on a specific container (must be a PromQL filter, Default: 'container_name!~".*POD.*"')
+Filter on a specific container (must be a PromQL filter, default: 'container!~"|.*POD.*"').
 
 =item B<--pod>
 
-Filter on a specific pod (must be a PromQL filter, Default: 'pod_name=~".*"')
+Filter on a specific pod (must be a PromQL filter, default: 'pod=~".*"').
+
+The label filtered is the first word of the C<--container> and C<--pod> filters.
+The kubelet cAdvisor metrics label names depend on the platform version:
+
+=over 4
+
+=item * Kubernetes < 1.14: C<container_name> and C<pod_name> only.
+
+=item * Kubernetes 1.14 and 1.15: both C<container_name>/C<pod_name> and C<container>/C<pod>.
+
+=item * Kubernetes >= 1.16: C<container> and C<pod> only.
+
+=item * OpenShift: C<container_name> and C<pod_name> only up to 4.1 (Kubernetes 1.13),
+both label sets in 4.2 (Kubernetes 1.14), C<container> and C<pod> only from 4.3 (Kubernetes 1.16).
+
+=item * Rancher: depends on the Kubernetes version of the managed cluster. Kubernetes 1.16 is
+available from Rancher 2.3.0 (experimental), generally available in 2.3.2 and the default in 2.3.3.
+
+=back
+
+On older platforms, use for example: --container='container_name!~"|.*POD.*"' --pod='pod_name=~".*"'
+
+=item B<--namespace>
+
+Filter on a specific namespace (must be a PromQL filter, default: 'namespace=~".*"').
+Two pods with the same name in different namespaces are reported separately, but with the
+same output and performance data names: filter on the namespace to tell them apart.
 
 =item B<--device>
 
-Filter on a specific device (must be a PromQL filter, Default: 'device=~".*"')
+Filter on a specific device (must be a PromQL filter, default: 'device=~".*"').
 
 =item B<--units>
 
@@ -267,13 +328,13 @@ Critical threshold.
 
 =item B<--extra-filter>
 
-Add a PromQL filter (can be defined multiple times)
+Add a PromQL filter (can be defined multiple times).
 
 Example : --extra-filter='name=~".*pretty.*"'
 
 =item B<--metric-overload>
 
-Overload default metrics name (can be defined multiple times)
+Overload default metrics name (can be defined multiple times).
 
 Example : --metric-overload='metric,^my_metric_name$'
 

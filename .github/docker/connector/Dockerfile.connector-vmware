@@ -213,7 +213,6 @@ apt-get install -y --no-install-recommends \
     perl \
     libclass-methodmaker-perl \
     libcrypt-openssl-aes-perl \
-    libcrypt-ssleay-perl \
     libcurl4t64 \
     libio-socket-inet6-perl \
     libjson-xs-perl \

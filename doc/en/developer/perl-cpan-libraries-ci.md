@@ -4,7 +4,7 @@
 
 Some Perl modules required by the plugins are not available in the official package repositories of supported Linux distributions (AlmaLinux, Debian, Ubuntu). The `perl-cpan-libraries` workflow builds and delivers these missing libraries as native `.rpm` and `.deb` packages so they can be installed as standard system packages alongside the plugins.
 
-The pipeline is **smart**: before building anything, it checks whether a library is already available in the distribution's official repositories or in the Centreon stable Artifactory repository. Only libraries that are genuinely missing or at the wrong version are packaged.
+The pipeline is **smart**: before building anything, it checks whether a library is already available in the distribution's official repositories or in the Centreon Pulp repository. Only libraries that are genuinely missing or at the wrong version are packaged.
 
 ---
 
@@ -18,7 +18,7 @@ flowchart TD
     ENV --> CHK[check-official-repos\n8 distributions in parallel]
     ENV --> GPI[get-packaging-images\n9 images in parallel]
 
-    CHK --> GEN[generate-matrices\nMerge partials + filter stable Artifactory]
+    CHK --> GEN[generate-matrices\nMerge partials + filter Centreon Pulp]
     GEN --> PRPM[package-rpm\nup to 50 in parallel]
     GEN --> PDEB[package-deb\nup to 50 in parallel]
     GPI --> PRPM
@@ -33,7 +33,7 @@ flowchart TD
     SIGN --> TEST[test-packages\n9 distributions]
     CDEB --> TEST
 
-    TEST --> DP[deliver-packages\n8 distributions]
+    TEST --> DP[deliver-packages-pulp\n8 distributions]
     DP --> SKIP[set-skip-label]
 
     style TRIGGER fill:#555,color:#fff
@@ -129,7 +129,7 @@ The pipeline avoids unnecessary builds through a two-level filtering process:
 flowchart TD
     LIB[Library in cpan-libraries.json] --> A{Available in\nofficial distrib repo\nat expected version?}
     A -->|Yes| SKIP1[Skip — no build needed]
-    A -->|No| B{Already in\nCentreon stable\nArtifactory?}
+    A -->|No| B{Already in\nCentreon Pulp\nrepository?}
     B -->|Yes, same version| SKIP2[Skip — already delivered]
     B -->|No / different version| BUILD[Build and package]
 ```
@@ -142,9 +142,9 @@ Runs inside the actual distribution container (e.g. `debian:bookworm`) using the
 
 Uses `cpanminus` to resolve the CPAN distribution name and version for each module. Produces a `partial-matrix-{distrib}.json` file listing only the libraries that need to be built for that distribution.
 
-### Level 2 — Centreon stable Artifactory check (`generate-matrices`)
+### Level 2: Centreon Pulp repository check (`generate-matrices`)
 
-After collecting all partial matrices, `generate-matrices.py` additionally queries the Centreon public Artifactory instance (`packages.centreon.com`) for each library. If the package is already present in the stable repository at the expected version, it is excluded from the build matrix.
+After collecting all partial matrices, `generate-matrices.py` additionally reads the public metadata of the Centreon Pulp repository (`packages.centreon.com`) for each library. If the package is already present at the expected version (in `stable` for `testing` and `stable` builds, in `unstable` otherwise), it is excluded from the build matrix.
 
 This prevents redundant rebuilds when re-running the workflow on a branch where no library actually changed.
 
@@ -187,7 +187,7 @@ These images contain the tools needed to build packages (rpmbuild, fpm, dh-make-
 ### `generate-matrices`
 
 1. Downloads all `partial-matrix-*.json` artifacts.
-2. Optionally queries the Centreon stable Artifactory repository to exclude already-delivered packages.
+2. Optionally queries the Centreon Pulp repository to exclude already-delivered packages.
 3. Generates two flat `include`-only matrices (no cross-product):
    - `matrix_rpm`: one entry per (library, RPM distrib) combination that needs building
    - `matrix_deb`: one entry per (library, DEB build target) combination that needs building
@@ -258,9 +258,9 @@ Uses the `.github/actions/test-cpan-libs` action, which installs all packages fo
 
 On failure, an error log artifact is uploaded as `install_error_log_{distrib}-{arch}`.
 
-### `deliver-packages`
+### `deliver-packages-pulp`
 
-Uploads all packages to the Centreon Artifactory repository under the `perl-cpan-libraries` module name.
+Delivers all packages to the Centreon Pulp repository under the `perl-cpan-libraries` module name, with the `package-delivery-pulp` action on `testing` and `unstable`, and the `promote-to-stable-pulp` action on `stable`. The delivered or promoted packages are then verified on Pulp, and a missing package fails the job.
 
 **Conditions:**
 - `stability` is `testing` or `unstable`, **OR** `stability == 'stable'` with a `push` event (not `workflow_dispatch`)
@@ -277,8 +277,8 @@ Adds the label `skip-workflow-perl-cpan-libraries` to the PR after successful de
 | Key | Content | Produced by | Consumed by |
 |---|---|---|---|
 | `{image}-{sha}-{run_id}` | Docker image tar | `get-packaging-images` | `package-rpm`, `package-deb` |
-| `{sha}-{run_id}-rpm-{distrib}` | Signed `.rpm` files | `sign-rpm` | `test-packages`, `deliver-packages` |
-| `{sha}-{run_id}-deb-{distrib}` | `.deb` files | `download-and-cache-deb` | `test-packages`, `deliver-packages` |
+| `{sha}-{run_id}-rpm-{distrib}` | Signed `.rpm` files | `sign-rpm` | `test-packages`, `deliver-packages-pulp` |
+| `{sha}-{run_id}-deb-{distrib}` | `.deb` files | `download-and-cache-deb` | `test-packages`, `deliver-packages-pulp` |
 
 ---
 
