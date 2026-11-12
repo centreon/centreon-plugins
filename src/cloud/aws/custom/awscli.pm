@@ -116,10 +116,6 @@ sub check_options {
         $ENV{HTTPS_PROXY} = $self->{option_results}->{proxyurl};
     }
 
-    if (defined($self->{option_results}->{aws_role_arn}) && $self->{option_results}->{aws_role_arn} ne '') {
-        $self->assume_role(aws_arn => $self->{option_results}->{aws_role_arn});
-    }
-
     if (defined($self->{option_results}->{aws_secret_key}) && $self->{option_results}->{aws_secret_key} ne '') {
         $ENV{AWS_SECRET_ACCESS_KEY} = $self->{option_results}->{aws_secret_key};
     }
@@ -155,6 +151,10 @@ sub check_options {
         command_options => $self->{option_results}->{command_options},
         command_path => $self->{option_results}->{command_path}
     );
+
+    if (defined($self->{option_results}->{aws_role_arn}) && $self->{option_results}->{aws_role_arn} ne '') {
+        $self->assume_role(aws_arn => $self->{option_results}->{aws_role_arn});
+    }
 
     return 0;
 }
