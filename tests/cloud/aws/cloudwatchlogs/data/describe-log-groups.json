@@ -1,0 +1,19 @@
+{
+    "logGroups": [
+        {
+            "logGroupName": "/ecs/demo-service",
+            "arn": "arn:aws:logs:eu-west-1:123456789012:log-group:/ecs/demo-service:*",
+            "storedBytes": 2048
+        },
+        {
+            "logGroupName": "/aws/lambda/demo-function",
+            "arn": "arn:aws:logs:eu-west-1:123456789012:log-group:/aws/lambda/demo-function:*",
+            "storedBytes": 1024
+        },
+        {
+            "logGroupName": "/aws/rds/instance/demo-db/error",
+            "arn": "arn:aws:logs:eu-west-1:123456789012:log-group:/aws/rds/instance/demo-db/error:*",
+            "storedBytes": 512
+        }
+    ]
+}
