@@ -193,7 +193,8 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     my $results = get_port_security(snmp => $options{snmp});
-    my $attribute = { ifName => 'name', ifDescr => 'description', ifAlias => 'alias' }->{$self->{option_results}->{oid_display}};
+    # an empty --oid-display (empty macro) falls back to ifName
+    my $attribute = { ifName => 'name', ifDescr => 'description', ifAlias => 'alias' }->{$self->{option_results}->{oid_display} || 'ifName'};
 
     $self->{interfaces} = {};
     foreach my $instance (keys %$results) {
