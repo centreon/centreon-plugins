@@ -352,6 +352,7 @@ SMS
 SnapMirrors
 snmp
 snmpd.conf
+SOLIDserver
 space-usage-prct
 Splunk
 --sql-errors-exit
