@@ -253,6 +253,7 @@ jobs:
     if: |
       needs.get-environment.outputs.skip_workflow == 'false' &&
       needs.get-plugins.outputs.package_plugins == 'True' &&
+      needs.get-environment.outputs.stability != 'stable' &&
       ! cancelled() &&
       ! contains(needs.*.result, 'failure') &&
       ! contains(needs.*.result, 'cancelled')
@@ -499,33 +500,6 @@ jobs:
           pulp_url: ${{ vars.PULP_API_URL }}
           pulp_content_url: ${{ vars.PULP_CONTENT_URL }}
           audience: ${{ vars.PULP_OIDC_AUDIENCE }}
-
-  deliver-sources:
-    needs: [get-environment, fatpacker]
-    if: |
-      needs.get-environment.outputs.stability == 'stable' &&
-      github.event_name == 'push'
-    runs-on: ubuntu-24.04
-
-    steps:
-      - name: Checkout sources
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
-      - uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: ./build/
-          key: fatpacked-plugins-${{ github.sha }}-${{ github.run_id }}
-          fail-on-cache-miss: true
-
-      - name: Deliver sources
-        uses: ./.github/actions/release-sources
-        with:
-          bucket_directory: centreon-plugins
-          module_directory: build
-          module_name: centreon-plugins
-          version: ${{ needs.get-environment.outputs.version }}
-          release: ${{ needs.get-environment.outputs.release }}
-          token_download_centreon_com: ${{ secrets.TOKEN_DOWNLOAD_CENTREON_COM }}
 
   release-tag:
     needs: [get-environment]

@@ -18,7 +18,6 @@ flowchart TD
     TP --> DP[deliver-packages-pulp\n8 distributions]
     DP --> SKIP[set-skip-label]
 
-    FP --> DS[deliver-sources\nstable only]
     ENV --> RT[release-tag\nstable only]
 
     DP --> JIRA[create-jira-nightly-ticket\non failure only]
@@ -33,7 +32,6 @@ flowchart TD
     style PKG fill:#1b5e20,color:#fff
     style TP fill:#1b5e20,color:#fff
     style DP fill:#e65100,color:#fff
-    style DS fill:#e65100,color:#fff
     style RT fill:#e65100,color:#fff
     style SKIP fill:#4a148c,color:#fff
     style JIRA fill:#b71c1c,color:#fff
@@ -206,7 +204,7 @@ On failure, the file `lastlog.jsonl` is uploaded as an artifact.
 
 Produces standalone Perl scripts (one per plugin) by bundling all dependencies into a single executable file using [App::FatPacker](https://metacpan.org/pod/App::FatPacker).
 
-**Requires:** `package_plugins == 'True'` (at least one plugin to build)
+**Requires:** `package_plugins == 'True'` (at least one plugin to build) AND `stability != 'stable'`
 
 Steps:
 1. Restores `plugins.json` from cache.
@@ -285,12 +283,6 @@ Delivers packages to the Centreon Pulp repository (served on `packages.centreon.
 
 For each distribution, uses the `package-delivery-pulp` action with the `plugins` module name on `testing` and `unstable`, and the `promote-to-stable-pulp` action (promotion of the `testing` packages) on `stable`. The delivered or promoted packages are then verified on Pulp, and a missing package fails the job.
 
-### `deliver-sources`
-
-Uploads the fatpacked plugin files to the Centreon download server.
-
-**Conditions:** `stability == 'stable'` AND event is `push`
-
 ### `release-tag`
 
 Creates a Git tag in the format `plugins-YYYYMMDD`.
@@ -314,7 +306,7 @@ Automatically creates a Jira ticket if a nightly run fails (`is_nightly == 'true
 | Key | Content | Produced by | Consumed by |
 |---|---|---|---|
 | `plugins-{sha}-{run_id}` | `plugins.json` | `get-plugins` | `fatpacker`, `package`, `test-plugins` |
-| `fatpacked-plugins-{sha}-{run_id}` | `build/` directory | `fatpacker` | `package`, `deliver-sources` |
+| `fatpacked-plugins-{sha}-{run_id}` | `build/` directory | `fatpacker` | `package` |
 | `{sha}-{run_id}-{ext}-{distrib}` | `.rpm` / `.deb` files | `package` | `test-plugins`, `deliver-packages-pulp` |
 | `{image}-{sha}-{run_id}` | Docker image tar | `test-image-to-cache` | `robot-test` |
 
@@ -381,12 +373,9 @@ sequenceDiagram
 sequenceDiagram
     participant GH as GitHub Actions
     participant PULP as Pulp
-    participant DL as Download server
 
     GH->>GH: get-environment (stability=stable)
-    GH->>GH: fatpacker (no unit-tests, no package)
     GH->>PULP: deliver-packages-pulp (promote testing to stable)
-    GH->>DL: deliver-sources
     GH->>GH: release-tag (plugins-YYYYMMDD)
 ```
 
