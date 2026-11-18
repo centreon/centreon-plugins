@@ -206,11 +206,11 @@ Ignore closed incidents.
 
 =item B<--warning-incidents-total>
 
-Warning threshold for incidents total.
+Warning threshold for incidents total (number of incidents).
 
 =item B<--critical-incidents-total>
 
-Critical threshold for incidents total.
+Critical threshold for incidents total (number of incidents).
 
 =item B<--warning-incident-status>
 

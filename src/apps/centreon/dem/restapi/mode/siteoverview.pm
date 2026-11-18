@@ -156,35 +156,35 @@ so you won't see anything with a granularity lower than 24 hours.
 
 =item B<--warning-performance-score>
 
-Warning threshold for performance score.
+Warning threshold for performance score (from 0 to 100).
 
 =item B<--critical-performance-score>
 
-Critical threshold for performance score.
+Critical threshold for performance score (from 0 to 100).
 
 =item B<--warning-digital-sobriety-score>
 
-Warning threshold for digital sobriety score.
+Warning threshold for digital sobriety score (from 0 to 100).
 
 =item B<--critical-digital-sobriety-score>
 
-Critical threshold for digital sobriety score.
+Critical threshold for digital sobriety score (from 0 to 100).
 
 =item B<--warning-eco-design-score>
 
-Warning threshold for C<eco design> score.
+Warning threshold for C<eco design> score (from 0 to 100).
 
 =item B<--critical-eco-design-score>
 
-Critical threshold for C<eco design> score.
+Critical threshold for C<eco design> score (from 0 to 100).
 
 =item B<--warning-carbon-footprint>
 
-Warning threshold for carbon footprint.
+Warning threshold for carbon footprint per click (in g).
 
 =item B<--critical-carbon-footprint>
 
-Critical threshold for carbon footprint.
+Critical threshold for carbon footprint per click (in g).
 
 =back
 

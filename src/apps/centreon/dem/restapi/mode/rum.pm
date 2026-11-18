@@ -195,7 +195,7 @@ __END__
 
 =head1 MODE
 
-Check Centreon DEM (formerly Quanta) RUM metrics for a given site.
+Check Centreon Experience Monitoring (formerly Quanta) RUM metrics for a given site.
 
 =over 8
 
@@ -219,27 +219,27 @@ To be used with --perspective. Limit the number of results to be fetched (number
 
 =item B<--warning-sessions>
 
-Warning threshold for sessions.
+Warning threshold for sessions (number of sessions).
 
 =item B<--critical-sessions>
 
-Critical threshold for sessions.
+Critical threshold for sessions (number of sessions).
 
 =item B<--warning-page-views>
 
-Warning threshold for page views.
+Warning threshold for page views (number of page views).
 
 =item B<--critical-page-views>
 
-Critical threshold for page views.
+Critical threshold for page views (number of page views).
 
 =item B<--warning-bounce-rate>
 
-Warning threshold for bounce rate.
+Warning threshold for bounce rate (in %).
 
 =item B<--critical-bounce-rate>
 
-Critical threshold for bounce rate.
+Critical threshold for bounce rate (in %).
 
 =item B<--warning-ttfb>
 
@@ -267,11 +267,11 @@ Critical threshold for time to interaction next paint (in ms).
 
 =item B<--warning-speed-index>
 
-Warning threshold for speed index.
+Warning threshold for speed index (in ms).
 
 =item B<--critical-speed-index>
 
-Critical threshold for speed index.
+Critical threshold for speed index (in ms).
 
 =back
 
