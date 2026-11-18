@@ -25,7 +25,7 @@ use warnings;
 use centreon::plugins::http;
 use centreon::plugins::statefile;
 use JSON::XS;
-use MIME::Base64;
+use MIME::Base64 qw(encode_base64);
 use Digest::SHA qw(sha256_hex);
 use centreon::plugins::misc qw/json_encode json_decode is_empty/;
 
@@ -150,8 +150,7 @@ sub get_token {
         || !defined($token)
         || $options{force_authentication}
     ) {
-        my $auth_string = MIME::Base64::encode_base64($self->{username} . ':' . $self->{password});
-        chomp $auth_string;
+        my $auth_string = encode_base64($self->{username} . ':' . $self->{password}, '');
 
         $self->settings();
         my $content = $self->{http}->request(

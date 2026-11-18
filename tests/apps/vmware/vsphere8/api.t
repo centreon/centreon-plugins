@@ -2,6 +2,7 @@ use strict;
 use warnings;
 use Test2::V0;
 use FindBin;
+use MIME::Base64 qw(decode_base64);
 use lib "$FindBin::RealBin/../../../../src";
 use apps::vmware::vsphere8::custom::api;
 
@@ -20,6 +21,49 @@ use apps::vmware::vsphere8::custom::api;
     sub add_option_msg { }
     sub option_exit { }
 
+}
+
+{
+    package MockHttp;
+    sub new { bless { requests => [] }, shift }
+    sub request {
+        my ($self, %options) = @_;
+        push @{$self->{requests}}, \%options;
+        return '"abcdef00-0000-0000-0000-000000000001"';
+    }
+}
+
+{
+    package MockTokenCache;
+    sub new { bless {}, shift }
+    sub read { 0 }
+    sub get { undef }
+    sub write { }
+}
+
+sub test_authorization_header {
+    my ($username, $password, $description) = @_;
+
+    my $api = apps::vmware::vsphere8::custom::api->new(
+        options => MockOptions->new(),
+        output  => MockOutput->new()
+    );
+    $api->{hostname}      = 'localhost';
+    $api->{port}          = 3000;
+    $api->{username}      = $username;
+    $api->{password}      = $password;
+    $api->{http}          = MockHttp->new();
+    $api->{token_cache}   = MockTokenCache->new();
+    $api->{settings_done} = 1;
+
+    is($api->get_token(), 'abcdef00-0000-0000-0000-000000000001', "$description: token returned");
+
+    my ($auth_header) = grep { /^Authorization:/ } @{$api->{http}->{requests}->[0]->{header}};
+    unlike($auth_header, qr/\n/, "$description: Authorization header is a single line");
+    my ($auth_string) = $auth_header =~ m{^Authorization: Basic ([A-Za-z0-9+/]+=*)$};
+    ok(defined($auth_string), "$description: Authorization header is a Basic one");
+    # decode_base64 ignores newlines, hence the single line check above
+    is(decode_base64($auth_string // ''), "$username:$password", "$description: credentials decoded from the header");
 }
 
 sub process_test {
@@ -73,6 +117,10 @@ sub process_test {
 sub main {
     #process_test('localhost', 443, 'https', '/v2', 10, 'user', 'pass');
     process_test('localhost', 3000, 'http', undef, 10, 'login', 'password');
+
+    test_authorization_header('login', 'password', 'short credentials');
+    # 83 characters: encode_base64 wraps its output beyond 57 input characters
+    test_authorization_header('user@vsphere.local', 'abcdefgh' x 8, 'long credentials');
 }
 
 main();
