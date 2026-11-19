@@ -25,7 +25,7 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
-use centreon::plugins::misc qw(is_not_empty);
+use centreon::plugins::misc qw(is_excluded);
 use centreon::plugins::constants qw(:counters :values);
 
 sub custom_interface_status_output {
@@ -111,10 +111,8 @@ sub manage_selection {
     my $instances = {};
     $self->{interfaces} = {};
     foreach my $interface (@$interfaces) {
-        next if (is_not_empty($self->{option_results}->{filter_instance})
-            && $interface->{metric}->{instance} !~ /$self->{option_results}->{filter_instance}/);
-        next if (is_not_empty($self->{option_results}->{filter_name})
-            && $interface->{metric}->{device} !~ /$self->{option_results}->{filter_name}/);
+        next if is_excluded($interface->{metric}->{instance}, $self->{option_results}->{filter_instance}, undef, output => $self->{output});
+        next if is_excluded($interface->{metric}->{device}, $self->{option_results}->{filter_name}, undef, output => $self->{output});
 
         $instances->{ $interface->{metric}->{instance} } = 1;
         $self->{interfaces}->{ $interface->{metric}->{instance} . $interface->{metric}->{device} } = {
