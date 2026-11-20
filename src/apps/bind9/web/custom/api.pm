@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -189,7 +189,7 @@ sub load_memory_xml_v3 {
     foreach my $node ($node_memory->getChildNodes()) {
         my $name = $node->getLocalName();
         next if (!defined($name));
-        if ($name eq 'TotalUse') {
+        if ($name eq 'Malloced') {
             $memory->{total_use} = $node->string_value;
         }
         if ($name eq 'InUse') {
