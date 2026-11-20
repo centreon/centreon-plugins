@@ -1,0 +1,40 @@
+{
+  "collect": {
+    "snmp": [
+      {
+        "name": "if",
+        "oid": "1.3.6.1.2.1.2.2.1",
+        "query": "Walk",
+        "labels": {
+          "1.2": "descr",
+          "1.8": "operstatus"
+        }
+      }
+    ]
+  },
+  "compute": {
+    "metrics": [
+      {
+        "name": "interface.status",
+        "value": "{if.operstatus}",
+        "prefix": "{if.descr}",
+        "value-map": {
+          "1": "up",
+          "2": "down",
+          "3": "testing",
+          "4": "unknown",
+          "5": "dormant",
+          "6": "notPresent",
+          "7": "lowerLayerDown"
+        },
+        "value-map-default": "unmapped",
+        "perfdata": false,
+        "threshold-suffix": "status",
+        "critical": "1:1"
+      }
+    ]
+  },
+  "output": {
+    "ok": "OK: All interfaces are up"
+  }
+}
