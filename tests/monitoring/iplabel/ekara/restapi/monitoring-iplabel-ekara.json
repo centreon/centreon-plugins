@@ -338,7 +338,7 @@
       "type": "http",
       "documentation": "",
       "method": "post",
-      "endpoint": "results-api/results/09fe2561-315b-470f-a7ac-9c30fbd2e0fb",
+      "endpoint": "results-api/scenario-results/09fe2561-315b-470f-a7ac-9c30fbd2e0fb",
       "responses": [
         {
           "uuid": "debf59fb-35ca-4482-b957-5cdf3b7777da",
@@ -437,7 +437,7 @@
       "type": "http",
       "documentation": "",
       "method": "post",
-      "endpoint": "results-api/results/127a149b-0fa6-4859-820e-9c4db23b6454",
+      "endpoint": "results-api/scenario-results/127a149b-0fa6-4859-820e-9c4db23b6454",
       "responses": [
         {
           "uuid": "e1882d7b-2d65-41fa-b7e5-ca33713138db",
@@ -495,7 +495,7 @@
       "type": "http",
       "documentation": "",
       "method": "post",
-      "endpoint": "results-api/results/41d36b91-a4d3-4b00-a3ca-9e4fcf737d30",
+      "endpoint": "results-api/scenario-results/41d36b91-a4d3-4b00-a3ca-9e4fcf737d30",
       "responses": [
         {
           "uuid": "07c2e64c-53c7-48c4-a684-328fc7baeb57",
@@ -553,7 +553,7 @@
       "type": "http",
       "documentation": "",
       "method": "post",
-      "endpoint": "results-api/results/425bff8b-51eb-4b68-8529-6258e7b7888c",
+      "endpoint": "results-api/scenario-results/425bff8b-51eb-4b68-8529-6258e7b7888c",
       "responses": [
         {
           "uuid": "b862b4f5-de3a-49b0-83a5-75aaf19a4d68",
@@ -611,7 +611,7 @@
       "type": "http",
       "documentation": "",
       "method": "post",
-      "endpoint": "results-api/results/478a6915-1c00-4e85-9fe2-7d919e28ce88",
+      "endpoint": "results-api/scenario-results/478a6915-1c00-4e85-9fe2-7d919e28ce88",
       "responses": [
         {
           "uuid": "49056e84-6551-40ae-b477-d2d02d7cb23b",
@@ -669,7 +669,7 @@
       "type": "http",
       "documentation": "",
       "method": "post",
-      "endpoint": "results-api/results/4fa9f25d-ae49-4848-823a-945e7f865f4b",
+      "endpoint": "results-api/scenario-results/4fa9f25d-ae49-4848-823a-945e7f865f4b",
       "responses": [
         {
           "uuid": "ecc298b8-8328-496c-a1d1-7a7e3b21ea55",
@@ -727,7 +727,7 @@
       "type": "http",
       "documentation": "",
       "method": "post",
-      "endpoint": "results-api/results/7622678e-ffec-49f5-8a67-7d1b4452bff6",
+      "endpoint": "results-api/scenario-results/7622678e-ffec-49f5-8a67-7d1b4452bff6",
       "responses": [
         {
           "uuid": "1e9dd117-758d-42c9-a3b3-8be8510b5cf7",
@@ -785,7 +785,7 @@
       "type": "http",
       "documentation": "",
       "method": "post",
-      "endpoint": "results-api/results/8d0a798c-1b47-4142-869d-9bdabc9c126c",
+      "endpoint": "results-api/scenario-results/8d0a798c-1b47-4142-869d-9bdabc9c126c",
       "responses": [
         {
           "uuid": "adcada46-8c3c-423a-8d15-4d8ac47c68a9",
@@ -843,7 +843,7 @@
       "type": "http",
       "documentation": "",
       "method": "post",
-      "endpoint": "results-api/results/eae701ac-4231-4fc5-94e3-08601ac591e9",
+      "endpoint": "results-api/scenario-results/eae701ac-4231-4fc5-94e3-08601ac591e9",
       "responses": [
         {
           "uuid": "19b10ca6-e4c9-4038-9ce2-f83a0f1639e0",
@@ -901,7 +901,7 @@
       "type": "http",
       "documentation": "",
       "method": "post",
-      "endpoint": "results-api/results/fc6b739e-c18c-40ab-917c-61d20dff830c",
+      "endpoint": "results-api/scenario-results/fc6b739e-c18c-40ab-917c-61d20dff830c",
       "responses": [
         {
           "uuid": "13780366-a431-4a45-9727-76a473889d7f",
@@ -1000,7 +1000,7 @@
       "type": "http",
       "documentation": "",
       "method": "post",
-      "endpoint": "results-api/results/fe1ca10e-1cf6-45c8-a7e9-b9b85272c086",
+      "endpoint": "results-api/scenario-results/fe1ca10e-1cf6-45c8-a7e9-b9b85272c086",
       "responses": [
         {
           "uuid": "2ae43dd0-c2e5-483b-92a8-199d2af8a6c9",
@@ -1165,7 +1165,7 @@
       "type": "http",
       "documentation": "",
       "method": "post",
-      "endpoint": "results-api/results/121ca10e-1cf6-45c8-a7e9-b9b85272c086",
+      "endpoint": "results-api/scenario-results/121ca10e-1cf6-45c8-a7e9-b9b85272c086",
       "responses": [
         {
           "uuid": "a5ac5470-43e9-4665-ba3b-bd4b43bec14b",
