@@ -70,7 +70,7 @@ sub check_options {
 
         $self->{output}->option_exit(short_msg => "Need to specify --".($opt=~s/_/-/gr)." option.")
             if $self->{$opt} eq '';
-    }    
+    }
 }
 
 sub set_options {
@@ -160,6 +160,9 @@ sub sites_accountSnapshot {
                          description
                        }
                        connectivityStatus
+                       haStatus{
+                        readiness
+                        }
                        operationalStatus
                        lastConnected
                        connectedSince
@@ -179,6 +182,7 @@ sub sites_accountSnapshot {
                 description => $site->{info}->{description},
                 connectivity_status => $site->{connectivityStatus},
                 operational_status => $site->{operationalStatus},
+                hastatus => $site->{haStatus}->{readiness},
                 last_connected => $site->{lastConnected},
                 connected_since => $site->{connectedSince},
                 pop_name => $site->{popName}
@@ -299,12 +303,12 @@ sub list_sites {
                 next unless exists $sites_snap->{ $site->{id} };
                 my $ref = $sites_snap->{ $site->{id} };
 
-                $site->{$_} = $ref->{$_} foreach qw/connectivity_status operational_status last_connected connected_since pop_name description/;
+                $site->{$_} = $ref->{$_} foreach qw/connectivity_status operational_status hastatus last_connected connected_since pop_name description/;
             }
         } else {
             # Otherwise set empty values
             foreach my $site (@response) {
-                $site->{$_} = '' foreach qw/connectivity_status operational_status last_connected connected_since pop_name description/;
+                $site->{$_} = '' foreach qw/connectivity_status operational_status hastatus last_connected connected_since pop_name description/;
             }
         }
     }
