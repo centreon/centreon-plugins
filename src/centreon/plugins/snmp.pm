@@ -71,7 +71,7 @@ sub new {
             'snmp-tls-our-identity:s'   => { name => 'snmp_tls_our_identity' },
             'snmp-tls-their-identity:s' => { name => 'snmp_tls_their_identity' },
             'snmp-tls-their-hostname:s' => { name => 'snmp_tls_their_hostname' },
-            'snmp-tls-trust-cert:s    ' => { name => 'snmp_tls_trust_cert' },
+            'snmp-tls-trust-cert:s' => { name => 'snmp_tls_trust_cert' },
             'snmp-errors-exit:s'        => { name => 'snmp_errors_exit', default => 'unknown' },
         });
         $options{options}->add_help(package => __PACKAGE__, sections => 'SNMP OPTIONS');
