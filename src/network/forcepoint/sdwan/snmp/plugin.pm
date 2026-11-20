@@ -41,6 +41,7 @@ sub new {
         'interfaces'       => 'snmp_standard::mode::interfaces',
         'list-disks'       => 'network::forcepoint::sdwan::snmp::mode::listdisks',
         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
+        'list-storages'    => 'snmp_standard::mode::liststorages',
         'load'             => 'snmp_standard::mode::loadaverage',
         'memory'           => 'snmp_standard::mode::memory',
         'rejected-packets' => 'network::forcepoint::sdwan::snmp::mode::rejectedpackets',
