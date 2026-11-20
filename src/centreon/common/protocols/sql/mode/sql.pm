@@ -24,6 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use centreon::plugins::misc;
 use Time::HiRes qw(gettimeofday tv_interval);
 
 sub custom_value_output {
@@ -76,8 +77,9 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
-    $options{options}->add_options(arguments => { 
+    $options{options}->add_options(arguments => {
         'sql-statement:s' => { name => 'sql_statement' },
+        'sql-file:s'      => { name => 'sql_file' },
         'format:s'        => { name => 'format', default => 'SQL statement result : %i.' },
         'perfdata-unit:s' => { name => 'perfdata_unit', default => '' },
         'perfdata-name:s' => { name => 'perfdata_name', default => 'value' },
@@ -94,10 +96,15 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    if (!defined($self->{option_results}->{sql_statement}) || $self->{option_results}->{sql_statement} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify '--sql-statement' option.");
-        $self->{output}->option_exit();
+    $self->{query} = $self->{option_results}->{sql_statement};
+    if (!defined($self->{query}) || $self->{query} eq '') {
+        if (!defined($self->{option_results}->{sql_file}) || $self->{option_results}->{sql_file} eq '') {
+            $self->{output}->add_option_msg(short_msg => "Need to specify --sql-statement or --sql-file option.");
+            $self->{output}->option_exit();
+        }
+        $self->{query} = centreon::plugins::misc::slurp_file(output => $self->{output}, file => $self->{option_results}->{sql_file});
     }
+
     if (!defined($self->{option_results}->{format}) || $self->{option_results}->{format} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify '--format' option.");
         $self->{output}->option_exit();
@@ -108,9 +115,9 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     $options{sql}->connect();
-    
+
     my $timing0 = [gettimeofday];
-    $options{sql}->query(query => $self->{option_results}->{sql_statement});
+    $options{sql}->query(query => $self->{query});
     my $value = $options{sql}->fetchrow_array();
     $self->{global} = {
         value => $value,
@@ -133,6 +140,10 @@ Check SQL statement.
 =item B<--sql-statement>
 
 SQL statement that returns a number.
+
+=item B<--sql-file>
+
+Define the file with the SQL request.
 
 =item B<--format>
 
