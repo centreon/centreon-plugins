@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -68,6 +68,8 @@ my %alarm_type_map = (
     '.1.3.6.1.4.1.534.1.7.42' => 'AlarmOutputBad',
     '.1.3.6.1.4.1.534.1.7.43' => 'AlarmAwaitingPower',
     '.1.3.6.1.4.1.534.1.7.44' => 'OnMaintenanceBypass',
+    # alarms added with the Eaton Network-M2 card
+    '.1.3.6.1.4.1.534.1.7.51' => 'OutputNotProtected',
 );
 
 sub new {
@@ -126,7 +128,8 @@ sub run {
         next if ($key !~ /^$oid_xupsAlarmDescr\.(\d+)$/);
         my $instance = $1;
 
-        my $type = $alarm_type_map{$result->{$key}};
+        # an alarm missing from the map must still be reported with its OID instead of an empty type
+        my $type = defined($alarm_type_map{$result->{$key}}) ? $alarm_type_map{$result->{$key}} : 'Unknown(' . $result->{$key} . ')';
         my $time = $result->{$oid_xupsAlarmTime . '.' . $instance};
         
         if (defined($self->{option_results}->{memory})) {

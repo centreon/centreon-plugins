@@ -459,6 +459,7 @@ WSMAN
 XCP-ng
 Xen
 XPath
+XUPS
 ZDX
 ZFS
 Zscaler
