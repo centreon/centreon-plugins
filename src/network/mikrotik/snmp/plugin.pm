@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2024-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -39,10 +39,12 @@ sub new {
         'list-interfaces'     => 'snmp_standard::mode::listinterfaces',
         'list-frequencies'    => 'network::mikrotik::snmp::mode::listfrequencies',
         'list-lte-interfaces' => 'network::mikrotik::snmp::mode::listlteinterfaces',
+        'list-sfp'            => 'network::mikrotik::snmp::mode::listsfp',
         'list-ssids'          => 'network::mikrotik::snmp::mode::listssids',
         'lte'                 => 'network::mikrotik::snmp::mode::lte',
         'lte-interfaces'      => 'network::mikrotik::snmp::mode::lteinterfaces',
         'memory'              => 'network::mikrotik::snmp::mode::memory',
+        'sfp'                 => 'network::mikrotik::snmp::mode::sfp',
         'signal'              => 'network::mikrotik::snmp::mode::signal',
         'time'                => 'snmp_standard::mode::ntp',
         'uptime'              => 'snmp_standard::mode::uptime'
@@ -57,6 +59,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Mikrotik equipments in SNMP.
+Check Mikrotik equipment in SNMP.
 
 =cut
