@@ -93,6 +93,7 @@ sub manage_selection {
 
     $self->{global} = {};
     foreach my $query (keys %{$server_stats->{opcounters}}) {
+        next if ref $server_stats->{opcounters}->{$query};
         $self->{global}->{$query} = $server_stats->{opcounters}->{$query};
         $self->{global}->{total} += $server_stats->{opcounters}->{$query};
     }
