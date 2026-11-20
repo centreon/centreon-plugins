@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2026 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -69,6 +69,27 @@ sub get_metrics_mapping {
             'label'  => 'ddos-inbound-packets',
             'nlabel' => 'publicip.ddos.inbound.packets.countpersecond',
             'unit'   => '/s',
+            'min'    => '0'
+        },
+        'packetcount' => {
+            'output' => 'Packet Count',
+            'label'  => 'packet-count',
+            'nlabel' => 'publicip.packets.count',
+            'unit'   => '',
+            'min'    => '0'
+        },
+        'bytecount' => {
+            'output' => 'Byte Count',
+            'label'  => 'byte-count',
+            'nlabel' => 'publicip.bytes',
+            'unit'   => 'B',
+            'min'    => '0'
+        },
+        'syncount' => {
+            'output' => 'Syn Count',
+            'label'  => 'syn-count',
+            'nlabel' => 'publicip.syn.count',
+            'unit'   => 'B',
             'min'    => '0'
         }
     };
@@ -163,17 +184,77 @@ Set resource name or ID (required).
 
 Set resource group (required if resource's name is used).
 
-=item B<---warning-*>
+=item B<---warning-ddos-dropped>
 
-Warning threshold where '*' can be:
-'ddos-dropped', 'ddos-forwarded', 'ddos-inbound', 'ddos-dropped-packets',
-'ddos-forwarded-packets', 'ddos-inbound-packets'.
+Warning threshold
 
-=item B<--critical-*>
+=item B<--critical-ddos-dropped>
 
-Critical threshold where '*' can be:
-'ddos-dropped', 'ddos-forwarded', 'ddos-inbound', 'ddos-dropped-packets',
-'ddos-forwarded-packets', 'ddos-inbound-packets'.
+Critical threshold
+
+=item B<---warning-ddos-forwarded>
+
+Warning threshold
+
+=item B<--critical-ddos-forwarded>
+
+Critical threshold
+
+=item B<---warning-ddos-inbound>
+
+Warning threshold
+
+=item B<--critical-ddos-inbound>
+
+Critical threshold
+
+=item B<---warning-ddos-dropped-packets>
+
+Warning threshold
+
+=item B<--critical-ddos-dropped-packets>
+
+Critical threshold
+
+=item B<---warning-ddos-forwarded-packets>
+
+Warning threshold
+
+=item B<--critical-ddos-forwarded-packets>
+
+Critical threshold
+
+=item B<---warning-ddos-inbound-packets>
+
+Warning threshold
+
+=item B<--critical-ddos-inbound-packets>
+
+Critical threshold
+
+=item B<---warning-ddos-packet-count>
+
+Warning threshold
+
+=item B<--critical-ddos-packet-count>
+
+Critical threshold
+
+=item B<---warning-ddos-byte-count>
+
+Warning threshold
+
+=item B<--critical-ddos-byte-count>
+
+Critical threshold
+
+=item B<---warning-ddos-syn-count>
+
+Warning threshold
+
+=item B<--critical-ddos-syn-count>
+
+Critical threshold
 
 =back
 
