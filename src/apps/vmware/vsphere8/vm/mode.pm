@@ -33,8 +33,9 @@ sub new {
 
     $options{options}->add_options(
         arguments => {
-            'vm-id:s'          => { name => 'vm_id' },
-            'vm-name:s'        => { name => 'vm_name' }
+            'vm-id:s'                => { name => 'vm_id' },
+            'vm-name:s'              => { name => 'vm_name' },
+            'vm-id-cache-duration:s' => { name => 'vm_id_cache_duration', default => 3600 }
         }
     );
     $options{options}->add_help(package => __PACKAGE__, sections => 'VMWARE 8 VM OPTIONS', once => 1);
@@ -54,12 +55,21 @@ sub get_vm_id {
         $self->{output}->option_exit();
     }
 
-    # return it from the cache if it is available
-    if ($self->{cache}->read(statefile => 'vsphere8_api_vm_info_' . md5_hex($self->{vm_name}))) {
-        my $vm_id = $self->{cache}->get(name => 'vm_id');
-        # store it to avoid re-reading the cache the next time it is asked
-        $self->{vm_id} = $vm_id;
-        return $self->{vm_id};
+    # return it from the cache if it is available and recent enough
+    # The statefile name includes the vCenter: the same VM name may exist on several
+    # vCenters, and a VM moved to another vCenter gets a new ID there. The cached ID also
+    # expires, so that a VM re-registered under a new ID is found again without having to
+    # delete the statefile by hand.
+    my $statefile = 'vsphere8_api_vm_info_'
+        . md5_hex($options{custom}->{hostname} . ':' . $options{custom}->{port} . '_' . $self->{vm_name});
+    if ($self->{cache}->read(statefile => $statefile)) {
+        my $vm_id   = $self->{cache}->get(name => 'vm_id');
+        my $updated = $self->{cache}->get(name => 'updated') // 0;
+        if (!centreon::plugins::misc::is_empty($vm_id) && time() - $updated < $self->{vm_id_cache_duration}) {
+            # store it to avoid re-reading the cache the next time it is asked
+            $self->{vm_id} = $vm_id;
+            return $self->{vm_id};
+        }
     }
 
     # get it from the API
@@ -178,8 +188,13 @@ sub check_options {
         $self->{output}->option_exit();
     }
 
-    $self->{vm_id}   = $self->{option_results}->{vm_id};
-    $self->{vm_name} = $self->{option_results}->{vm_name};
+    if ($self->{option_results}->{vm_id_cache_duration} !~ /^\d+$/) {
+        $self->{output}->option_exit(short_msg => "Wrong --vm-id-cache-duration value '" . $self->{option_results}->{vm_id_cache_duration} . "': it must be a number of seconds.");
+    }
+
+    $self->{vm_id}                = $self->{option_results}->{vm_id};
+    $self->{vm_name}              = $self->{option_results}->{vm_name};
+    $self->{vm_id_cache_duration} = $self->{option_results}->{vm_id_cache_duration};
 }
 
 1;
@@ -200,6 +215,12 @@ B<Using this option is mandatory if you have several VMs with the same name.>
 Define which VM to monitor based on its name (example: C<WEBSERVER01>).
 When possible, it is recommended to use C<--vm-id> instead.
 B<Do not use this option if you have several VMs with the same name.>
+
+=item B<--vm-id-cache-duration>
+
+Define how long (in seconds) the VM ID found from C<--vm-name> is kept in cache before
+being looked up again (default: C<3600>). The cache is kept per vCenter.
+Set it to C<0> to look the ID up at every check.
 
 =back
 
