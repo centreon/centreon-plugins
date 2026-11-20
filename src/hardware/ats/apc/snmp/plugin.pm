@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -34,8 +34,13 @@ sub new {
         'device-status' => 'hardware::ats::apc::snmp::mode::devicestatus',
         'input-lines'   => 'hardware::ats::apc::snmp::mode::inputlines',
         'output-lines'  => 'hardware::ats::apc::snmp::mode::outputlines',
+        'output-banks'  => 'hardware::ats::apc::snmp::mode::outputbanks',
         'time'          => 'hardware::ats::apc::snmp::mode::ntp',
         'uptime'        => 'snmp_standard::mode::uptime'
+    };
+
+    $self->{modes_options} = {
+        'uptime' => { force_new_perfdata => 1 }
     };
 
     return $self;
