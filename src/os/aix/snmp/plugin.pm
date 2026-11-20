@@ -39,6 +39,7 @@ sub new {
         'processcount'     => 'snmp_standard::mode::processcount',
         'storage'          => 'snmp_standard::mode::storage',
         'swap'             => 'os::aix::snmp::mode::swap',
+        'memory'           => 'os::aix::snmp::mode::memory',
         'time'             => 'snmp_standard::mode::ntp',
         'uptime'           => 'snmp_standard::mode::uptime',
     );
