@@ -210,7 +210,7 @@ __END__
 
 =head1 MODE
 
-Check Centreon DEM (formerly Quanta) statistics for a user journey.
+Check Centreon Experience Monitoring (formerly Quanta) statistics for a user journey.
 
 =over 8
 

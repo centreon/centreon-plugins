@@ -226,21 +226,21 @@ __END__
 
 =head1 NAME
 
-Centreon DEM (formerly Quanta) Rest API
+Centreon Experience Monitoring (formerly Quanta) Rest API
 
 =head1 SYNOPSIS
 
-Centreon DEM (formerly Quanta) Rest API custom mode
+Centreon Experience Monitoring (formerly Quanta) Rest API custom mode
 
 =head1 REST API OPTIONS
 
-Centreon DEM (formerly Quanta) Rest API
+Centreon Experience Monitoring (formerly Quanta) Rest API
 
 =over 8
 
 =item B<--hostname>
 
-Centreon DEM (formerly Quanta) API hostname (default: 'api.quanta.io')
+Centreon Experience Monitoring (formerly Quanta) API hostname (default: 'api.quanta.io')
 
 =item B<--port>
 

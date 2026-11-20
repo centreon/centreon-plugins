@@ -184,7 +184,7 @@ __END__
 
 =head1 MODE
 
-Check Centreon DEM (formerly Quanta) incidents for a given user journey.
+Check Centreon Experience Monitoring (formerly Quanta) incidents for a given user journey.
 
 =over 8
 
