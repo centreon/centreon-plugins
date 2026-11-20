@@ -48,6 +48,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Centreon DEM (formerly Quanta) application probes results using Rest API.
+Check Centreon Experience Monitoring (formerly Quanta) application probes results using Rest API.
 
 =cut

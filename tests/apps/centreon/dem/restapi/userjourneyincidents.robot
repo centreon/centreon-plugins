@@ -1,5 +1,5 @@
 *** Settings ***
-Documentation       Centreon DEM (formerly Quanta)
+Documentation       Centreon Experience Monitoring (formerly Quanta)
 
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
 

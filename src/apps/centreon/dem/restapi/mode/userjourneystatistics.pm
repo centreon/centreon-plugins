@@ -210,7 +210,7 @@ __END__
 
 =head1 MODE
 
-Check Centreon DEM (formerly Quanta) statistics for a user journey.
+Check Centreon Experience Monitoring (formerly Quanta) statistics for a user journey.
 
 =over 8
 
@@ -232,11 +232,11 @@ Set timeframe in seconds (default: 300).
 
 =item B<--warning-journey-performance-score>
 
-Warning threshold for journey performance score.
+Warning threshold for journey performance score (from 0 to 100).
 
 =item B<--critical-journey-performance-score>
 
-Critical threshold for journey performance score.
+Critical threshold for journey performance score (from 0 to 100).
 
 =item B<--warning-journey-hero-time>
 
@@ -262,45 +262,45 @@ Warning threshold for journey time to first byte (in ms).
 
 Critical threshold for journey time to first byte (in ms).
 
-=back
-
-=head2 Interaction related metrics
-
-The following parameters take effect only if --show-interactions is set
-
-=over 8
-
 =item B<--warning-interaction-performance-score>
 
-Warning threshold for interaction performance score.
+Warning threshold for interaction performance score (from 0 to 100).
+Only used with C<--show-interactions>.
 
 =item B<--critical-interaction-performance-score>
 
-Critical threshold for interaction performance score.
+Critical threshold for interaction performance score (from 0 to 100).
+Only used with C<--show-interactions>.
 
 =item B<--warning-interaction-hero-time>
 
 Warning threshold for interaction hero time (in ms).
+Only used with C<--show-interactions>.
 
 =item B<--critical-interaction-hero-time>
 
 Critical threshold for interaction hero time (in ms).
+Only used with C<--show-interactions>.
 
 =item B<--warning-interaction-speed-index>
 
 Warning threshold for interaction speed index (in ms).
+Only used with C<--show-interactions>.
 
 =item B<--critical-interaction-speed-index>
 
 Critical threshold for interaction speed index (in ms).
+Only used with C<--show-interactions>.
 
 =item B<--warning-interaction-ttfb>
 
 Warning threshold for interaction time to first byte (in ms).
+Only used with C<--show-interactions>.
 
 =item B<--critical-interaction-ttfb>
 
-Critical threshold for time to first byte (in ms).
+Critical threshold for interaction time to first byte (in ms).
+Only used with C<--show-interactions>.
 
 =back
 

@@ -103,7 +103,7 @@ __END__
 
 =head1 MODE
 
-List Centreon DEM (formerly Quanta) user journeys for a given site.
+List Centreon Experience Monitoring (formerly Quanta) user journeys for a given site.
 
 =over 8
 
