@@ -1,0 +1,155 @@
+{
+    "uuid": "71a2d0e1-59ca-4fc9-a977-c7b2ddc99a50",
+    "lastMigration": 32,
+    "name": "Aws cloudwatchlogs",
+    "endpointPrefix": "",
+    "latency": 0,
+    "port": 3000,
+    "hostname": "",
+    "folders": [],
+    "routes": [
+        {
+            "uuid": "22362511-1ab4-43b5-8eeb-4e1f269b68e4",
+            "type": "http",
+            "documentation": "",
+            "method": "post",
+            "endpoint": "logs/describe",
+            "responses": [
+                {
+                    "uuid": "67e22c1e-3fc1-4309-a811-25cd1be57f90",
+                    "body": "{\n  \"logGroups\": [\n    {\n      \"logGroupName\": \"/ecs/demo-service\",\n      \"arn\": \"arn:aws:logs:eu-west-1:123456789012:log-group:/ecs/demo-service:*\",\n      \"storedBytes\": 2048\n    },\n    {\n      \"logGroupName\": \"/aws/lambda/demo-function\",\n      \"arn\": \"arn:aws:logs:eu-west-1:123456789012:log-group:/aws/lambda/demo-function:*\",\n      \"storedBytes\": 1024\n    },\n    {\n      \"logGroupName\": \"/aws/rds/instance/demo-db/error\",\n      \"arn\": \"arn:aws:logs:eu-west-1:123456789012:log-group:/aws/rds/instance/demo-db/error:*\",\n      \"storedBytes\": 512\n    }\n  ]\n}",
+                    "latency": 0,
+                    "statusCode": 200,
+                    "label": "",
+                    "headers": [
+                        {
+                            "key": "Content-Type",
+                            "value": "application/x-amz-json-1.1"
+                        }
+                    ],
+                    "bodyType": "INLINE",
+                    "filePath": "",
+                    "databucketID": "",
+                    "sendFileAsBody": false,
+                    "rules": [],
+                    "rulesOperator": "OR",
+                    "disableTemplating": false,
+                    "fallbackTo404": false,
+                    "default": true,
+                    "crudKey": "id",
+                    "callbacks": []
+                }
+            ],
+            "responseMode": null
+        },
+        {
+            "uuid": "0a7eedcf-10a9-4da0-b9f7-fed3f0c584eb",
+            "type": "http",
+            "documentation": "",
+            "method": "post",
+            "endpoint": "logs/filter",
+            "responses": [
+                {
+                    "uuid": "29323e7a-412d-48e1-b932-dbaaca0f8bd2",
+                    "body": "{\n  \"events\": [\n    {\n      \"logStreamName\": \"app-stream-1\",\n      \"timestamp\": 1790000000000,\n      \"message\": \"INFO request done\",\n      \"ingestionTime\": 1790000000100,\n      \"eventId\": \"1\"\n    },\n    {\n      \"logStreamName\": \"app-stream-1\",\n      \"timestamp\": 1790000010000,\n      \"message\": \"WARN slow response\",\n      \"ingestionTime\": 1790000010100,\n      \"eventId\": \"2\"\n    },\n    {\n      \"logStreamName\": \"app-stream-2\",\n      \"timestamp\": 1790000020000,\n      \"message\": \"ERROR connection refused\",\n      \"ingestionTime\": 1790000020100,\n      \"eventId\": \"3\"\n    }\n  ],\n  \"searchedLogStreams\": []\n}",
+                    "latency": 0,
+                    "statusCode": 200,
+                    "label": "all streams",
+                    "headers": [
+                        {
+                            "key": "Content-Type",
+                            "value": "application/x-amz-json-1.1"
+                        }
+                    ],
+                    "bodyType": "INLINE",
+                    "filePath": "",
+                    "databucketID": "",
+                    "sendFileAsBody": false,
+                    "rules": [],
+                    "rulesOperator": "OR",
+                    "disableTemplating": false,
+                    "fallbackTo404": false,
+                    "default": true,
+                    "crudKey": "id",
+                    "callbacks": []
+                },
+                {
+                    "uuid": "ed619b98-281a-4e97-90f5-c2c1d2e635f4",
+                    "body": "{\n  \"events\": [\n    {\n      \"logStreamName\": \"app-stream-2\",\n      \"timestamp\": 1790000020000,\n      \"message\": \"ERROR connection refused\",\n      \"ingestionTime\": 1790000020100,\n      \"eventId\": \"3\"\n    }\n  ],\n  \"searchedLogStreams\": []\n}",
+                    "latency": 0,
+                    "statusCode": 200,
+                    "label": "stream app-stream-2",
+                    "headers": [
+                        {
+                            "key": "Content-Type",
+                            "value": "application/x-amz-json-1.1"
+                        }
+                    ],
+                    "bodyType": "INLINE",
+                    "filePath": "",
+                    "databucketID": "",
+                    "sendFileAsBody": false,
+                    "rules": [
+                        {
+                            "target": "body",
+                            "modifier": "",
+                            "value": "app-stream-2",
+                            "invert": false,
+                            "operator": "regex"
+                        }
+                    ],
+                    "rulesOperator": "OR",
+                    "disableTemplating": false,
+                    "fallbackTo404": false,
+                    "default": false,
+                    "crudKey": "id",
+                    "callbacks": []
+                }
+            ],
+            "responseMode": null
+        }
+    ],
+    "rootChildren": [
+        {
+            "type": "route",
+            "uuid": "22362511-1ab4-43b5-8eeb-4e1f269b68e4"
+        },
+        {
+            "type": "route",
+            "uuid": "0a7eedcf-10a9-4da0-b9f7-fed3f0c584eb"
+        }
+    ],
+    "proxyMode": false,
+    "proxyHost": "",
+    "proxyRemovePrefix": false,
+    "tlsOptions": {
+        "enabled": false,
+        "type": "CERT",
+        "pfxPath": "",
+        "certPath": "",
+        "keyPath": "",
+        "caPath": "",
+        "passphrase": ""
+    },
+    "cors": true,
+    "headers": [
+        {
+            "key": "Content-Type",
+            "value": "application/x-amz-json-1.1"
+        }
+    ],
+    "proxyReqHeaders": [
+        {
+            "key": "",
+            "value": ""
+        }
+    ],
+    "proxyResHeaders": [
+        {
+            "key": "",
+            "value": ""
+        }
+    ],
+    "data": [],
+    "callbacks": []
+}

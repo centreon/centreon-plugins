@@ -1,0 +1,26 @@
+{
+  "events": [
+    {
+      "logStreamName": "app-stream-1",
+      "timestamp": 1790000000000,
+      "message": "INFO request done",
+      "ingestionTime": 1790000000100,
+      "eventId": "1"
+    },
+    {
+      "logStreamName": "app-stream-1",
+      "timestamp": 1790000010000,
+      "message": "WARN slow response",
+      "ingestionTime": 1790000010100,
+      "eventId": "2"
+    },
+    {
+      "logStreamName": "app-stream-2",
+      "timestamp": 1790000020000,
+      "message": "ERROR connection refused",
+      "ingestionTime": 1790000020100,
+      "eventId": "3"
+    }
+  ],
+  "searchedLogStreams": []
+}

@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -30,8 +30,7 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $options{options}->add_options(arguments => {
-    });
+    $options{options}->add_options(arguments => {});
 
     return $self;
 }
@@ -41,23 +40,20 @@ sub check_options {
     $self->SUPER::init(%options);
 }
 
+# Both custom modes (awscli and paws) return the log groups with the key logGroupName.
 sub manage_selection {
     my ($self, %options) = @_;
 
-    return $options{custom}->cloudwatchlogs_describe_log_groups();
+    my $log_groups = $options{custom}->cloudwatchlogs_describe_log_groups();
+
+    return [ sort grep { $_ ne '' } map { $_->{logGroupName} // '' } @{$log_groups // []} ];
 }
 
 sub run {
     my ($self, %options) = @_;
 
-    my $log_groups = $self->manage_selection(%options);
-    foreach (@$log_groups) {
-        $self->{output}->output_add(
-            long_msg => sprintf(
-                '[group name = %s]',
-                defined($_->{logGroupName}) ? $_->{logGroupName} : $_->{LogGroupName}
-            )
-        );
+    foreach my $group_name (@{$self->manage_selection(%options)}) {
+        $self->{output}->output_add(long_msg => sprintf('[group name = %s]', $group_name));
     }
 
     $self->{output}->output_add(
@@ -77,11 +73,8 @@ sub disco_format {
 sub disco_show {
     my ($self, %options) = @_;
 
-    my $log_groups = $self->manage_selection(%options);
-    foreach (@$log_groups) {
-        $self->{output}->add_disco_entry(
-            group_name => $_->{logGroupName}
-        );
+    foreach my $group_name (@{$self->manage_selection(%options)}) {
+        $self->{output}->add_disco_entry(group_name => $group_name);
     }
 }
 
@@ -91,11 +84,10 @@ __END__
 
 =head1 MODE
 
-List cloudwatch logs groups.
+List CloudWatch Logs log groups.
 
 =over 8
 
 =back
 
 =cut
-    
