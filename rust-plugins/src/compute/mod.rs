@@ -29,9 +29,8 @@ pub mod lexer;
 pub mod threshold;
 
 use self::ast::ExprResult;
-use self::lexer::{LexicalError, Tok};
 use crate::snmp::SnmpResult;
-use lalrpop_util::{ParseError, lalrpop_mod};
+use lalrpop_util::lalrpop_mod;
 use log::{debug, trace};
 use regex::Regex;
 use serde::Deserialize;
@@ -131,7 +130,7 @@ impl<'a> Parser<'a> {
         let re = Regex::new(r"\{[a-zA-Z_][a-zA-Z0-9_.]*\}").unwrap();
         let mut suffix = expr;
         let mut result: ExprResult = ExprResult::Empty;
-        trace!("[eval_str] suffix: {:?} - re: {:?}", &suffix, &re);
+        trace!("[eval_str] suffix: {:?} - re: {:?}", suffix, re);
         loop {
             let found = re.find(suffix);
             if let Some(m) = found {
