@@ -71,7 +71,7 @@ sub new {
             'snmp-tls-our-identity:s'   => { name => 'snmp_tls_our_identity' },
             'snmp-tls-their-identity:s' => { name => 'snmp_tls_their_identity' },
             'snmp-tls-their-hostname:s' => { name => 'snmp_tls_their_hostname' },
-            'snmp-tls-trust-cert:s    ' => { name => 'snmp_tls_trust_cert' },
+            'snmp-tls-trust-cert:s'     => { name => 'snmp_tls_trust_cert' },
             'snmp-errors-exit:s'        => { name => 'snmp_errors_exit', default => 'unknown' },
         });
         $options{options}->add_help(package => __PACKAGE__, sections => 'SNMP OPTIONS');
@@ -1288,8 +1288,8 @@ the value of the --hostname parameter.
 
 =item B<--snmp-tls-trust-cert>
 
-A trusted CA certificate used to verify a remote host's certificate. 
-If you use this option, you must also  define --snmp-tls-their-hostname.
+A trusted CA certificate used to verify a remote host's certificate.
+If you use this option, you must also define --snmp-tls-their-hostname.
 
 =back
 
