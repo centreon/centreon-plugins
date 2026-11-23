@@ -22,10 +22,11 @@
 //!
 //! Produces output like: `STATUS message | metric1=value1;warn;crit;min;max metric2=...`
 
-use crate::compute::Parser;
-use crate::compute::ast::ExprResult;
-use crate::generic::{Perfdata, Status};
-use crate::snmp::SnmpResult;
+use crate::{
+    compute::{Parser, ast::ExprResult},
+    generic::{Perfdata, Status},
+    snmp::SnmpResult,
+};
 use log::error;
 use serde::Deserialize;
 

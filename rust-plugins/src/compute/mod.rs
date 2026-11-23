@@ -171,8 +171,10 @@ impl<'a> Parser<'a> {
 
 #[cfg(test)]
 mod test {
-    use crate::compute::{Parser, ast::ExprResult, grammar, lexer};
-    use crate::snmp::SnmpResult;
+    use crate::{
+        compute::{Parser, ast::ExprResult, grammar, lexer},
+        snmp::SnmpResult,
+    };
     use log::{debug, info};
     use std::collections::HashMap;
 

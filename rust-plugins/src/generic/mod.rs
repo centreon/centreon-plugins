@@ -32,10 +32,11 @@ extern crate serde_json;
 pub mod error;
 
 use self::error::Result;
-use crate::compute::{Compute, Parser, ast::ExprResult, threshold::Threshold};
-use crate::output::{Output, OutputFormatter};
-use crate::snmp::SnmpResult;
-use crate::snmp::{snmp_bulk_get, snmp_bulk_walk, snmp_bulk_walk_with_labels};
+use crate::{
+    compute::{Compute, Parser, ast::ExprResult, threshold::Threshold},
+    output::{Output, OutputFormatter},
+    snmp::{SnmpResult, snmp_bulk_get, snmp_bulk_walk, snmp_bulk_walk_with_labels},
+};
 use log::{debug, trace};
 use regex::Regex;
 use serde::Deserialize;
@@ -389,7 +390,8 @@ impl Command {
         Ok(collect)
     }
 
-    /// Executes the complete plugin pipeline: SNMP collection, metric computation, filtering, and output formatting.
+    /// Executes the complete plugin pipeline: SNMP collection, metric computation, filtering, and
+    /// output formatting.
     ///
     /// # Arguments
     /// * `target` - The target address in "host:port" format

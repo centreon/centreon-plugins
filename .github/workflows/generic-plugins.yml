@@ -56,10 +56,31 @@ jobs:
           rustup default 1.100
         shell: bash
 
+      # Fail fast when Cargo.lock does not match Cargo.toml, before any longer step: every later
+      # cargo command would otherwise silently rewrite the lockfile and build something else than
+      # what is committed.
+      - name: Check Cargo.lock is up to date
+        run: |
+          cd rust-plugins
+          if ! cargo metadata --locked --format-version 1 > /dev/null; then
+            echo "::error file=rust-plugins/Cargo.lock::Cargo.lock is out of date with Cargo.toml: run 'cargo update --workspace' in rust-plugins and commit Cargo.lock"
+            exit 1
+          fi
+        shell: bash
+
+      # rustfmt.toml uses options that are only available on the nightly channel (comment_width,
+      # wrap_comments, imports_granularity, trailing_comma): a stable rustfmt ignores them with a
+      # warning. Only the formatting runs on nightly, pinned to a date so that the result does not
+      # change from one run to the next; the build, clippy and the tests stay on the pinned stable.
+      # Keep the date in sync with .githooks/pre-commit.d/11_rust_fmt.sh.
+      - name: Install pinned nightly rustfmt
+        run: rustup toolchain install nightly-2026-11-20 --profile minimal --component rustfmt
+        shell: bash
+
       - name: Check formatting
         run: |
           cd rust-plugins
-          cargo fmt --check
+          cargo +nightly-2026-11-20 fmt --check
         shell: bash
 
       - name: Clippy

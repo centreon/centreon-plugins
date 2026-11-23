@@ -1,0 +1,13 @@
+# Basic configuration
+comment_width = 100            # Wrap comments at this width
+max_width = 100                # Maximum width of each line
+
+# Import handling
+imports_granularity = "Crate"  # Group imports by crate for better organization
+reorder_imports = true         # Sort imports alphabetically for consistency
+
+# Code style consistency
+trailing_comma = "Vertical"    # Add trailing commas in multi-line structures
+newline_style = "Unix"         # Use LF line endings
+wrap_comments = true           # Format comments to respect max line width
+

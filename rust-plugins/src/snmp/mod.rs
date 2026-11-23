@@ -34,23 +34,23 @@ extern crate rasn;
 extern crate rasn_smi;
 extern crate rasn_snmp;
 
-use crate::Error::InvalidOidParser;
-use crate::compute::ast::ExprResult;
-use crate::generic::error::Error::EmptyResponse;
-use crate::generic::error::Error::InvalidSnmpValue;
-use crate::generic::error::Result;
+use crate::{
+    Error::InvalidOidParser,
+    compute::ast::ExprResult,
+    generic::error::{
+        Error::{EmptyResponse, InvalidSnmpValue},
+        Result,
+    },
+};
 use log::warn;
 use rasn::types::ObjectIdentifier;
 use rasn_smi::v2::{ApplicationSyntax, ObjectSyntax, SimpleSyntax};
-use rasn_snmp::v2::BulkPdu;
-use rasn_snmp::v2::GetBulkRequest;
-use rasn_snmp::v2::Pdus;
-use rasn_snmp::v2::VarBind;
-use rasn_snmp::v2::VarBindValue;
-use rasn_snmp::v2c::Message;
-use rasn_snmp::v3::VarBindValue::EndOfMibView;
-use std::collections::HashMap;
-use std::convert::TryInto;
+use rasn_snmp::{
+    v2::{BulkPdu, GetBulkRequest, Pdus, VarBind, VarBindValue},
+    v2c::Message,
+    v3::VarBindValue::EndOfMibView,
+};
+use std::{collections::HashMap, convert::TryInto};
 // FailedToConnectToHost/InvalidSnmpPduDecode/InvalidSnmpPduEncode/info/trace/
 // UdpSocket are used only by the #[cfg(not(test))] variant of
 // `get_data_from_udp` below, so a `cargo test`/`--tests` analysis pass sees
@@ -148,7 +148,6 @@ fn value_from_varbind(value: &VarBindValue) -> Result<Option<ValueType>> {
 ///                        6.0,
 ///                        6.0,
 ///            ])}}
-///
 #[derive(Debug)]
 pub struct SnmpResult {
     /// Collected values from this SNMP query, indexed by OID name.
@@ -181,7 +180,8 @@ pub fn snmp_bulk_get(
     let mut oids_tab: Vec<Vec<u32>> = vec![];
     for oid_str in oid_list {
         let mut oid = oid_to_vec(oid_str)?;
-        // As we only use bulk requests, we have to skip the trailing 0 if it exists or the first OID we are trying to get will never be requested
+        // As we only use bulk requests, we have to skip the trailing 0 if it exists or the first
+        // OID we are trying to get will never be requested
         let _ = oid.pop_if(|val| *val == 0);
         oids_tab.push(oid);
     }
@@ -358,8 +358,9 @@ impl SnmpResult {
 
     /// Stores a decoded value under `key`, appending to the existing vector when
     /// this key has already been seen (walk operations collect one entry per OID).
-    /// Return an error when the key previously held a String and inserting a number (and vice-versa)
-    /// this would mean a single OID column changed SNMP type mid-collection, which indicates a malformed response.
+    /// Return an error when the key previously held a String and inserting a number (and
+    /// vice-versa) this would mean a single OID column changed SNMP type mid-collection, which
+    /// indicates a malformed response.
     fn store(&mut self, key: String, typ: ValueType) -> Result<()> {
         match typ {
             ValueType::String(s) => match self.items.entry(key) {
@@ -491,7 +492,8 @@ impl SnmpResult {
     }
 }
 
-/// Helper function to parse a numerical oid and return a vector containing the list of id composing the oid.
+/// Helper function to parse a numerical oid and return a vector containing the list of id composing
+/// the oid.
 ///
 /// # Arguments
 /// * `oid` - string in the form '.1.3.6.1.2', the first dot being optional.
@@ -499,7 +501,6 @@ impl SnmpResult {
 /// # Returns
 /// An array of unsigned numbers representing the oid, or an error if the oid
 /// is empty or one of its parts is not a number.
-///
 fn oid_to_vec(oid: &str) -> Result<Vec<u32>> {
     let mut oid_u32: Vec<u32> = vec![];
     if oid.is_empty() {
@@ -524,8 +525,8 @@ fn oid_to_vec(oid: &str) -> Result<Vec<u32>> {
 /// * `message` - Snmp Message, containing the snmp version, comunity, and a Pdu
 ///
 /// # Returns
-/// A Message<Pdu> containing the answers from the target, or an error if it was not reachable/decodable
-///
+/// A Message<Pdu> containing the answers from the target, or an error if it was not
+/// reachable/decodable
 // In tests, the transport is replaced by an in-memory fake agent (see
 // `tests::fake_snmp_agent`) so the request/response loop in `snmp_bulk_walk`
 // and friends can be exercised without a real network.
@@ -535,9 +536,9 @@ fn get_data_from_udp(_target: &str, message: Message<GetBulkRequest>) -> Result<
 }
 #[cfg(not(test))]
 fn get_data_from_udp(target: &str, message: Message<GetBulkRequest>) -> Result<Message<Pdus>> {
-    use crate::generic::error::Error::FailedToConnectToHost;
-    use crate::generic::error::Error::InvalidSnmpPduDecode;
-    use crate::generic::error::Error::InvalidSnmpPduEncode;
+    use crate::generic::error::Error::{
+        FailedToConnectToHost, InvalidSnmpPduDecode, InvalidSnmpPduEncode,
+    };
     use log::{info, trace};
     use std::net::UdpSocket;
 
@@ -577,8 +578,10 @@ mod tests {
     // `ApplicationSyntax`'s fields (Counter32, Unsigned32, IpAddress, TimeTicks)
     // are type aliases, and tuple structs can't be constructed through an
     // alias, so tests build values via the concrete v1 types instead.
-    use rasn_smi::v1::{Counter, Gauge, IpAddress, TimeTicks};
-    use rasn_smi::v2::{Counter64, ToOpaque};
+    use rasn_smi::{
+        v1::{Counter, Gauge, IpAddress, TimeTicks},
+        v2::{Counter64, ToOpaque},
+    };
     use rasn_snmp::v2::{Pdu, Response};
 
     /// Base OID for a fake table with more rows (12) than `max_repetitions`

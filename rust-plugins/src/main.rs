@@ -47,11 +47,7 @@ mod output;
 mod snmp;
 
 use env_logger::Env;
-use generic::Command;
-use generic::FORMAT_VERSION;
-use generic::Status;
-use generic::error::*;
-use generic::schema_url;
+use generic::{Command, FORMAT_VERSION, Status, error::*, schema_url};
 use lalrpop_util::lalrpop_mod;
 use lexopt::Arg;
 use log::trace;
@@ -139,7 +135,8 @@ fn snmp_plugin() -> Result<(), Error> {
                         trace!("snmp_version: {}", snmp_version);
                     }
                     Short('c') | Long("snmp-community") => {
-                        // For backward compatibility 'public' is used when the SNMP community is empty
+                        // For backward compatibility 'public' is used when the SNMP community is
+                        // empty
                         let s = parser.value()?.into_string()?;
                         if !s.is_empty() {
                             snmp_community = s;
