@@ -50,8 +50,10 @@ jobs:
       - name: Checkout sources
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: Install fmt and clippy components
-        run: rustup component add rustfmt clippy
+      - name: Install pinned toolchain with fmt and clippy
+        run: |
+          rustup toolchain install 1.100 --profile minimal --component rustfmt,clippy
+          rustup default 1.100
         shell: bash
 
       - name: Check formatting
@@ -67,10 +69,11 @@ jobs:
         shell: bash
 
   build:
-    needs: [get-environment]
+    needs: [get-environment, lint]
     if: |
       needs.get-environment.outputs.skip_workflow == 'false' &&
       needs.get-environment.outputs.stability != 'stable' &&
+      needs.lint.result == 'success' &&
       ! cancelled()
     strategy:
       fail-fast: false
