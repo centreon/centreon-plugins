@@ -139,7 +139,7 @@ runs:
     # Add to your PR the label upload-artifacts to get packages as artifacts
     - if: ${{ contains(github.event.pull_request.labels.*.name, 'upload-artifacts') }}
       name: Upload package artifacts
-      uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       with:
         # The architecture is part of the name because a caller may package several architectures
         # for the same distribution, and artifact names have to be unique within a run.
