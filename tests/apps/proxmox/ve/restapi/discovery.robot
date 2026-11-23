@@ -38,10 +38,10 @@ Discovery ${tc}
     ...    --
     ...    1
     ...    ${EMPTY}
-    ...    "discovered_items":3
+    ...    "discovered_items":5
     ...    2
     ...    --resource-type=vm
-    ...    .*"ip_addresses":\\\\["123.321.123.321","127.0.0.1"\\\\].*"os_info_name":"XXXXX GNU/Linux".*"tags":\\\\["dev","linux"\\\\]
+    ...    .*"ip_addresses":\\\\["10.0.0.2","127.0.0.1"\\\\].*"os_info_name":"Linux".*"tags":"centreon;prod"
     ...    3
     ...    --resource-type=node
     ...    ^(?!.*(ip_addresses|os_info_name)).*$

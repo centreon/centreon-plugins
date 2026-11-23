@@ -1,353 +1,714 @@
 {
-  "uuid": "7c3f15b2-59b9-4121-a4f0-fe988d60ed57",
-  "lastMigration": 33,
-  "name": "Proxmox restapi.mockoon",
-  "endpointPrefix": "",
-  "latency": 0,
-  "port": 3000,
-  "hostname": "",
-  "folders": [],
-  "routes": [
-    {
-      "uuid": "6a778c11-99ff-4a50-8004-97b6aabff215",
-      "type": "http",
-      "documentation": "Proxmox restapi ve",
-      "method": "get",
-      "endpoint": "",
-      "responses": [
+    "uuid": "f5fc133f-bb21-4a6c-9996-12b75911f704",
+    "lastMigration": 33,
+    "name": "Proxmox 2",
+    "endpointPrefix": "",
+    "latency": 0,
+    "port": 3008,
+    "hostname": "",
+    "folders": [],
+    "routes": [
         {
-          "uuid": "5c0324bb-6a0b-45f6-a01f-29fb6decc85b",
-          "body": "{\n  \"return\": [\n    {\n      \"name\": \"eth0\",\n      \"hardware-address\": \"52:54:00:12:34:56\",\n      \"ip-addresses\": [\n        {\n          \"ip-address\": \"192.168.1.42\",\n          \"prefix\": 24,\n          \"ip-address-type\": \"ipv4\"\n        }\n      ],\n      \"link-status\": \"up\"\n    }\n  ]\n}\n{\n  \"return\": [\n    {\n      \"name\": \"eth0\",\n      \"hardware-address\": \"52:54:00:12:34:56\",\n      \"ip-addresses\": [\n        {\n          \"ip-address\": \"192.168.1.42\",\n          \"prefix\": 24,\n          \"ip-address-type\": \"ipv4\"\n        }\n      ],\n      \"link-status\": \"up\"\n    }\n  ]\n}\n{\n  \"data\": [\n    {\n      \"name\": \"eth0\",\n      \"hardware-address\": \"12:54:00:32:24:56\",\n      \"ip-addresses\": [\n        {\n          \"ip-address\": \"192.168.1.10\",\n          \"prefix\": 24,\n          \"ip-address-type\": \"ipv4\"\n        },\n        {\n          \"ip-address\": \"fe80::5114:ff:ee12:1456\",\n          \"prefix\": 64,\n          \"ip-address-type\": \"ipv6\"\n        }\n      ],\n      \"link-status\": \"up\",\n      \"ipv4\": [\n        \"192.168.1.42/24\"\n      ],\n      \"ipv6\": [\n        \"fe80::5054:ff:fe12:3456/64\"\n      ],\n      \"flags\": [\"up\", \"broadcast\", \"multicast\"]\n    },\n    {\n      \"name\": \"lo\",\n      \"hardware-address\": \"00:00:00:00:00:00\",\n      \"ip-addresses\": [\n        {\n          \"ip-address\": \"127.0.0.1\",\n          \"prefix\": 8,\n          \"ip-address-type\": \"ipv4\"\n        },\n        {\n          \"ip-address\": \"::1\",\n          \"prefix\": 128,\n          \"ip-address-type\": \"ipv6\"\n        }\n      ],\n      \"link-status\": \"up\",\n      \"ipv4\": [\n        \"127.0.0.1/8\"\n      ],\n      \"ipv6\": [\n        \"::1/128\"\n      ],\n      \"flags\": [\"up\", \"loopback\"]\n    }\n  ]\n}",
-          "latency": 0,
-          "statusCode": 200,
-          "label": "",
-          "headers": [],
-          "bodyType": "INLINE",
-          "filePath": "",
-          "databucketID": "",
-          "sendFileAsBody": false,
-          "rules": [],
-          "rulesOperator": "OR",
-          "disableTemplating": false,
-          "fallbackTo404": false,
-          "default": true,
-          "crudKey": "id",
-          "callbacks": []
-        }
-      ],
-      "responseMode": null,
-      "streamingMode": null,
-      "streamingInterval": 0
-    },
-    {
-      "uuid": "d71c2a8a-90af-40cc-8580-a7c42143e803",
-      "type": "http",
-      "documentation": "",
-      "method": "post",
-      "endpoint": "api2/json/access/ticket",
-      "responses": [
-        {
-          "uuid": "440d1923-ff1f-4e23-9ac2-8ba9ca6584d1",
-          "body": "{\n  \"data\": {\n    \"username\": \"root@pam\",\n    \"ticket\": \"PVE:root@pam:ccccccc::g2bBfFuM\",\n    \"CSRFPreventionToken\": \"aaaaaaa-3d3b-4e91-bf79-b1a2c18eabfc\",\n    \"cap\": {\n      \"access\": {\n        \"audit\": 1,\n        \"groups\": 1,\n        \"permissions\": 1,\n        \"realm\": 1,\n        \"roles\": 1,\n        \"user\": 1\n      },\n      \"nodes\": {\n        \"Sys.Audit\": 1,\n        \"Sys.Modify\": 1\n      },\n      \"storage\": {\n        \"Datastore.Allocate\": 1,\n        \"Datastore.AllocateSpace\": 1,\n        \"Datastore.Audit\": 1\n      },\n      \"vms\": {\n        \"VM.Allocate\": 1,\n        \"VM.Console\": 1,\n        \"VM.Migrate\": 1,\n        \"VM.PowerMgmt\": 1,\n        \"VM.Audit\": 1\n      }\n    },\n    \"clustername\": \"WwWwW-cluster\",\n    \"hostname\": \"WwWwW1.local\"\n  }\n}",
-          "latency": 0,
-          "statusCode": 200,
-          "label": "",
-          "headers": [],
-          "bodyType": "INLINE",
-          "filePath": "",
-          "databucketID": "",
-          "sendFileAsBody": false,
-          "rules": [],
-          "rulesOperator": "OR",
-          "disableTemplating": false,
-          "fallbackTo404": false,
-          "default": false,
-          "crudKey": "id",
-          "callbacks": []
-        }
-      ],
-      "responseMode": null,
-      "streamingMode": null,
-      "streamingInterval": 0
-    },
-    {
-      "uuid": "84416441-bdf8-48be-ad8c-dbfd56e99895",
-      "type": "http",
-      "documentation": "",
-      "method": "get",
-      "endpoint": "api2/json/cluster/resources",
-      "responses": [
-        {
-          "uuid": "3ca59867-a6c9-42c0-9365-6aee513e8338",
-          "body": "{\n  \"data\": [\n    {\n      \"id\": \"node/www1\",\n      \"type\": \"node\",\n      \"node\": \"www1\",\n      \"status\": \"online\",\n      \"maxcpu\": 8,\n      \"cpu\": 0.15,\n      \"maxmem\": 34359738368,\n      \"mem\": 4294967296,\n      \"maxdisk\": 500000000000,\n      \"disk\": 200000000000,\n      \"uptime\": 86400,\n      \"level\": \"\",\n      \"ssl_fingerprint\": \"AA:BB:CC:...\",\n      \"version\": \"1.1-2\",\n      \"name\": \"XxXxX\",\n      \"tags\": \"production;linux\"\n    },\n    {\n      \"id\": \"qemu/101\",\n      \"type\": \"qemu\",\n      \"vmid\": 101,\n      \"name\": \"cccccc-vm2\",\n      \"node\": \"dddddd1\",\n      \"status\": \"running\",\n      \"maxcpu\": 2,\n      \"cpu\": 0.2,\n      \"maxmem\": 2147483648,\n      \"mem\": 1073741824,\n      \"maxdisk\": 34359738368,\n      \"disk\": 8589934592,\n      \"uptime\": 3600,\n      \"template\": 0,\n      \"tags\": \"dev;linux\"\n    },\n    {\n      \"id\": \"storage/local\",\n      \"type\": \"storage\",\n      \"storage\": \"local\",\n      \"node\": \"cccccc1\",\n      \"status\": \"available\",\n      \"enabled\": 1,\n      \"content\": \"iso,vztmpl,backup\",\n      \"shared\": 0,\n      \"maxdisk\": 250000000000,\n      \"disk\": 150000000000,\n      \"name\": \"rien0\"\n    }\n  ]\n}",
-          "latency": 0,
-          "statusCode": 200,
-          "label": "",
-          "headers": [],
-          "bodyType": "INLINE",
-          "filePath": "",
-          "databucketID": "",
-          "sendFileAsBody": false,
-          "rules": [
-            {
-              "target": "query",
-              "modifier": "type",
-              "value": "node",
-              "invert": false,
-              "operator": "equals"
-            },
-            {
-              "target": "body",
-              "modifier": "",
-              "value": "",
-              "invert": false,
-              "operator": "equals"
-            }
-          ],
-          "rulesOperator": "OR",
-          "disableTemplating": false,
-          "fallbackTo404": false,
-          "default": false,
-          "crudKey": "id",
-          "callbacks": []
-        }
-      ],
-      "responseMode": null,
-      "streamingMode": null,
-      "streamingInterval": 0
-    },
-    {
-      "uuid": "c0cdebe1-88ef-4fd8-8074-b4ebc77b5e9f",
-      "type": "http",
-      "documentation": "",
-      "method": "get",
-      "endpoint": "api2/json/nodes/([a-z0-9]+)/qemu/([a-z0-9]+)/agent/get-osinfo",
-      "responses": [
-        {
-          "uuid": "3b682249-4d8b-4c5e-91cc-272832002e77",
-          "body": "{\"data\":{\"result\":{\"machine\":\"x86_64\",\"version\":\"111 (XXXXX)\",\"version-id\":\"111\",\"pretty-name\":\"XXXXX GNU/Linux 111 (XXXXX)\",\"id\":\"XXXXX\",\"name\":\"XXXXX GNU/Linux\",\"kernel-version\":\"#1 SMP PREEMPT_DYNAMIC XXXXX 6.0.0-1 (2025-01-01)\",\"kernel-release\":\"6.0.0-32-amd64\"}}}",
-          "latency": 0,
-          "statusCode": 500,
-          "label": "",
-          "headers": [
-            {
-              "key": "access-control-allow-headers",
-              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
-            },
-            {
-              "key": "access-control-allow-methods",
-              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
-            },
-            {
-              "key": "access-control-allow-origin",
-              "value": "*"
-            },
-            {
-              "key": "content-security-policy",
-              "value": "default-src 'none'"
-            },
-            {
-              "key": "content-type",
-              "value": "text/html; charset=utf-8"
-            },
-            {
-              "key": "x-content-type-options",
-              "value": "nosniff"
-            }
-          ],
-          "bodyType": "INLINE",
-          "filePath": "",
-          "databucketID": "",
-          "sendFileAsBody": false,
-          "rules": [],
-          "rulesOperator": "OR",
-          "disableTemplating": false,
-          "fallbackTo404": false,
-          "default": false,
-          "crudKey": "id",
-          "callbacks": []
+            "uuid": "1a3e83d1-f69d-471c-bbf3-e6b158651aba",
+            "type": "http",
+            "documentation": "Proxmox restapi ve",
+            "method": "get",
+            "endpoint": "",
+            "responses": [
+                {
+                    "uuid": "d54d02b0-5374-426f-92bc-faf64810ca54",
+                    "body": "{\n  \"return\": [\n    {\n      \"name\": \"eth0\",\n      \"hardware-address\": \"52:54:00:12:34:56\",\n      \"ip-addresses\": [\n        {\n          \"ip-address\": \"192.168.1.42\",\n          \"prefix\": 24,\n          \"ip-address-type\": \"ipv4\"\n        }\n      ],\n      \"link-status\": \"up\"\n    }\n  ]\n}\n{\n  \"return\": [\n    {\n      \"name\": \"eth0\",\n      \"hardware-address\": \"52:54:00:12:34:56\",\n      \"ip-addresses\": [\n        {\n          \"ip-address\": \"192.168.1.42\",\n          \"prefix\": 24,\n          \"ip-address-type\": \"ipv4\"\n        }\n      ],\n      \"link-status\": \"up\"\n    }\n  ]\n}\n{\n  \"data\": [\n    {\n      \"name\": \"eth0\",\n      \"hardware-address\": \"12:54:00:32:24:56\",\n      \"ip-addresses\": [\n        {\n          \"ip-address\": \"192.168.1.10\",\n          \"prefix\": 24,\n          \"ip-address-type\": \"ipv4\"\n        },\n        {\n          \"ip-address\": \"fe80::5114:ff:ee12:1456\",\n          \"prefix\": 64,\n          \"ip-address-type\": \"ipv6\"\n        }\n      ],\n      \"link-status\": \"up\",\n      \"ipv4\": [\n        \"192.168.1.42/24\"\n      ],\n      \"ipv6\": [\n        \"fe80::5054:ff:fe12:3456/64\"\n      ],\n      \"flags\": [\"up\", \"broadcast\", \"multicast\"]\n    },\n    {\n      \"name\": \"lo\",\n      \"hardware-address\": \"00:00:00:00:00:00\",\n      \"ip-addresses\": [\n        {\n          \"ip-address\": \"127.0.0.1\",\n          \"prefix\": 8,\n          \"ip-address-type\": \"ipv4\"\n        },\n        {\n          \"ip-address\": \"::1\",\n          \"prefix\": 128,\n          \"ip-address-type\": \"ipv6\"\n        }\n      ],\n      \"link-status\": \"up\",\n      \"ipv4\": [\n        \"127.0.0.1/8\"\n      ],\n      \"ipv6\": [\n        \"::1/128\"\n      ],\n      \"flags\": [\"up\", \"loopback\"]\n    }\n  ]\n}",
+                    "latency": 0,
+                    "statusCode": 200,
+                    "label": "",
+                    "headers": [],
+                    "bodyType": "INLINE",
+                    "filePath": "",
+                    "databucketID": "",
+                    "sendFileAsBody": false,
+                    "rules": [],
+                    "rulesOperator": "OR",
+                    "disableTemplating": false,
+                    "fallbackTo404": false,
+                    "default": true,
+                    "crudKey": "id",
+                    "callbacks": []
+                }
+            ],
+            "responseMode": null,
+            "streamingMode": null,
+            "streamingInterval": 0
         },
         {
-          "uuid": "34ffe7cc-4968-43e7-b8c4-b57c248f20ef",
-          "body": "{\"message\":\"QEMU guest agent is not running\\n\",\"data\":null}",
-          "latency": 0,
-          "statusCode": 200,
-          "label": "",
-          "headers": [],
-          "bodyType": "INLINE",
-          "filePath": "",
-          "databucketID": "",
-          "sendFileAsBody": false,
-          "rules": [],
-          "rulesOperator": "OR",
-          "disableTemplating": false,
-          "fallbackTo404": false,
-          "default": false,
-          "crudKey": "id",
-          "callbacks": []
-        }
-      ],
-      "responseMode": null,
-      "streamingMode": null,
-      "streamingInterval": 0
-    },
-    {
-      "uuid": "78d64704-80ab-4420-aa6b-2c807930f0e6",
-      "type": "http",
-      "documentation": "",
-      "method": "get",
-      "endpoint": "api2/json/nodes/([a-z0-9]+)/qemu/([a-z0-9]+)/agent/network-get-interfaces",
-      "responses": [
+            "uuid": "389c37f9-2230-4ab2-81af-dcc8d9af5920",
+            "type": "http",
+            "documentation": "",
+            "method": "post",
+            "endpoint": "api2/json/access/ticket",
+            "responses": [
+                {
+                    "uuid": "76831e41-653e-40a6-bd10-4d582842236a",
+                    "body": "{\n  \"data\": {\n    \"username\": \"root@pam\",\n    \"ticket\": \"PVE:root@pam:ccccccc::g2bBfFuM\",\n    \"CSRFPreventionToken\": \"aaaaaaa-3d3b-4e91-bf79-b1a2c18eabfc\",\n    \"cap\": {\n      \"access\": {\n        \"audit\": 1,\n        \"groups\": 1,\n        \"permissions\": 1,\n        \"realm\": 1,\n        \"roles\": 1,\n        \"user\": 1\n      },\n      \"nodes\": {\n        \"Sys.Audit\": 1,\n        \"Sys.Modify\": 1\n      },\n      \"storage\": {\n        \"Datastore.Allocate\": 1,\n        \"Datastore.AllocateSpace\": 1,\n        \"Datastore.Audit\": 1\n      },\n      \"vms\": {\n        \"VM.Allocate\": 1,\n        \"VM.Console\": 1,\n        \"VM.Migrate\": 1,\n        \"VM.PowerMgmt\": 1,\n        \"VM.Audit\": 1\n      }\n    },\n    \"clustername\": \"WwWwW-cluster\",\n    \"hostname\": \"WwWwW1.local\"\n  }\n}",
+                    "latency": 0,
+                    "statusCode": 200,
+                    "label": "",
+                    "headers": [],
+                    "bodyType": "INLINE",
+                    "filePath": "",
+                    "databucketID": "",
+                    "sendFileAsBody": false,
+                    "rules": [],
+                    "rulesOperator": "OR",
+                    "disableTemplating": false,
+                    "fallbackTo404": false,
+                    "default": false,
+                    "crudKey": "id",
+                    "callbacks": []
+                }
+            ],
+            "responseMode": null,
+            "streamingMode": null,
+            "streamingInterval": 0
+        },
         {
-          "uuid": "62d7f560-f89c-41ca-8a36-46da872671b0",
-          "body": "{\"data\":{\"result\":[{\"ip-addresses\":[{\"ip-address\":\"127.0.0.1\",\"prefix\":8,\"ip-address-type\":\"ipv4\"},{\"prefix\":128,\"ip-address-type\":\"ipv6\",\"ip-address\":\"::1\"}],\"hardware-address\":\"00:00:00:00:00:00\",\"name\":\"lo\",\"statistics\":{\"tx-packets\":332,\"rx-errs\":0,\"tx-errs\":0,\"rx-packets\":332,\"rx-dropped\":0,\"tx-bytes\":56962,\"rx-bytes\":56962,\"tx-dropped\":0}},{\"statistics\":{\"tx-errs\":0,\"rx-packets\":682355687,\"tx-packets\":492437157,\"rx-errs\":0,\"rx-bytes\":172127793,\"tx-dropped\":0,\"rx-dropped\":0,\"tx-bytes\":917205385},\"name\":\"eth0\",\"hardware-address\":\"aa:bb:cc:dd:ee:ff\",\"ip-addresses\":[{\"ip-address-type\":\"ipv4\",\"prefix\":24,\"ip-address\":\"123.321.123.321\"},{\"ip-address\":\"aaaa::bbbb:cccc:dddd:eeee\",\"ip-address-type\":\"ipv6\",\"prefix\":64}]}]}}",
-          "latency": 0,
-          "statusCode": 200,
-          "label": "",
-          "headers": [],
-          "bodyType": "INLINE",
-          "filePath": "",
-          "databucketID": "",
-          "sendFileAsBody": false,
-          "rules": [],
-          "rulesOperator": "OR",
-          "disableTemplating": false,
-          "fallbackTo404": false,
-          "default": false,
-          "crudKey": "id",
-          "callbacks": []
-        }
-      ],
-      "responseMode": null,
-      "streamingMode": null,
-      "streamingInterval": 0
-    },
-    {
-      "uuid": "91c855e0-c509-4273-9794-76fbb7d57782",
-      "type": "http",
-      "documentation": "",
-      "method": "get",
-      "endpoint": "api2/json/nodes/([a-z0-9]+)/(qemu|node|storage)/([a-z0-9]+)/status/current",
-      "responses": [
+            "uuid": "b87af394-dfcc-4c81-b635-14531358661d",
+            "type": "http",
+            "documentation": "",
+            "method": "get",
+            "endpoint": "api2/json/cluster/resources",
+            "responses": [
+                {
+                    "uuid": "9a67b74e-c695-491d-a29a-2cb065644009",
+                    "body": "{\n  \"data\": [\n    {\n      \"id\": \"qemu/100000\",\n      \"diskread\": 1162752,\n      \"uptime\": 57206,\n      \"disk\": 0,\n      \"vmid\": 100000,\n      \"memhost\": 42807296,\n      \"name\": \"CENTREON01\",\n      \"status\": \"running\",\n      \"mem\": 42807296,\n      \"netout\": 3986859,\n      \"diskwrite\": 0,\n      \"hastate\": \"started\",\n      \"maxdisk\": 34359738368,\n      \"type\": \"qemu\",\n      \"cpu\": 0.107879817465604,\n      \"maxcpu\": 1,\n      \"netin\": 58804750,\n      \"node\": \"centreon01-pm03\",\n      \"template\": 0,\n      \"maxmem\": 2147483648,\n      \"tags\": \"centreon;prod,rust\"\n    },\n    {\n      \"netout\": 0,\n      \"diskwrite\": 0,\n      \"mem\": 0,\n      \"maxdisk\": 34359738368,\n      \"type\": \"qemu\",\n      \"netin\": 0,\n      \"node\": \"centreon01-pm03\",\n      \"maxcpu\": 1,\n      \"cpu\": 0,\n      \"template\": 0,\n      \"maxmem\": 2147483648,\n      \"id\": \"qemu/100001\",\n      \"diskread\": 0,\n      \"disk\": 0,\n      \"vmid\": 100001,\n      \"uptime\": 0,\n      \"status\": \"stopped\",\n      \"name\": \"CENTREON02\",\n      \"memhost\": 0,\n      \"tags\": \"centreon;prod\"\n    },\n    {\n      \"id\": \"qemu/100002\",\n      \"diskread\": 0,\n      \"uptime\": 0,\n      \"disk\": 0,\n      \"vmid\": 100002,\n      \"memhost\": 0,\n      \"name\": \"CENTREON03\",\n      \"status\": \"stopped\",\n      \"mem\": 0,\n      \"netout\": 0,\n      \"diskwrite\": 0,\n      \"maxdisk\": 107374182400,\n      \"type\": \"qemu\",\n      \"maxcpu\": 16,\n      \"cpu\": 0,\n      \"netin\": 0,\n      \"node\": \"centreon01-pm03\",\n      \"template\": 0,\n      \"maxmem\": 17179869184,\n      \"tags\": \"centreon;prod\"\n    },\n    {\n      \"diskread\": 0,\n      \"id\": \"qemu/100003\",\n      \"memhost\": 0,\n      \"name\": \"CENTREON04\",\n      \"status\": \"started\",\n      \"uptime\": 0,\n      \"vmid\": 100003,\n      \"disk\": 0,\n      \"type\": \"qemu\",\n      \"maxdisk\": 107374182400,\n      \"mem\": 0,\n      \"diskwrite\": 0,\n      \"netout\": 0,\n      \"maxmem\": 17179869184,\n      \"template\": 0,\n      \"cpu\": 0,\n      \"maxcpu\": 16,\n      \"node\": \"centreon02-pm04\",\n      \"netin\": 0,\n      \"tags\": \"centreon;prod\"\n    },\n    {\n      \"node\": \"centreon02-pm04\",\n      \"netin\": 123906649,\n      \"maxcpu\": 4,\n      \"cpu\": 0.0132359668672818,\n      \"maxmem\": 17179869184,\n      \"template\": 0,\n      \"diskwrite\": 764603904,\n      \"netout\": 679705213,\n      \"mem\": 3710521344,\n      \"type\": \"qemu\",\n      \"maxdisk\": 75161927680,\n      \"hastate\": \"started\",\n      \"vmid\": 100004,\n      \"disk\": 0,\n      \"uptime\": 57629,\n      \"name\": \"CENTREON05\",\n      \"status\": \"running\",\n      \"memhost\": 17211142144,\n      \"id\": \"qemu/100004\",\n      \"diskread\": 1619630080,\n      \"tags\": \"centreon;prod\"\n    }\n  ]\n}",
+                    "latency": 0,
+                    "statusCode": 200,
+                    "label": "",
+                    "headers": [],
+                    "bodyType": "INLINE",
+                    "filePath": "",
+                    "databucketID": "",
+                    "sendFileAsBody": false,
+                    "rules": [
+                        {
+                            "target": "query",
+                            "modifier": "type",
+                            "value": "node",
+                            "invert": false,
+                            "operator": "equals"
+                        }
+                    ],
+                    "rulesOperator": "OR",
+                    "disableTemplating": false,
+                    "fallbackTo404": false,
+                    "default": false,
+                    "crudKey": "id",
+                    "callbacks": []
+                }
+            ],
+            "responseMode": null,
+            "streamingMode": null,
+            "streamingInterval": 0
+        },
         {
-          "uuid": "416d285c-918c-4b19-acad-6b5a56ff41d8",
-          "body": "{\n  \"data\": {\n    \"pid\": 1234,\n    \"status\": \"running\",\n    \"name\": \"YyYyY\",\n    \"cpu\": 0.05,\n    \"mem\": 524288,\n    \"maxmem\": 1048576,\n    \"uptime\": 3600,\n    \"disk\": 10737418240,\n    \"diskread\": 1048576,\n    \"diskwrite\": 524288,\n    \"netin\": 123456,\n    \"netout\": 654321,\n    \"id\": 1,\n    \"node\": \"XxXxX\"\n  }\n}",
-          "latency": 0,
-          "statusCode": 200,
-          "label": "",
-          "headers": [
-            {
-              "key": "access-control-allow-headers",
-              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
-            },
-            {
-              "key": "access-control-allow-methods",
-              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
-            },
-            {
-              "key": "access-control-allow-origin",
-              "value": "*"
-            },
-            {
-              "key": "content-security-policy",
-              "value": "default-src 'none'"
-            },
-            {
-              "key": "content-type",
-              "value": "text/html; charset=utf-8"
-            },
-            {
-              "key": "x-content-type-options",
-              "value": "nosniff"
-            }
-          ],
-          "bodyType": "INLINE",
-          "filePath": "",
-          "databucketID": "",
-          "sendFileAsBody": false,
-          "rules": [],
-          "rulesOperator": "OR",
-          "disableTemplating": false,
-          "fallbackTo404": false,
-          "default": false,
-          "crudKey": "id",
-          "callbacks": []
+            "uuid": "403ae461-72fe-4fae-933d-eff509dc912d",
+            "type": "http",
+            "documentation": "",
+            "method": "get",
+            "endpoint": "api2/json/nodes/:nodeId/qemu/:vmId/agent/get-osinfo",
+            "responses": [
+                {
+                    "uuid": "a0d2acf5-db2d-48fc-9a1a-3a24de55bc59",
+                    "body": "{\n  \"message\": \"No QEMU guest agent configured\\n\",\n  \"data\": null\n}",
+                    "latency": 0,
+                    "statusCode": 200,
+                    "label": "",
+                    "headers": [
+                        {
+                            "key": "access-control-allow-headers",
+                            "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+                        },
+                        {
+                            "key": "access-control-allow-methods",
+                            "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+                        },
+                        {
+                            "key": "access-control-allow-origin",
+                            "value": "*"
+                        },
+                        {
+                            "key": "content-security-policy",
+                            "value": "default-src 'none'"
+                        },
+                        {
+                            "key": "content-type",
+                            "value": "application/json"
+                        },
+                        {
+                            "key": "x-content-type-options",
+                            "value": "nosniff"
+                        }
+                    ],
+                    "bodyType": "INLINE",
+                    "filePath": "",
+                    "databucketID": "",
+                    "sendFileAsBody": false,
+                    "rules": [],
+                    "rulesOperator": "OR",
+                    "disableTemplating": false,
+                    "fallbackTo404": false,
+                    "default": true,
+                    "crudKey": "id",
+                    "callbacks": []
+                },
+                {
+                    "uuid": "389e9e7e-dfd3-4647-9e57-acbf67ea1a8d",
+                    "body": "{\n  \"message\": \"VM 100002 is not running\\n\",\n  \"data\": null\n}",
+                    "latency": 0,
+                    "statusCode": 200,
+                    "label": "",
+                    "headers": [],
+                    "bodyType": "INLINE",
+                    "filePath": "",
+                    "databucketID": "",
+                    "sendFileAsBody": false,
+                    "rules": [
+                        {
+                            "target": "params",
+                            "modifier": "nodeId",
+                            "value": "centreon01-pm03",
+                            "invert": false,
+                            "operator": "equals"
+                        },
+                        {
+                            "target": "params",
+                            "modifier": "vmId",
+                            "value": "100002",
+                            "invert": false,
+                            "operator": "equals"
+                        }
+                    ],
+                    "rulesOperator": "AND",
+                    "disableTemplating": false,
+                    "fallbackTo404": false,
+                    "default": false,
+                    "crudKey": "id",
+                    "callbacks": []
+                },
+                {
+                    "uuid": "9d55f376-65f3-488d-8cf2-6037d1aad22d",
+                    "body": "{\n  \"data\": {\n    \"result\": {\n      \"machine\": \"x86_64\",\n      \"id\": \"linux\",\n      \"variant-id\": \"server\",\n      \"pretty-name\": \"XXXXX GNU/Linux\",\n      \"name\": \"Linux\",\n      \"kernel-version\": \"5.15.167\",\n      \"variant\": \"server\",\n      \"version-id\": \"XX\",\n      \"kernel-release\": \"YY\",\n      \"version\": \"Linux XX\"\n    }\n  }\n}",
+                    "latency": 0,
+                    "statusCode": 200,
+                    "label": "",
+                    "headers": [],
+                    "bodyType": "INLINE",
+                    "filePath": "",
+                    "databucketID": "",
+                    "sendFileAsBody": false,
+                    "rules": [
+                        {
+                            "target": "params",
+                            "modifier": "nodeId",
+                            "value": "centreon02-pm04",
+                            "invert": false,
+                            "operator": "equals"
+                        },
+                        {
+                            "target": "params",
+                            "modifier": "vmId",
+                            "value": "100003",
+                            "invert": false,
+                            "operator": "equals"
+                        }
+                    ],
+                    "rulesOperator": "AND",
+                    "disableTemplating": false,
+                    "fallbackTo404": false,
+                    "default": false,
+                    "crudKey": "id",
+                    "callbacks": []
+                },
+                {
+                    "uuid": "a216302c-beac-45a8-9590-bd915dc82076",
+                    "body": "{\n  \"data\": {\n    \"result\": {\n      \"machine\": \"x86_64\",\n      \"id\": \"linux\",\n      \"variant-id\": \"server\",\n      \"pretty-name\": \"XXXXX GNU/Linux\",\n      \"name\": \"Linux\",\n      \"kernel-version\": \"5.15.167\",\n      \"variant\": \"server\",\n      \"version-id\": \"XX\",\n      \"kernel-release\": \"YY\",\n      \"version\": \"Linux XX\"\n    }\n  }\n}",
+                    "latency": 0,
+                    "statusCode": 200,
+                    "label": "",
+                    "headers": [],
+                    "bodyType": "INLINE",
+                    "filePath": "",
+                    "databucketID": "",
+                    "sendFileAsBody": false,
+                    "rules": [
+                        {
+                            "target": "params",
+                            "modifier": "nodeId",
+                            "value": "centreon02-pm04",
+                            "invert": false,
+                            "operator": "equals"
+                        },
+                        {
+                            "target": "params",
+                            "modifier": "vmId",
+                            "value": "100004",
+                            "invert": false,
+                            "operator": "equals"
+                        }
+                    ],
+                    "rulesOperator": "AND",
+                    "disableTemplating": false,
+                    "fallbackTo404": false,
+                    "default": false,
+                    "crudKey": "id",
+                    "callbacks": []
+                }
+            ],
+            "responseMode": null,
+            "streamingMode": null,
+            "streamingInterval": 0
+        },
+        {
+            "uuid": "590942ff-2eea-455b-ad21-9107cd95efeb",
+            "type": "http",
+            "documentation": "",
+            "method": "get",
+            "endpoint": "api2/json/nodes/:nodeId/qemu/:vmId/agent/network-get-interfaces",
+            "responses": [
+                {
+                    "uuid": "9b1f0b2c-3f3b-47ac-ae84-500c1abc4408",
+                    "body": "{\n  \"message\": \"No QEMU guest agent configured\\n\",\n  \"data\": null\n}",
+                    "latency": 0,
+                    "statusCode": 200,
+                    "label": "",
+                    "headers": [],
+                    "bodyType": "INLINE",
+                    "filePath": "",
+                    "databucketID": "",
+                    "sendFileAsBody": false,
+                    "rules": [],
+                    "rulesOperator": "OR",
+                    "disableTemplating": false,
+                    "fallbackTo404": false,
+                    "default": false,
+                    "crudKey": "id",
+                    "callbacks": []
+                },
+                {
+                    "uuid": "ca8487f2-8a32-4c2d-9dd6-1aaae3082b69",
+                    "body": "{\n  \"data\": {\n    \"result\": [\n      {\n        \"statistics\": {\n          \"rx-errs\": 0,\n          \"tx-packets\": 1053197,\n          \"rx-packets\": 1153755,\n          \"tx-errs\": 0,\n          \"rx-bytes\": 128101868,\n          \"rx-dropped\": 24984,\n          \"tx-dropped\": 0,\n          \"tx-bytes\": 679719321\n        },\n        \"name\": \"Ethernet 2\",\n        \"ip-addresses\": [\n          {\n            \"prefix\": 16,\n            \"ip-address-type\": \"ipv4\",\n            \"ip-address\": \"10.0.0.1\"\n          }\n        ],\n        \"hardware-address\": \"aa:00:01:07:67:df\"\n      },\n      {\n        \"statistics\": {\n          \"rx-packets\": 0,\n          \"tx-errs\": 0,\n          \"rx-errs\": 0,\n          \"tx-packets\": 0,\n          \"tx-dropped\": 0,\n          \"tx-bytes\": 0,\n          \"rx-bytes\": 0,\n          \"rx-dropped\": 0\n        },\n        \"name\": \"Loopback Pseudo-Interface 1\",\n        \"ip-addresses\": [\n          {\n            \"ip-address-type\": \"ipv6\",\n            \"ip-address\": \"::1\",\n            \"prefix\": 128\n          },\n          {\n            \"ip-address-type\": \"ipv4\",\n            \"ip-address\": \"127.0.0.1\",\n            \"prefix\": 8\n          }\n        ]\n      }\n    ]\n  }\n}",
+                    "latency": 0,
+                    "statusCode": 200,
+                    "label": "",
+                    "headers": [],
+                    "bodyType": "INLINE",
+                    "filePath": "",
+                    "databucketID": "",
+                    "sendFileAsBody": false,
+                    "rules": [
+                        {
+                            "target": "params",
+                            "modifier": "nodeId",
+                            "value": "centreon02-pm04",
+                            "invert": false,
+                            "operator": "equals"
+                        },
+                        {
+                            "target": "params",
+                            "modifier": "vmId",
+                            "value": "100004",
+                            "invert": false,
+                            "operator": "equals"
+                        }
+                    ],
+                    "rulesOperator": "AND",
+                    "disableTemplating": false,
+                    "fallbackTo404": false,
+                    "default": false,
+                    "crudKey": "id",
+                    "callbacks": []
+                },
+                {
+                    "uuid": "f0579b73-aa66-47db-9bfa-eafc49d55c54",
+                    "body": "{\n  \"data\": {\n    \"result\": [\n      {\n        \"statistics\": {\n          \"rx-errs\": 0,\n          \"tx-packets\": 1053197,\n          \"rx-packets\": 1153755,\n          \"tx-errs\": 0,\n          \"rx-bytes\": 128101868,\n          \"rx-dropped\": 24984,\n          \"tx-dropped\": 0,\n          \"tx-bytes\": 679719321\n        },\n        \"name\": \"Ethernet 3\",\n        \"ip-addresses\": [\n          {\n            \"prefix\": 16,\n            \"ip-address-type\": \"ipv4\",\n            \"ip-address\": \"10.0.0.2\"\n          }\n        ],\n        \"hardware-address\": \"aa:00:01:07:67:df\"\n      },\n      {\n        \"statistics\": {\n          \"rx-packets\": 0,\n          \"tx-errs\": 0,\n          \"rx-errs\": 0,\n          \"tx-packets\": 0,\n          \"tx-dropped\": 0,\n          \"tx-bytes\": 0,\n          \"rx-bytes\": 0,\n          \"rx-dropped\": 0\n        },\n        \"name\": \"Loopback Pseudo-Interface 1\",\n        \"ip-addresses\": [\n          {\n            \"ip-address-type\": \"ipv6\",\n            \"ip-address\": \"::1\",\n            \"prefix\": 128\n          },\n          {\n            \"ip-address-type\": \"ipv4\",\n            \"ip-address\": \"127.0.0.1\",\n            \"prefix\": 8\n          }\n        ]\n      }\n    ]\n  }\n}",
+                    "latency": 0,
+                    "statusCode": 200,
+                    "label": "",
+                    "headers": [],
+                    "bodyType": "INLINE",
+                    "filePath": "",
+                    "databucketID": "",
+                    "sendFileAsBody": false,
+                    "rules": [
+                        {
+                            "target": "params",
+                            "modifier": "nodeId",
+                            "value": "centreon02-pm04",
+                            "invert": false,
+                            "operator": "equals"
+                        },
+                        {
+                            "target": "params",
+                            "modifier": "vmId",
+                            "value": "100003",
+                            "invert": false,
+                            "operator": "equals"
+                        }
+                    ],
+                    "rulesOperator": "AND",
+                    "disableTemplating": false,
+                    "fallbackTo404": false,
+                    "default": false,
+                    "crudKey": "id",
+                    "callbacks": []
+                }
+            ],
+            "responseMode": null,
+            "streamingMode": null,
+            "streamingInterval": 0
+        },
+        {
+            "uuid": "49acd3e6-7c8e-4cf8-a451-8576e7723de7",
+            "type": "http",
+            "documentation": "",
+            "method": "get",
+            "endpoint": "api2/json/nodes/(qemu|node|storage)/([a-z0-9]+)/status/current",
+            "responses": [
+                {
+                    "uuid": "00b7c5b2-621a-43f6-9663-35ba10aa5258",
+                    "body": "{\n  \"data\": {\n    \"pid\": 1234,\n    \"status\": \"running\",\n    \"name\": \"YyYyY\",\n    \"cpu\": 0.05,\n    \"mem\": 524288,\n    \"maxmem\": 1048576,\n    \"uptime\": 3600,\n    \"disk\": 10737418240,\n    \"diskread\": 1048576,\n    \"diskwrite\": 524288,\n    \"netin\": 123456,\n    \"netout\": 654321,\n    \"id\": 1,\n    \"node\": \"XxXxX\"\n  }\n}",
+                    "latency": 0,
+                    "statusCode": 200,
+                    "label": "",
+                    "headers": [
+                        {
+                            "key": "access-control-allow-headers",
+                            "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+                        },
+                        {
+                            "key": "access-control-allow-methods",
+                            "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+                        },
+                        {
+                            "key": "access-control-allow-origin",
+                            "value": "*"
+                        },
+                        {
+                            "key": "content-security-policy",
+                            "value": "default-src 'none'"
+                        },
+                        {
+                            "key": "x-content-type-options",
+                            "value": "nosniff"
+                        }
+                    ],
+                    "bodyType": "INLINE",
+                    "filePath": "",
+                    "databucketID": "",
+                    "sendFileAsBody": false,
+                    "rules": [],
+                    "rulesOperator": "OR",
+                    "disableTemplating": false,
+                    "fallbackTo404": false,
+                    "default": false,
+                    "crudKey": "id",
+                    "callbacks": []
+                }
+            ],
+            "responseMode": null,
+            "streamingMode": null,
+            "streamingInterval": 0
+        },
+        {
+            "uuid": "c70cbf3a-078d-4c6f-a8ed-028dd160e2a8",
+            "type": "http",
+            "documentation": "",
+            "method": "get",
+            "endpoint": "api2/json/nodes/:nodeId/qemu/:vmId/status/current",
+            "responses": [
+                {
+                    "uuid": "1a7cfe5c-0928-4405-983f-6d36d5543b7e",
+                    "body": "{\n  \"data\": {\n    \"pid\": 1234,\n    \"status\": \"running\",\n    \"name\": \"CENTREON01\",\n    \"cpu\": 0.05,\n    \"mem\": 524288,\n    \"maxmem\": 1048576,\n    \"uptime\": 3600,\n    \"disk\": 10737418240,\n    \"diskread\": 1048576,\n    \"diskwrite\": 524288,\n    \"netin\": 123456,\n    \"netout\": 654321,\n    \"id\": 100000,\n    \"node\": \"centreon01-pm03\"\n  }\n}",
+                    "latency": 0,
+                    "statusCode": 200,
+                    "label": "",
+                    "headers": [
+                        {
+                            "key": "access-control-allow-headers",
+                            "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+                        },
+                        {
+                            "key": "access-control-allow-methods",
+                            "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+                        },
+                        {
+                            "key": "access-control-allow-origin",
+                            "value": "*"
+                        },
+                        {
+                            "key": "content-security-policy",
+                            "value": "default-src 'none'"
+                        },
+                        {
+                            "key": "content-type",
+                            "value": "application/json"
+                        },
+                        {
+                            "key": "x-content-type-options",
+                            "value": "nosniff"
+                        }
+                    ],
+                    "bodyType": "INLINE",
+                    "filePath": "",
+                    "databucketID": "",
+                    "sendFileAsBody": false,
+                    "rules": [],
+                    "rulesOperator": "OR",
+                    "disableTemplating": false,
+                    "fallbackTo404": false,
+                    "default": true,
+                    "crudKey": "id",
+                    "callbacks": []
+                },
+                {
+                    "uuid": "e72f6cd0-61c2-400b-9eea-c4eb38715607",
+                    "body": "{\n  \"data\": {\n    \"pid\": 1234,\n    \"status\": \"running\",\n    \"name\": \"CENTREON02\",\n    \"cpu\": 0.05,\n    \"mem\": 524288,\n    \"maxmem\": 1048576,\n    \"uptime\": 3600,\n    \"disk\": 10737418240,\n    \"diskread\": 1048576,\n    \"diskwrite\": 524288,\n    \"netin\": 123456,\n    \"netout\": 654321,\n    \"id\": 100001,\n    \"node\": \"centreon01-pm03\"\n  }\n}",
+                    "latency": 0,
+                    "statusCode": 200,
+                    "label": "",
+                    "headers": [
+                        {
+                            "key": "access-control-allow-headers",
+                            "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+                        },
+                        {
+                            "key": "access-control-allow-methods",
+                            "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+                        },
+                        {
+                            "key": "access-control-allow-origin",
+                            "value": "*"
+                        },
+                        {
+                            "key": "content-security-policy",
+                            "value": "default-src 'none'"
+                        },
+                        {
+                            "key": "content-type",
+                            "value": "application/json"
+                        },
+                        {
+                            "key": "x-content-type-options",
+                            "value": "nosniff"
+                        }
+                    ],
+                    "bodyType": "INLINE",
+                    "filePath": "",
+                    "databucketID": "",
+                    "sendFileAsBody": false,
+                    "rules": [
+                        {
+                            "target": "query",
+                            "modifier": "nodeId",
+                            "value": "centreon01-pm03",
+                            "invert": false,
+                            "operator": "equals"
+                        },
+                        {
+                            "target": "query",
+                            "modifier": "vmId",
+                            "value": "100001",
+                            "invert": false,
+                            "operator": "equals"
+                        }
+                    ],
+                    "rulesOperator": "AND",
+                    "disableTemplating": false,
+                    "fallbackTo404": false,
+                    "default": false,
+                    "crudKey": "id",
+                    "callbacks": []
+                },
+                {
+                    "uuid": "18b74299-3738-411a-b9be-19f7d9131b12",
+                    "body": "{\n  \"data\": {\n    \"pid\": 1234,\n    \"status\": \"running\",\n    \"name\": \"CENTREON03\",\n    \"cpu\": 0.05,\n    \"mem\": 524288,\n    \"maxmem\": 1048576,\n    \"uptime\": 3600,\n    \"disk\": 10737418240,\n    \"diskread\": 1048576,\n    \"diskwrite\": 524288,\n    \"netin\": 123456,\n    \"netout\": 654321,\n    \"id\": 100002,\n    \"node\": \"centreon01-pm03\"\n  }\n}",
+                    "latency": 0,
+                    "statusCode": 200,
+                    "label": "",
+                    "headers": [],
+                    "bodyType": "INLINE",
+                    "filePath": "",
+                    "databucketID": "",
+                    "sendFileAsBody": false,
+                    "rules": [
+                        {
+                            "target": "params",
+                            "modifier": "nodeId",
+                            "value": "centreon01-pm03",
+                            "invert": false,
+                            "operator": "equals"
+                        },
+                        {
+                            "target": "params",
+                            "modifier": "vmId",
+                            "value": "100002",
+                            "invert": false,
+                            "operator": "equals"
+                        }
+                    ],
+                    "rulesOperator": "AND",
+                    "disableTemplating": false,
+                    "fallbackTo404": false,
+                    "default": false,
+                    "crudKey": "id",
+                    "callbacks": []
+                },
+                {
+                    "uuid": "c3552b1e-5af4-4315-b71a-404f5c557d78",
+                    "body": "{\n  \"data\": {\n    \"pid\": 1234,\n    \"status\": \"running\",\n    \"name\": \"CENTREON04\",\n    \"cpu\": 0.05,\n    \"mem\": 524288,\n    \"maxmem\": 1048576,\n    \"uptime\": 3600,\n    \"disk\": 10737418240,\n    \"diskread\": 1048576,\n    \"diskwrite\": 524288,\n    \"netin\": 123456,\n    \"netout\": 654321,\n    \"id\": 100003,\n    \"node\": \"centreon02-pm04\"\n  }\n}",
+                    "latency": 0,
+                    "statusCode": 200,
+                    "label": "",
+                    "headers": [],
+                    "bodyType": "INLINE",
+                    "filePath": "",
+                    "databucketID": "",
+                    "sendFileAsBody": false,
+                    "rules": [
+                        {
+                            "target": "params",
+                            "modifier": "nodeId",
+                            "value": "centreon02-pm04",
+                            "invert": false,
+                            "operator": "equals"
+                        },
+                        {
+                            "target": "params",
+                            "modifier": "vmId",
+                            "value": "100003",
+                            "invert": false,
+                            "operator": "equals"
+                        }
+                    ],
+                    "rulesOperator": "AND",
+                    "disableTemplating": false,
+                    "fallbackTo404": false,
+                    "default": false,
+                    "crudKey": "id",
+                    "callbacks": []
+                },
+                {
+                    "uuid": "c09513c2-11af-4f3d-8093-dc2d708080cf",
+                    "body": "{\n  \"data\": {\n    \"pid\": 1234,\n    \"status\": \"running\",\n    \"name\": \"CENTREON05\",\n    \"cpu\": 0.05,\n    \"mem\": 524288,\n    \"maxmem\": 1048576,\n    \"uptime\": 3600,\n    \"disk\": 10737418240,\n    \"diskread\": 1048576,\n    \"diskwrite\": 524288,\n    \"netin\": 123456,\n    \"netout\": 654321,\n    \"id\": 100004,\n    \"node\": \"centreon02-pm04\"\n  }\n}",
+                    "latency": 0,
+                    "statusCode": 200,
+                    "label": "",
+                    "headers": [],
+                    "bodyType": "INLINE",
+                    "filePath": "",
+                    "databucketID": "",
+                    "sendFileAsBody": false,
+                    "rules": [
+                        {
+                            "target": "params",
+                            "modifier": "nodeId",
+                            "value": "centreon02-pm04",
+                            "invert": false,
+                            "operator": "equals"
+                        },
+                        {
+                            "target": "params",
+                            "modifier": "vmId",
+                            "value": "100004",
+                            "invert": false,
+                            "operator": "equals"
+                        }
+                    ],
+                    "rulesOperator": "AND",
+                    "disableTemplating": false,
+                    "fallbackTo404": false,
+                    "default": false,
+                    "crudKey": "id",
+                    "callbacks": []
+                }
+            ],
+            "responseMode": null,
+            "streamingMode": null,
+            "streamingInterval": 0
         }
-      ],
-      "responseMode": null,
-      "streamingMode": null,
-      "streamingInterval": 0
-    }
-  ],
-  "rootChildren": [
-    {
-      "type": "route",
-      "uuid": "6a778c11-99ff-4a50-8004-97b6aabff215"
+    ],
+    "rootChildren": [
+        {
+            "type": "route",
+            "uuid": "1a3e83d1-f69d-471c-bbf3-e6b158651aba"
+        },
+        {
+            "type": "route",
+            "uuid": "389c37f9-2230-4ab2-81af-dcc8d9af5920"
+        },
+        {
+            "type": "route",
+            "uuid": "b87af394-dfcc-4c81-b635-14531358661d"
+        },
+        {
+            "type": "route",
+            "uuid": "403ae461-72fe-4fae-933d-eff509dc912d"
+        },
+        {
+            "type": "route",
+            "uuid": "590942ff-2eea-455b-ad21-9107cd95efeb"
+        },
+        {
+            "type": "route",
+            "uuid": "49acd3e6-7c8e-4cf8-a451-8576e7723de7"
+        },
+        {
+            "type": "route",
+            "uuid": "c70cbf3a-078d-4c6f-a8ed-028dd160e2a8"
+        }
+    ],
+    "proxyMode": false,
+    "proxyHost": "",
+    "proxyRemovePrefix": false,
+    "tlsOptions": {
+        "enabled": false,
+        "type": "CERT",
+        "pfxPath": "",
+        "certPath": "",
+        "keyPath": "",
+        "caPath": "",
+        "passphrase": ""
     },
-    {
-      "type": "route",
-      "uuid": "d71c2a8a-90af-40cc-8580-a7c42143e803"
-    },
-    {
-      "type": "route",
-      "uuid": "84416441-bdf8-48be-ad8c-dbfd56e99895"
-    },
-    {
-      "type": "route",
-      "uuid": "c0cdebe1-88ef-4fd8-8074-b4ebc77b5e9f"
-    },
-    {
-      "type": "route",
-      "uuid": "78d64704-80ab-4420-aa6b-2c807930f0e6"
-    },
-    {
-      "type": "route",
-      "uuid": "91c855e0-c509-4273-9794-76fbb7d57782"
-    }
-  ],
-  "proxyMode": false,
-  "proxyHost": "",
-  "proxyRemovePrefix": false,
-  "tlsOptions": {
-    "enabled": false,
-    "type": "CERT",
-    "pfxPath": "",
-    "certPath": "",
-    "keyPath": "",
-    "caPath": "",
-    "passphrase": ""
-  },
-  "cors": true,
-  "headers": [
-    {
-      "key": "Content-Type",
-      "value": "application/json"
-    },
-    {
-      "key": "Access-Control-Allow-Origin",
-      "value": "*"
-    },
-    {
-      "key": "Access-Control-Allow-Methods",
-      "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
-    },
-    {
-      "key": "Access-Control-Allow-Headers",
-      "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
-    }
-  ],
-  "proxyReqHeaders": [
-    {
-      "key": "",
-      "value": ""
-    }
-  ],
-  "proxyResHeaders": [
-    {
-      "key": "",
-      "value": ""
-    }
-  ],
-  "data": [],
-  "callbacks": []
+    "cors": true,
+    "headers": [
+        {
+            "key": "Content-Type",
+            "value": "application/json"
+        },
+        {
+            "key": "Access-Control-Allow-Origin",
+            "value": "*"
+        },
+        {
+            "key": "Access-Control-Allow-Methods",
+            "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+        },
+        {
+            "key": "Access-Control-Allow-Headers",
+            "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+        }
+    ],
+    "proxyReqHeaders": [
+        {
+            "key": "",
+            "value": ""
+        }
+    ],
+    "proxyResHeaders": [
+        {
+            "key": "",
+            "value": ""
+        }
+    ],
+    "data": [],
+    "callbacks": []
 }
