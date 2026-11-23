@@ -192,7 +192,7 @@ sub load_memory_xml_v3 {
         if ($name eq 'TotalUse') {
             $memory->{total_use} = $node->string_value;
         }
-        if ($name eq 'InUse') {
+        if ($name eq 'InUse' || $name eq 'Malloced') {
             $memory->{in_use} = $node->string_value;
         }
     }
