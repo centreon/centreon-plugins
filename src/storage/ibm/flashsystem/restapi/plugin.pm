@@ -1,5 +1,5 @@
 #
-# Copyright 2026 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -16,8 +16,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-# Authors : Valentin MAROT <contact@valentin-marot.fr>
 #
 
 #
@@ -91,14 +89,14 @@ B<Monitor> role.
 
 =item B<Available modes>
 
-capacity, drives, eth-ports, eventlog, fc-ports, hardware, hosts, performance,
-replication, system-status, volume-groups, volumes.
+C<capacity>, C<drives>, C<eth-ports>, C<eventlog>, C<fc-ports>, C<hardware>, C<hosts>,
+C<performance>, C<replication>, C<system-status>, C<volume-groups>, C<volumes>.
 
 Run C<--list-mode> to get the authoritative list: only implemented modes are
 declared, so anything listed can actually be run.
 
 C<system-status> is meant to be the B<host check command>, not a service: it
-reports DOWN only when the array stopped serving — no canister online, no pool
+reports DOWN only when the array stopped serving, no canister online, no pool
 online, or no answer at all. A dead power supply or a degraded partition must
 not take the host down, because that would make every service UNREACHABLE and
 silence them.
@@ -106,7 +104,7 @@ silence them.
 =item B<Splitting a mode across several services>
 
 A mode that returns several concerns at once is split with
-C<--filter-counters>, a regular expression on the counter labels — no plugin
+C<--filter-counters>, a regular expression on the counter labels, no plugin
 code and no extra command. C<performance> is split that way into three
 services: C<--filter-counters=latency>,
 C<--filter-counters=iops|bandwidth|cache> and C<--filter-counters=cpu>.

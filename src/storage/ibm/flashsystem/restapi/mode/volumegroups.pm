@@ -1,5 +1,5 @@
 #
-# Copyright 2026 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -16,8 +16,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-# Authors : Valentin MAROT <contact@valentin-marot.fr>
 #
 
 #
@@ -207,13 +205,13 @@ __END__
 
 =head1 MODE
 
-Check the volume groups — the per-object granularity that means something on
+Check the volume groups, the per-object granularity that means something on
 these arrays.
 
 A volume carries only a status, identical across all 349 of them. A group
 carries a backup state, a last backup time, a restore in progress and the
-policies attached to it. And its name is a business one — C<Volume_Group_ESXi>,
-C<Volume_Group_DBWMSPRTRI01> — which reads well on call.
+policies attached to it. And its name is a business one, C<Volume_Group_ESXi>,
+C<Volume_Group_DBWMSPRTRI01>, which reads well on call.
 
 Example, one service per group through service discovery:
 
@@ -244,7 +242,7 @@ C<replication_policy>, C<snapshot_policy>, C<safeguarded_policy>,
 C<restore_in_progress>.
 
 Nothing else alerts by default. On these arrays C<backup_status> is C<off>
-everywhere and no group references a snapshot policy — an operational choice,
+everywhere and no group references a snapshot policy, an operational choice,
 not a fault. Once that choice is settled, express it here rather than in the
 code:
 
@@ -260,7 +258,7 @@ C<replication_policy>, C<snapshot_policy>, C<safeguarded_policy>,
 C<restore_in_progress>.
 
 Nothing else alerts by default. On these arrays C<backup_status> is C<off>
-everywhere and no group references a snapshot policy — an operational choice,
+everywhere and no group references a snapshot policy, an operational choice,
 not a fault. Once that choice is settled, express it here rather than in the
 code:
 
@@ -278,7 +276,7 @@ C<restore_in_progress>.
 Default critical: C<%{backup_status} =~ /^failed$/i>.
 
 Nothing else alerts by default. On these arrays C<backup_status> is C<off>
-everywhere and no group references a snapshot policy — an operational choice,
+everywhere and no group references a snapshot policy, an operational choice,
 not a fault. Once that choice is settled, express it here rather than in the
 code:
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2026 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -16,8 +16,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-# Authors : Valentin MAROT <contact@valentin-marot.fr>
 #
 
 #
@@ -199,8 +197,8 @@ __END__
 
 Check the status of the hosts declared on the system.
 
-Every declared host is evaluated. A host that is offline on purpose — a spare
-LPAR profile, an idle backup host — still reports offline: acknowledging it in
+Every declared host is evaluated. A host that is offline on purpose, a spare
+logical partition profile, an idle backup host, still reports offline: acknowledging it in
 Centreon records who decided it is expected and when that should be revisited,
 which a hard-coded exclusion would not.
 
@@ -231,7 +229,7 @@ C<host_cluster_name>, C<partition_name>.
 The natural order of severity is B<inverted> here, on purpose. C<offline> means
 no WWPN of that host connects any more: the array cannot tell a deliberately
 powered-off server from a failed one, and the common case is the former
-(spares, backup hosts) — a warning keeps it visible without waking anyone.
+(spares, backup hosts), a warning keeps it visible without waking anyone.
 C<degraded> means only B<part> of the paths answer: the host is running, in
 production, on eaten-into redundancy, and the next lost path cuts its storage.
 That is actionable right now (zoning, SFP, switch) and is often the only place
@@ -249,7 +247,7 @@ Default warning: C<%{status} =~ /^offline$/i>.
 The natural order of severity is B<inverted> here, on purpose. C<offline> means
 no WWPN of that host connects any more: the array cannot tell a deliberately
 powered-off server from a failed one, and the common case is the former
-(spares, backup hosts) — a warning keeps it visible without waking anyone.
+(spares, backup hosts), a warning keeps it visible without waking anyone.
 C<degraded> means only B<part> of the paths answer: the host is running, in
 production, on eaten-into redundancy, and the next lost path cuts its storage.
 That is actionable right now (zoning, SFP, switch) and is often the only place
@@ -267,7 +265,7 @@ Default critical: C<%{status} =~ /^degraded$/i>.
 The natural order of severity is B<inverted> here, on purpose. C<offline> means
 no WWPN of that host connects any more: the array cannot tell a deliberately
 powered-off server from a failed one, and the common case is the former
-(spares, backup hosts) — a warning keeps it visible without waking anyone.
+(spares, backup hosts), a warning keeps it visible without waking anyone.
 C<degraded> means only B<part> of the paths answer: the host is running, in
 production, on eaten-into redundancy, and the next lost path cuts its storage.
 That is actionable right now (zoning, SFP, switch) and is often the only place

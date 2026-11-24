@@ -1,5 +1,5 @@
 #
-# Copyright 2026 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -16,8 +16,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-# Authors : Valentin MAROT <contact@valentin-marot.fr>
 #
 
 #
@@ -38,7 +36,7 @@ use warnings;
 use centreon::plugins::http;
 use centreon::plugins::statefile;
 use JSON::XS;
-use Digest::MD5 qw(md5_hex);
+use Digest::SHA qw(sha256_hex);
 
 sub new {
     my ($class, %options) = @_;
@@ -241,8 +239,8 @@ sub statefile_name {
     my ($self, %options) = @_;
 
     return 'ibm_flashsystem_api_'
-        . md5_hex($self->{hostname} . ':' . $self->{port})
-        . '_' . md5_hex($self->{api_username});
+        . sha256_hex($self->{hostname} . ':' . $self->{port})
+        . '_' . sha256_hex($self->{api_username});
 }
 
 # Re-reads the cache and returns the token if still valid, undef otherwise.
@@ -324,8 +322,8 @@ sub get_token {
 sub response_cache_name {
     my ($self, %options) = @_;
 
-    return 'ibm_flashsystem_api_rsp_' . md5_hex($self->{hostname} . ':' . $self->{port})
-        . '_' . md5_hex($self->{api_username} . '|' . $options{key});
+    return 'ibm_flashsystem_api_rsp_' . sha256_hex($self->{hostname} . ':' . $self->{port})
+        . '_' . sha256_hex($self->{api_username} . '|' . $options{key});
 }
 
 sub cached_response {
@@ -582,7 +580,7 @@ array).
 
 The array also rate-limits commands. Splitting the monitoring into
 single-purpose services multiplies plugin runs that read the B<same> C<ls*>
-commands within the same minute — the first check of the cycle fills the
+commands within the same minute, the first check of the cycle fills the
 cache, the others read it, and the burst disappears without changing the
 check cadence. Every command is a read, so caching is semantically safe; the
 worst case is a detection delayed by under a minute on a five-minute cadence.

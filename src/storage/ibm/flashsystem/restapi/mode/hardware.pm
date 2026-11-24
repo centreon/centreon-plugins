@@ -1,5 +1,5 @@
 #
-# Copyright 2026 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -16,8 +16,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-# Authors : Valentin MAROT <contact@valentin-marot.fr>
 #
 
 #
@@ -347,8 +345,8 @@ Define the conditions to match for the status to be UNKNOWN.
 Threshold on each component. Available macros: C<name>, C<type>, C<status>.
 
 Critical means B<service lost>, warning means B<redundancy lost>. Every part
-here is redundant — two power supplies, two canisters, six fan modules, a DRAID
-across twelve drives — so a degraded component eats the margin without stopping
+here is redundant, two power supplies, two canisters, six fan modules, a DRAID
+across twelve drives, so a degraded component eats the margin without stopping
 anything. Merging the two wakes someone up for a fault that can wait for
 business hours, and buries the real outage among them.
 
@@ -361,8 +359,8 @@ Threshold on each component. Available macros: C<name>, C<type>, C<status>.
 Default warning: C<%{status} =~ /^(degraded|degraded_paths|degraded_ports)$/i>.
 
 Critical means B<service lost>, warning means B<redundancy lost>. Every part
-here is redundant — two power supplies, two canisters, six fan modules, a DRAID
-across twelve drives — so a degraded component eats the margin without stopping
+here is redundant, two power supplies, two canisters, six fan modules, a DRAID
+across twelve drives, so a degraded component eats the margin without stopping
 anything. Merging the two wakes someone up for a fault that can wait for
 business hours, and buries the real outage among them.
 
@@ -375,8 +373,8 @@ Threshold on each component. Available macros: C<name>, C<type>, C<status>.
 Default critical: C<%{status} =~ /^(offline|excluded)$/i>.
 
 Critical means B<service lost>, warning means B<redundancy lost>. Every part
-here is redundant — two power supplies, two canisters, six fan modules, a DRAID
-across twelve drives — so a degraded component eats the margin without stopping
+here is redundant, two power supplies, two canisters, six fan modules, a DRAID
+across twelve drives, so a degraded component eats the margin without stopping
 anything. Merging the two wakes someone up for a fault that can wait for
 business hours, and buries the real outage among them.
 

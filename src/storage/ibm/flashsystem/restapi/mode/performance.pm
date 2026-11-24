@@ -1,5 +1,5 @@
 #
-# Copyright 2026 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -16,8 +16,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-# Authors : Valentin MAROT <contact@valentin-marot.fr>
 #
 
 #
@@ -300,11 +298,11 @@ output, because on a five-minute average the peak is what the mean erases.
 Only latency ships with thresholds. It is the one indicator with a physical
 norm: on all-flash, a few milliseconds is normal and a few tens is not,
 whichever array you look at. IOPS, bandwidth and CPU have no good absolute
-value — they are set against what you observe, so no default is shipped.
+value, they are set against what you observe, so no default is shipped.
 
 IBM Storage Insights Pro keeps a year of history and dozens of metrics: fine
 metrology lives there. This mode exists for the B<alert>, which has to be raised
-in Centreon because Centreon is what talks to ServiceNow.
+in Centreon because Centreon is what sends the notifications.
 
 Example:
 
@@ -339,32 +337,32 @@ point on these all-flash systems: 10 and 20. Measured idle values sit around
 
 Warning threshold.
 
-Same, split by direction. Writes are normally slower than reads — around 0.5 ms
-against 0.2 on these arrays — so a single threshold on both hides a write
+Same, split by direction. Writes are normally slower than reads, around 0.5 ms
+against 0.2 on these arrays, so a single threshold on both hides a write
 problem.
 
 =item B<--critical-read-latency>
 
 Critical threshold.
 
-Same, split by direction. Writes are normally slower than reads — around 0.5 ms
-against 0.2 on these arrays — so a single threshold on both hides a write
+Same, split by direction. Writes are normally slower than reads, around 0.5 ms
+against 0.2 on these arrays, so a single threshold on both hides a write
 problem.
 
 =item B<--warning-write-latency>
 
 Warning threshold.
 
-Same, split by direction. Writes are normally slower than reads — around 0.5 ms
-against 0.2 on these arrays — so a single threshold on both hides a write
+Same, split by direction. Writes are normally slower than reads, around 0.5 ms
+against 0.2 on these arrays, so a single threshold on both hides a write
 problem.
 
 =item B<--critical-write-latency>
 
 Critical threshold.
 
-Same, split by direction. Writes are normally slower than reads — around 0.5 ms
-against 0.2 on these arrays — so a single threshold on both hides a write
+Same, split by direction. Writes are normally slower than reads, around 0.5 ms
+against 0.2 on these arrays, so a single threshold on both hides a write
 problem.
 
 =item B<--warning-backend-latency>
@@ -403,28 +401,28 @@ fabric, not at the disks.
 
 Warning threshold.
 
-Thresholds on volume IOPS and throughput. Throughput is in bytes per second —
+Thresholds on volume IOPS and throughput. Throughput is in bytes per second:
 the array reports MB/s and the mode converts.
 
 =item B<--critical-iops>
 
 Critical threshold.
 
-Thresholds on volume IOPS and throughput. Throughput is in bytes per second —
+Thresholds on volume IOPS and throughput. Throughput is in bytes per second:
 the array reports MB/s and the mode converts.
 
 =item B<--warning-bandwidth>
 
 Warning threshold.
 
-Thresholds on volume IOPS and throughput. Throughput is in bytes per second —
+Thresholds on volume IOPS and throughput. Throughput is in bytes per second:
 the array reports MB/s and the mode converts.
 
 =item B<--critical-bandwidth>
 
 Critical threshold.
 
-Thresholds on volume IOPS and throughput. Throughput is in bytes per second —
+Thresholds on volume IOPS and throughput. Throughput is in bytes per second:
 the array reports MB/s and the mode converts.
 
 =item B<--warning-cpu>
@@ -456,8 +454,8 @@ Thresholds on the processor load, overall and for compression.
 Warning threshold.
 
 Thresholds on the B<per-canister> CPU load. Storage Virtualize has no load
-average; on an active/active pair the telling figure is the imbalance — one
-canister carrying everything while the other idles — which the global average
+average; on an active/active pair the telling figure is the imbalance, one
+canister carrying everything while the other idles, which the global average
 hides. The C<node-cpu> label is chosen so the Cpu service's
 C<--filter-counters=cpu> picks these counters up without touching any Centreon
 template.
@@ -467,8 +465,8 @@ template.
 Critical threshold.
 
 Thresholds on the B<per-canister> CPU load. Storage Virtualize has no load
-average; on an active/active pair the telling figure is the imbalance — one
-canister carrying everything while the other idles — which the global average
+average; on an active/active pair the telling figure is the imbalance, one
+canister carrying everything while the other idles, which the global average
 hides. The C<node-cpu> label is chosen so the Cpu service's
 C<--filter-counters=cpu> picks these counters up without touching any Centreon
 template.

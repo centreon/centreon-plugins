@@ -1,5 +1,5 @@
 #
-# Copyright 2026 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -16,8 +16,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-# Authors : Valentin MAROT <contact@valentin-marot.fr>
 #
 
 #
@@ -417,7 +415,7 @@ Volume group replications are restricted to the matching partitions too, so
 one service per partition is a matter of Centreon configuration: create a
 service from the same template and set the service-level C<EXTRAOPTIONS>
 macro, e.g. C<--filter-partition=Partition_AIX_HA>. Partnerships stay
-unfiltered — a broken partnership concerns every partition.
+unfiltered, a broken partnership concerns every partition.
 
 =item B<--filter-volume-group>
 

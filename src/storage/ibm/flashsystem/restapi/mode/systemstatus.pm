@@ -1,5 +1,5 @@
 #
-# Copyright 2026 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -16,8 +16,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-# Authors : Valentin MAROT <contact@valentin-marot.fr>
 #
 
 #
@@ -156,13 +154,13 @@ __END__
 Host check: whether the array is still working.
 
 This mode is meant for the B<host check command>, not for a service. It returns
-only OK (host UP) or CRITICAL (host DOWN) — never WARNING or UNKNOWN, whose
+only OK (host UP) or CRITICAL (host DOWN), never WARNING or UNKNOWN, whose
 meaning for a host check is ambiguous.
 
 The criterion is deliberately narrow. DOWN means "the array has stopped
 working", not "something is wrong". Marking a host DOWN turns B<all> its
 services UNREACHABLE and silences them, so a failed power supply, a dead drive
-or a degraded partition must never lead there — the C<hardware>, C<replication>
+or a degraded partition must never lead there, the C<hardware>, C<replication>
 and C<eventlog> services carry those, and they are exactly what you need to hear
 at that moment.
 
@@ -184,7 +182,7 @@ no pool is online, so no volume is served any more.
 
 =back
 
-An API that answers but refuses the call — expired token, 429, certificate —
+An API that answers but refuses the call, expired token, 429, certificate:
 is B<not> a dead array: it is our own monitoring having trouble. The host stays
 UP and the reason is printed.
 

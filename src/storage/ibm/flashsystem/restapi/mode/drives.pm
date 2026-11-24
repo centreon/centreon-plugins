@@ -1,5 +1,5 @@
 #
-# Copyright 2026 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -16,8 +16,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-# Authors : Valentin MAROT <contact@valentin-marot.fr>
 #
 
 #
@@ -229,7 +227,7 @@ drive): C<write_endurance_used>, the two path statuses, the physical fill and
 the predicted C<replacement_date>.
 
 Drive B<status> stays with the C<hardware> mode, which already covers every
-drive among its components — carrying it here too would double each alert.
+drive among its components, carrying it here too would double each alert.
 This mode alerts, by default, on a fallen path or a predicted end of life.
 
 Example:
@@ -261,7 +259,7 @@ C<port_1_status>, C<port_2_status>, C<replacement_date>, C<firmware>.
 
 Default warning:
 C<(%{port_1_status} ne "-" and %{port_1_status} !~ /^online$/i) or (%{port_2_status} ne "-" and %{port_2_status} !~ /^online$/i) or %{replacement_date} ne "-">.
-— one path left, or an end of life the array predicts.
+One path left, or an end of life the array predicts.
 
 =item B<--critical-status>
 

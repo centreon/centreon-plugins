@@ -1,5 +1,5 @@
 #
-# Copyright 2026 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -16,8 +16,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-# Authors : Valentin MAROT <contact@valentin-marot.fr>
 #
 
 #
@@ -354,17 +352,17 @@ over-allocated view of the hardware: a pool can report 630 TB free while only
 watches a number unrelated to the moment the array fills up.
 
 Thresholds are meant to be set on B<physical-usage-prct>, taken from
-C<lssystem>. Pool figures are still published as metrics — for the trend and for
-the over-allocation ratio — but only the pool B<status> alerts on its own.
+C<lssystem>. Pool figures are still published as metrics, for the trend and for
+the over-allocation ratio, but only the pool B<status> alerts on its own.
 
 The data reduction ratio is read from whichever layer actually reduces:
 the software layer (data reduction pools, C<used_capacity_*_reduction>) when a
 pool enables it, otherwise the B<FlashCore Module hardware compression>, which
-only the detailed per-mdisk view exposes (C<effective_used_capacity> — written
-by hosts — against the physical capacity actually consumed). The long output
+only the detailed per-mdisk view exposes (C<effective_used_capacity>, written
+by hosts, against the physical capacity actually consumed). The long output
 names the layer being measured. This matches the GUI's "Data reduction" figure;
 the GUI's larger "Total savings" ratio additionally counts thin provisioning
-and is deliberately not reproduced — over-allocation is already published as
+and is deliberately not reproduced, over-allocation is already published as
 its own metric.
 
 Example:

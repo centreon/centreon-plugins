@@ -1,5 +1,5 @@
 #
-# Copyright 2026 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -16,8 +16,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-# Authors : Valentin MAROT <contact@valentin-marot.fr>
 #
 
 #
@@ -250,7 +248,7 @@ Two commands describe two different things, and mixing them up is easy:
 =item *
 
 C<lsportethernet> is the B<physical> port: link state, negotiated speed,
-and the flags saying what it is used for — management, host, storage,
+and the flags saying what it is used for, management, host, storage,
 replication.
 
 =item *
@@ -261,17 +259,17 @@ C<id> rather than C<port_id>.
 
 =back
 
-On the arrays surveyed, all twelve IP entries are C<unconfigured> — iSCSI is not
-used, everything goes over Fibre Channel — and two of the six physical ports are
+On the arrays surveyed, all twelve IP entries are C<unconfigured>, iSCSI is not
+used, everything goes over Fibre Channel, and two of the six physical ports are
 active at 1 Gb/s.
 
-So an inactive port is B<not> treated as a fault: an uncabled port is a cabling
+So an inactive port is B<not> treated as a fault: an unconnected port is a cabling
 choice, not a defect, and alerting on it would produce permanent noise.
 
 B<Do not threshold on the role flags.> C<management>, C<host>, C<storage> and
 C<replication> report what a port is B<allowed> to carry, not what it currently
-carries: an uncabled port has them all set simply because nothing forbids them.
-Thresholding on "carries a role and link is down" put all four uncabled ports in
+carries: an unconnected port has them all set simply because nothing forbids them.
+A threshold on "carries a role and link is down" put all four unconnected ports in
 permanent CRITICAL. The one reliable sign that a port is in service is an IP
 address configured on it, which is what the default threshold uses.
 
@@ -289,7 +287,7 @@ Only check ports whose C<node-port> name matches this regular expression.
 
 =item B<--add-unused>
 
-Also report ports that carry no role and have no link — the full inventory
+Also report ports that carry no role and have no link, the full inventory
 rather than just what is in service.
 
 =item B<--unknown-status>

@@ -50,8 +50,6 @@ bootable
 BPL
 --cacert-file
 cAdvisor
-canister
-canisters
 cardtemperature
 CDN
 centreon
@@ -108,8 +106,6 @@ F5OS
 failover
 fanspeed
 FCCapacity
-FCM
-FCMs
 fibre
 FibreAlliance
 --filter-fs
@@ -202,14 +198,7 @@ LIBSSH
 Libvirt
 license-instances-usage-prct
 Loggly
-lsdrive
-lseventlog
-lsmdisk
 LSP
-lspartition
-lssystem
-lssystemstats
-lsvdisk
 LTE
 LUN
 LUNs
@@ -276,7 +265,6 @@ NLCapacity
 -NoLogo
 --nomachineaccount
 notapplicable
-NPIV
 NRPE
 NSClient
 --ntlmv2
@@ -337,7 +325,6 @@ PVX
 QoS
 Qtree
 queue-messages-inflighted
-quorum
 quts
 qwinsta
 raidvolume
@@ -353,10 +340,6 @@ RSS
 rssi
 RTT
 Rubrik
-Storwize
-vdisk
-Virtualize
-WWPN
 µs
 Sansymphony
 SAS
@@ -392,6 +375,7 @@ statefile
 --statefile-concat-cwd
 Statuspage
 Stormshield
+Storwize
 sudoers
 superseed
 SureBackup
@@ -451,6 +435,7 @@ VeloCloud
 Veritas
 vhost
 VIRSHCLI
+Virtualize
 VM
 VMs
 VMware
@@ -480,6 +465,7 @@ WildFire
 WLAN
 WLC
 WSMAN
+WWPN
 XCP-ng
 Xen
 XPath

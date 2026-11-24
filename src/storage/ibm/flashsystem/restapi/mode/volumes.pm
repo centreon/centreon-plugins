@@ -1,5 +1,5 @@
 #
-# Copyright 2026 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -16,8 +16,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-# Authors : Valentin MAROT <contact@valentin-marot.fr>
 #
 
 #
@@ -236,7 +234,7 @@ Check the volumes as a whole.
 
 This mode is aggregated on purpose. Neither C<lsvdisk> nor C<lsvdiskcopy>
 exposes C<used_capacity> in their concise output: a volume's consumption would
-need the detailed view, one call per volume — 349 per cycle on these arrays. The
+need the detailed view, one call per volume, 349 per cycle on these arrays. The
 only per-volume state actually available is the status, and they are all
 C<online>. One service per volume would display "online" and a frozen size,
 seven hundred times over.
@@ -244,7 +242,7 @@ seven hundred times over.
 So the service counts the states and B<names> the abnormal volumes in its
 output: the diagnostic detail is kept, the seven hundred services are not. For
 per-object monitoring, use the C<volume-groups> mode, whose objects carry a real
-state — replication, backup, attached policies.
+state, replication, backup, attached policies.
 
 Two reading traps:
 
@@ -253,7 +251,7 @@ Two reading traps:
 =item *
 
 C<fast_write_state = not_empty> is the B<normal> state of a working
-volume — data sitting in the write cache. Only C<corrupt> is abnormal.
+volume, data sitting in the write cache. Only C<corrupt> is abnormal.
 
 =item *
 
@@ -289,7 +287,7 @@ expression. Empty by default.
 =item B<--add-all-volumes>
 
 Turn every volume into a checkable instance, not just the abnormal ones. Use
-with a filter — this is what makes a per-volume service possible if you really
+with a filter, this is what makes a per-volume service possible if you really
 want one:
 
     --mode=volumes --add-all-volumes --filter-name='^VOL_PRD_01$'

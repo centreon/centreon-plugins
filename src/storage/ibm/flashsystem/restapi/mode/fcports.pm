@@ -1,5 +1,5 @@
 #
-# Copyright 2026 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -16,8 +16,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-# Authors : Valentin MAROT <contact@valentin-marot.fr>
 #
 
 #
@@ -216,7 +214,7 @@ __END__
 
 =head1 MODE
 
-Check the Fibre Channel ports — the data path, which the C<hardware> mode does
+Check the Fibre Channel ports, the data path, which the C<hardware> mode does
 not cover.
 
 C<lsportfc> exposes neither error counters nor throughput: status, negotiated
@@ -226,7 +224,7 @@ through C<lsnodecanisterstats>.
 Host logins come from C<lstargetportfc>, aggregated per physical port. An active
 port that loses its logins is a lost path, and nothing else would show it.
 
-Ports are named after their node and port number — C<node1-1> — because port ids
+Ports are named after their node and port number, C<node1-1>, because port ids
 are not contiguous (0 to 3 then 24 to 27 on a two-canister system), so a service
 called "Port 24" would help nobody.
 
@@ -244,7 +242,7 @@ Only check ports whose C<node-port> name matches this regular expression.
 
 =item B<--filter-type>
 
-Only check ports of this type (C<fc>, C<ethernet>…).
+Only check ports of this type (C<fc>, C<ethernet>...).
 
 =item B<--unknown-status>
 
