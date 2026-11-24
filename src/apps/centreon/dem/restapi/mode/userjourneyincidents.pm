@@ -184,7 +184,7 @@ __END__
 
 =head1 MODE
 
-Check Centreon DEM (formerly Quanta) incidents for a given user journey.
+Check Centreon Experience Monitoring (formerly Quanta) incidents for a given user journey.
 
 =over 8
 
@@ -206,11 +206,11 @@ Ignore closed incidents.
 
 =item B<--warning-incidents-total>
 
-Warning threshold for incidents total.
+Warning threshold for incidents total (number of incidents).
 
 =item B<--critical-incidents-total>
 
-Critical threshold for incidents total.
+Critical threshold for incidents total (number of incidents).
 
 =item B<--warning-incident-status>
 
