@@ -2,6 +2,7 @@
 name = "centreon-plugin-rust-snmp"
 version = "0.1.0"
 edition = "2024"
+rust-version = "1.100"
 
 [build-dependencies]
 lalrpop = "0.23.1"

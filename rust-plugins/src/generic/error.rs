@@ -25,9 +25,7 @@ use std::io;
 #[snafu(visibility(pub))]
 pub enum Error {
     #[snafu(display(
-        "Threshold: This syntax is a shortcut of '0:{}', so {} must be greater than 0.",
-        value,
-        value
+        "Threshold: This syntax is a shortcut of '0:{value}', so {value} must be greater than 0."
     ))]
     NegativeSimpleThreshold { value: f64 },
 
@@ -60,10 +58,7 @@ pub enum Error {
     MissingFormatVersion { expected: u32 },
 
     #[snafu(display(
-        "The collection targets the format version {}, this plugin only supports the version {}. Upgrade the plugin, or use a collection written for the version {}.",
-        found,
-        expected,
-        expected
+        "The collection targets the format version {found}, this plugin only supports the version {expected}. Upgrade the plugin, or use a collection written for the version {expected}."
     ))]
     UnsupportedFormatVersion { found: u32, expected: u32 },
 
