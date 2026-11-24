@@ -108,6 +108,17 @@ jobs:
           }
           Write-Host "Standalone version smoke-test OK."
 
+          # The WSUS synchronization mode uses DateTime, whose Specio
+          # implementation is selected dynamically. Ensure the pure-Perl
+          # implementation is embedded and the mode can load without Perl on PATH.
+          $wsus = & $exe --plugin apps::microsoft::wsus::local::plugin --mode synchronisation-status --help 2>&1 | Out-String
+          Write-Host $wsus
+          if ($wsus -match 'Cannot load module' -or $wsus -notmatch 'critical-last-synchronisation-status') {
+            Write-Error "WSUS synchronization mode failed to load from the standalone executable."
+            exit 1
+          }
+          Write-Host "WSUS synchronization mode smoke-test OK."
+
           # Exercise each HTTP backend with a real request so its native XS stack is
           # loaded (lwp -> Net::SSLeay/OpenSSL; curl -> Net::Curl/libcurl, loaded
           # lazily only on an actual curl request). The target port is dead, so the
