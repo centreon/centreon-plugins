@@ -172,13 +172,14 @@ sub usage {
 
     return {} if (!defined($options{total}) || !defined($options{free}) || $options{total} == 0);
 
-    my $used = $options{total} - $options{free};
+    my ($total, $free) = (int($options{total}), int($options{free}));
+    my $used = $total - $free;
     return {
-        total => $options{total},
+        total => $total,
         used => $used,
-        free => $options{free},
-        prct_used => $used * 100 / $options{total},
-        prct_free => $options{free} * 100 / $options{total}
+        free => $free,
+        prct_used => $used * 100 / $total,
+        prct_free => $free * 100 / $total
     };
 }
 
