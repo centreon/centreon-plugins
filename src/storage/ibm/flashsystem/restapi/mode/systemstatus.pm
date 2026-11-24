@@ -24,19 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::constants qw/:counters :values/;
-
-sub custom_canisters_output {
-    my ($self, %options) = @_;
-
-    return sprintf('canisters online: %s/%s', $self->{result_values}->{canisters_online}, $self->{result_values}->{canisters_total});
-}
-
-sub custom_pools_output {
-    my ($self, %options) = @_;
-
-    return sprintf('pools online: %s/%s', $self->{result_values}->{pools_online}, $self->{result_values}->{pools_total});
-}
+use centreon::plugins::constants qw(:counters :values);
 
 sub set_counters {
     my ($self, %options) = @_;
@@ -48,13 +36,13 @@ sub set_counters {
     $self->{maps_counters}->{global} = [
         { label => 'canisters-online', nlabel => 'system.canisters.online.count', critical_default => '1:', set => {
                 key_values => [ { name => 'canisters_online' }, { name => 'canisters_total' } ],
-                closure_custom_output => $self->can('custom_canisters_output'),
+                output_template => 'canisters online: %{canisters_online}/%{canisters_total}',
                 perfdatas => [ { template => '%s', min => 0, max => 'canisters_total' } ]
             }
         },
         { label => 'pools-online', nlabel => 'system.pools.online.count', critical_default => '1:', set => {
                 key_values => [ { name => 'pools_online' }, { name => 'pools_total' } ],
-                closure_custom_output => $self->can('custom_pools_output'),
+                output_template => 'pools online: %{pools_online}/%{pools_total}',
                 perfdatas => [ { template => '%s', min => 0, max => 'pools_total' } ]
             }
         }
@@ -76,7 +64,7 @@ sub manage_selection {
     foreach my $object (['canisters', 'lsnodecanister'], ['pools', 'lsmdiskgrp']) {
         my ($name, $command) = @$object;
         my ($total, $online) = (0, 0);
-        foreach my $entry (@{ $options{custom}->request(command => $command) }) {
+        foreach my $entry (@{$options{custom}->request(command => $command)}) {
             next if (ref($entry) ne 'HASH');
             $total++;
             $online++ if (($entry->{status} // '') =~ /^online$/i);

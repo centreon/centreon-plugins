@@ -24,10 +24,10 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::constants qw/:counters :values/;
+use centreon::plugins::constants qw(:counters :values);
 use centreon::plugins::misc qw(is_empty);
 
-my $MEASURES = [
+my $measures = [
     { stat => 'vdisk_ms',           key => 'latency',            unit => 'ms' },
     { stat => 'vdisk_r_ms',         key => 'read_latency',       unit => 'ms' },
     { stat => 'vdisk_w_ms',         key => 'write_latency',      unit => 'ms' },
@@ -48,23 +48,21 @@ sub set_counters {
 
     $self->{maps_counters_type} = [
         { name => 'system', type => COUNTER_TYPE_GLOBAL, prefix_output => 'Performance: ' },
-        { name => 'nodes', type => COUNTER_TYPE_INSTANCE, prefix_output => "Node '%{display}' ",
+        { name => 'nodes', type => COUNTER_TYPE_INSTANCE, prefix_output => "Node '%{name}' ",
           message_multiple => 'All node CPUs are ok', skipped_code => { NO_VALUE() => 1 } }
     ];
 
     $self->{maps_counters}->{nodes} = [
         { label => 'node-cpu', nlabel => 'node.cpu.utilization.percentage', set => {
-                key_values => [ { name => 'cpu' }, { name => 'display' } ],
+                key_values => [ { name => 'cpu' }, { name => 'name' } ],
                 output_template => 'cpu %s %%',
-                perfdatas => [ { template => '%s', unit => '%', min => 0, max => 100,
-                                 label_extra_instance => 1, instance_use => 'display' } ]
+                perfdatas => [ { template => '%s', unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'name' } ]
             }
         }
     ];
 
     $self->{maps_counters}->{system} = [
-        { label => 'latency', nlabel => 'system.io.latency.milliseconds',
-          set => {
+        { label => 'latency', nlabel => 'system.io.latency.milliseconds', set => {
                 key_values => [ { name => 'latency' } ],
                 output_template => 'latency %.3f ms',
                 perfdatas => [ { template => '%.3f', unit => 'ms', min => 0 } ]
@@ -88,12 +86,11 @@ sub set_counters {
                 perfdatas => [ { template => '%s', unit => 'iops', min => 0 } ]
             }
         },
-        # output_change_bytes 1 (bytes), not 2 (bits for networking).
         { label => 'bandwidth', nlabel => 'system.io.usage.bytespersecond', set => {
                 key_values => [ { name => 'bandwidth' } ],
                 output_template => 'bandwidth %s %s/s',
                 output_change_bytes => 1,
-                perfdatas => [ { template => '%s', unit => 'B/s', min => 0 } ]
+                perfdatas => [ { template => '%d', unit => 'B/s', min => 0 } ]
             }
         },
         { label => 'cpu', nlabel => 'system.cpu.utilization.percentage', set => {
@@ -142,7 +139,7 @@ sub set_counters {
                 key_values => [ { name => 'fc_bandwidth' } ],
                 output_template => 'fc %s %s/s',
                 output_change_bytes => 1,
-                perfdatas => [ { template => '%s', unit => 'B/s', min => 0 } ]
+                perfdatas => [ { template => '%d', unit => 'B/s', min => 0 } ]
             }
         }
     ];
@@ -171,31 +168,31 @@ sub manage_selection {
     ) if (defined($system->{statistics_status}) && $system->{statistics_status} !~ /^on$/i);
 
     my %stats;
-    foreach my $entry (@{ $options{custom}->request(command => 'lssystemstats') }) {
-        next unless (ref $entry eq 'HASH' && defined($entry->{stat_name}));
-        $stats{ $entry->{stat_name} } = $entry;
+    foreach my $entry (@{$options{custom}->request(command => 'lssystemstats')}) {
+        next if (ref($entry) ne 'HASH' || !defined($entry->{stat_name}));
+        $stats{$entry->{stat_name}} = $entry;
     }
 
     $self->{nodes} = {};
-    foreach my $entry (@{ $options{custom}->request_optional(command => 'lsnodecanisterstats') }) {
-        next unless (ref $entry eq 'HASH' && ($entry->{stat_name} // '') eq 'cpu_pc');
+    foreach my $entry (@{$options{custom}->request_optional(command => 'lsnodecanisterstats')}) {
+        next if (ref($entry) ne 'HASH' || ($entry->{stat_name} // '') ne 'cpu_pc');
         my $node = $entry->{node_name};
         my $value = $entry->{stat_current};
         next if (is_empty($node) || !defined($value) || $value !~ /^-?\d+(?:\.\d+)?$/);
-        $self->{nodes}->{$node} = { display => $node, cpu => $value };
+        $self->{nodes}->{$node} = { name => $node, cpu => $value };
     }
 
     $self->{system} = {};
     my @peaks;
 
-    foreach my $measure (@$MEASURES) {
-        my $entry = $stats{ $measure->{stat} };
+    foreach my $measure (@$measures) {
+        my $entry = $stats{$measure->{stat}};
         next if (!defined($entry));
 
         my $current = $entry->{stat_current};
         next if (!defined($current) || $current !~ /^-?\d+(?:\.\d+)?$/);
 
-        $self->{system}->{ $measure->{key} } = $current * ($measure->{scale} // 1);
+        $self->{system}->{$measure->{key}} = $current * ($measure->{scale} // 1);
 
         next if (!defined($self->{option_results}->{add_peaks}));
         my $peak = $entry->{stat_peak};
@@ -207,9 +204,9 @@ sub manage_selection {
     }
 
     $self->{output}->option_exit(short_msg => 'No usable counter returned by lssystemstats.')
-        if (!keys %{ $self->{system} });
+        if (scalar(keys %{$self->{system}}) == 0);
 
-    $self->{output}->output_add(long_msg => join("\n", @peaks)) if (@peaks);
+    $self->{output}->output_add(long_msg => join("\n", @peaks)) if (scalar(@peaks) > 0);
 }
 
 1;

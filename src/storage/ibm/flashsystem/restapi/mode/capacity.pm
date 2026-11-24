@@ -24,7 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::constants qw/:counters :values/;
+use centreon::plugins::constants qw(:counters :values);
 use centreon::plugins::misc qw(convert_bytes is_excluded is_not_empty);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
@@ -39,17 +39,6 @@ sub custom_usage_output {
         $total_value . ' ' . $total_unit,
         $used_value . ' ' . $used_unit, $self->{result_values}->{prct_used},
         $free_value . ' ' . $free_unit, $self->{result_values}->{prct_free}
-    );
-}
-
-sub custom_pool_output {
-    my ($self, %options) = @_;
-
-    return sprintf(
-        'status: %s, overallocation: %s%%, data reduction: %s',
-        $self->{result_values}->{status},
-        $self->{result_values}->{overallocation},
-        $self->{result_values}->{data_reduction}
     );
 }
 
@@ -139,7 +128,7 @@ sub set_counters {
                     { name => 'name' }, { name => 'status' },
                     { name => 'overallocation' }, { name => 'data_reduction' }
                 ],
-                closure_custom_output => $self->can('custom_pool_output'),
+                output_template => 'status: %{status}, overallocation: %{overallocation}%%, data reduction: %{data_reduction}',
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
@@ -231,13 +220,13 @@ sub manage_selection {
         );
     } else {
         my ($effective, $used) = (0, 0);
-        foreach my $mdisk (@{ $options{custom}->request_optional(command => 'lsmdisk') }) {
-            next unless (ref $mdisk eq 'HASH' && defined($mdisk->{id}) && $mdisk->{id} =~ /^\d+$/);
+        foreach my $mdisk (@{$options{custom}->request_optional(command => 'lsmdisk')}) {
+            next if (ref($mdisk) ne 'HASH' || !defined($mdisk->{id}) || $mdisk->{id} !~ /^\d+$/);
             my $detail = $options{custom}->request_optional(command => 'lsmdisk/' . $mdisk->{id})->[0];
-            next unless (ref $detail eq 'HASH');
+            next if (ref($detail) ne 'HASH');
 
-            my $eff   = $to_bytes->($detail->{effective_used_capacity});
-            my $ptot  = $to_bytes->($detail->{physical_capacity});
+            my $eff = $to_bytes->($detail->{effective_used_capacity});
+            my $ptot = $to_bytes->($detail->{physical_capacity});
             my $pfree = $to_bytes->($detail->{physical_free_capacity});
             next if (!defined($eff) || !defined($ptot) || !defined($pfree) || $ptot == 0);
 
@@ -261,12 +250,12 @@ sub manage_selection {
     }
 
     $self->{pools} = {};
-    foreach my $pool (@{ $options{custom}->request(command => 'lsmdiskgrp') }) {
+    foreach my $pool (@{$options{custom}->request(command => 'lsmdiskgrp')}) {
         my $name = $pool->{name} // '';
         next if (is_excluded($name, $self->{option_results}->{include_pool}, $self->{option_results}->{exclude_pool}));
 
         $self->{pools}->{$name} = {
-            %{ $self->usage(total => $to_bytes->($pool->{capacity}), free => $to_bytes->($pool->{free_capacity})) },
+            %{$self->usage(total => $to_bytes->($pool->{capacity}), free => $to_bytes->($pool->{free_capacity}))},
             name => $name,
             status => $pool->{status} // '',
             overallocation => $pool->{overallocation} // '',

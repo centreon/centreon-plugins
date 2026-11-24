@@ -32,18 +32,20 @@ sub new {
     my $self = {};
     bless $self, $class;
 
-    $options{options}->add_options(arguments => {
-        'hostname:s'            => { name => 'hostname', not_empty => 1 },
-        'port:s'                => { name => 'port', default => 7443, type => 'port' },
-        'proto:s'               => { name => 'proto', default => 'https', type => 'protocol_http' },
-        'api-username:s'        => { name => 'api_username', not_empty => 1 },
-        'api-password:s'        => { name => 'api_password', not_empty => 1 },
-        'api-path:s'            => { name => 'api_path', default => '/rest/v1', not_empty => 1 },
-        'timeout:s'             => { name => 'timeout', default => 30, numeric => 1 },
-        'token-lifetime:s'      => { name => 'token_lifetime', default => 6600, numeric => 1 },
-        'command-cache-ttl:s'   => { name => 'command_cache_ttl', default => 0, numeric => 1 },
-        'rate-limit-max-wait:s' => { name => 'rate_limit_max_wait', default => 15, numeric => 1 }
-    }) unless $options{noptions};
+    if (!defined($options{noptions})) {
+        $options{options}->add_options(arguments => {
+            'hostname:s'            => { name => 'hostname', not_empty => 1 },
+            'port:s'                => { name => 'port', default => 7443, type => 'port' },
+            'proto:s'               => { name => 'proto', default => 'https', type => 'protocol_http' },
+            'api-username:s'        => { name => 'api_username', not_empty => 1 },
+            'api-password:s'        => { name => 'api_password', not_empty => 1 },
+            'api-path:s'            => { name => 'api_path', default => '/rest/v1', not_empty => 1 },
+            'timeout:s'             => { name => 'timeout', default => 30, numeric => 1 },
+            'token-lifetime:s'      => { name => 'token_lifetime', default => 6600, numeric => 1 },
+            'command-cache-ttl:s'   => { name => 'command_cache_ttl', default => 0, numeric => 1 },
+            'rate-limit-max-wait:s' => { name => 'rate_limit_max_wait', default => 15, numeric => 1 }
+        });
+    }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
 
     $self->{output} = $options{output};
@@ -89,7 +91,7 @@ sub rate_limit_wait {
     my ($self, %options) = @_;
 
     my $delay = $self->{http}->get_first_header(name => 'Retry-After');
-    $delay = defined($delay) && $delay =~ /^\s*(\d+)\s*$/ ? $1 : $options{attempt} * 2;
+    $delay = (defined($delay) && $delay =~ /^\s*(\d+)\s*$/) ? $1 : $options{attempt} * 2;
 
     $self->{rate_limit_waited} //= 0;
     return 0 if ($self->{rate_limit_waited} + $delay > $self->{option_results}->{rate_limit_max_wait});
@@ -214,22 +216,16 @@ sub cached_response {
 sub store_response {
     my ($self, %options) = @_;
 
-    # read() sets the file name used by write().
     $self->{response_cache}->read(statefile => $self->response_cache_name(key => $options{key}));
     $self->{response_cache}->write(data => { stamp => time(), response => $options{response} });
 }
 
-# Always returns an array reference: the API answers with a single object for
-# some commands (lssystem) and with an array for others.
-# With optional => 1, a 404 (command unknown to this firmware) returns undef;
-# any other error ends the check.
 sub request {
     my ($self, %options) = @_;
 
-    my $payload = defined($options{payload}) ? $options{payload} : {};
+    my $payload = $options{payload} // {};
     my $cache_ttl = $self->{option_results}->{command_cache_ttl};
     my $body = json_encode($payload, output => $self->{output});
-    # json_encode is canonical: the same payload always gives the same key.
     my $cache_key = $options{command} . '|' . $body;
 
     if ($cache_ttl > 0) {
@@ -259,8 +255,6 @@ sub request {
 
         my $code = $self->{http}->get_code();
 
-        # Session expired or invalidated on the array side: this recovery is
-        # what allows a long --token-lifetime.
         if (($code == 401 || $code == 403) && !$reauthenticated) {
             $reauthenticated = 1;
             $token = $self->get_token(force => 1);
@@ -286,9 +280,11 @@ sub request {
                 . $self->response_message(code => $code, content => $content)
         ) if ($code != 200);
 
-        my $decoded = json_decode($content, silence => 1);
-        $self->{output}->option_exit(short_msg => "Cannot decode API response for command '" . $options{command} . "'")
-            if (!defined($decoded));
+        my $decoded = json_decode(
+            $content,
+            output => $self->{output},
+            errstr => "Cannot decode API response for command '" . $options{command} . "'"
+        );
 
         my $result = ref($decoded) eq 'ARRAY' ? $decoded : [ $decoded ];
         $self->store_response(key => $cache_key, response => $result) if ($cache_ttl > 0);
@@ -302,7 +298,7 @@ sub request_optional {
     my ($self, %options) = @_;
 
     my $result = $self->request(%options, optional => 1);
-    return defined($result) ? $result : [];
+    return $result // [];
 }
 
 1;

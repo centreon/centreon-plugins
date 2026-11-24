@@ -24,7 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::constants qw/:counters :values/;
+use centreon::plugins::constants qw(:counters :values);
 use centreon::plugins::misc qw(is_excluded is_not_empty);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
@@ -146,7 +146,7 @@ sub manage_selection {
 
         next if (is_excluded($event->{status}, $self->{option_results}->{include_status}, $self->{option_results}->{exclude_status}));
 
-        $self->{events}->{ $event->{sequence_number} } = $event;
+        $self->{events}->{$event->{sequence_number}} = $event;
     }
 }
 

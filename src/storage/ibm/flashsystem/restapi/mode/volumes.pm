@@ -24,7 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::constants qw/:counters :values/;
+use centreon::plugins::constants qw(:counters :values);
 use centreon::plugins::misc qw(is_excluded is_not_empty);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
@@ -94,8 +94,8 @@ sub set_counters {
         {
             label => 'status',
             type => COUNTER_KIND_TEXT,
-            critical_default => '%{status} =~ /^offline$/i || %{fast_write_state} =~ /^corrupt$/i',
-            warning_default => '%{status} =~ /^degraded$/i || %{sync} =~ /^no$/i',
+            critical_default => '%{status} =~ /^offline$/i or %{fast_write_state} =~ /^corrupt$/i',
+            warning_default => '%{status} =~ /^degraded$/i or %{sync} =~ /^no$/i',
             set => {
                 key_values => [
                     { name => 'name' }, { name => 'status' }, { name => 'fast_write_state' },
@@ -134,16 +134,14 @@ sub manage_selection {
     # Copy synchronisation is only in lsvdiskcopy: a volume can be online with
     # an out-of-sync copy.
     my %unsynced;
-    foreach my $copy (@{ $options{custom}->request_optional(command => 'lsvdiskcopy') }) {
-        $unsynced{ $copy->{vdisk_name} // '' } = 1 if (($copy->{sync} // '') =~ /^no$/i);
+    foreach my $copy (@{$options{custom}->request_optional(command => 'lsvdiskcopy')}) {
+        $unsynced{$copy->{vdisk_name} // ''} = 1 if (($copy->{sync} // '') =~ /^no$/i);
     }
 
-    $self->{global} = {
-        detected => 0, online => 0, degraded => 0, offline => 0, unsynchronised => 0
-    };
+    $self->{global} = { detected => 0, online => 0, degraded => 0, offline => 0, unsynchronised => 0 };
     $self->{volumes} = {};
 
-    foreach my $volume (@{ $options{custom}->request(command => 'lsvdisk') }) {
+    foreach my $volume (@{$options{custom}->request(command => 'lsvdisk')}) {
         my $name = $volume->{name} // '';
         my $pool = $volume->{mdisk_grp_name} // '';
         my $group = $volume->{volume_group_name} // '';
@@ -158,9 +156,9 @@ sub manage_selection {
         my $sync = $unsynced{$name} ? 'no' : 'yes';
 
         $self->{global}->{detected}++;
-        $self->{global}->{online}++   if ($status =~ /^online$/i);
+        $self->{global}->{online}++ if ($status =~ /^online$/i);
         $self->{global}->{degraded}++ if ($status =~ /^degraded$/i);
-        $self->{global}->{offline}++  if ($status =~ /^offline$/i);
+        $self->{global}->{offline}++ if ($status =~ /^offline$/i);
         $self->{global}->{unsynchronised}++ if ($sync eq 'no');
 
         # Aggregated mode: only abnormal volumes become instances by default.

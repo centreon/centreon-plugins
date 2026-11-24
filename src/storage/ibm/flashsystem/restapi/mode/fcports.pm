@@ -24,8 +24,8 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::constants qw/:counters :values/;
-use centreon::plugins::misc qw(is_excluded is_not_empty);
+use centreon::plugins::constants qw(:counters :values);
+use centreon::plugins::misc qw(is_empty is_excluded is_not_empty);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_port_output {
@@ -84,8 +84,7 @@ sub set_counters {
         {
             label => 'status',
             type => COUNTER_KIND_TEXT,
-            critical_default =>
-                '%{status} !~ /^(active|inactive_configured|inactive_unconfigured)$/i',
+            critical_default => '%{status} !~ /^(active|inactive_configured|inactive_unconfigured)$/i',
             warning_default => '%{status} =~ /^inactive_configured$/i and %{attachment} =~ /^switch$/i',
             set => {
                 key_values => [
@@ -122,16 +121,16 @@ sub manage_selection {
     # Host logins are read on the virtual (NPIV) target ports, keyed on
     # fc_io_port_id, then summed per physical port.
     my %logins;
-    foreach my $target (@{ $options{custom}->request_optional(command => 'lstargetportfc') }) {
+    foreach my $target (@{$options{custom}->request_optional(command => 'lstargetportfc')}) {
         my $count = $target->{active_login_count};
-        next if (!is_not_empty($target->{fc_io_port_id}) || !defined($count) || $count !~ /^\d+$/);
-        $logins{ $target->{fc_io_port_id} } += $count;
+        next if (is_empty($target->{fc_io_port_id}) || !defined($count) || $count !~ /^\d+$/);
+        $logins{$target->{fc_io_port_id}} += $count;
     }
 
     $self->{global} = { detected => 0, active => 0, inactive => 0, host_logins => 0 };
     $self->{ports} = {};
 
-    foreach my $port (@{ $options{custom}->request(command => 'lsportfc') }) {
+    foreach my $port (@{$options{custom}->request(command => 'lsportfc')}) {
         my $name = ($port->{node_name} // '') . '-' . ($port->{port_id} // '');
         my $type = $port->{type} // '';
 
@@ -139,7 +138,7 @@ sub manage_selection {
         next if (is_excluded($type, $self->{option_results}->{include_type}, $self->{option_results}->{exclude_type}));
 
         my $status = $port->{status} // '';
-        my $login_count = $logins{ $port->{fc_io_port_id} // '' } // '';
+        my $login_count = $logins{$port->{fc_io_port_id} // ''} // '';
 
         $self->{global}->{detected}++;
         if ($status =~ /^active$/i) {

@@ -24,7 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::constants qw/:counters :values/;
+use centreon::plugins::constants qw(:counters :values);
 use centreon::plugins::misc qw(is_empty is_excluded is_not_empty);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
@@ -125,12 +125,10 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{global} = {
-        detected => 0, replicated => 0, without_snapshot_policy => 0, restoring => 0
-    };
+    $self->{global} = { detected => 0, replicated => 0, without_snapshot_policy => 0, restoring => 0 };
     $self->{groups} = {};
 
-    foreach my $group (@{ $options{custom}->request(command => 'lsvolumegroup') }) {
+    foreach my $group (@{$options{custom}->request(command => 'lsvolumegroup')}) {
         my $name = $group->{name} // '';
         my $partition = $group->{partition_name} // '';
 

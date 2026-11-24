@@ -24,11 +24,11 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::constants qw/:counters :values/;
+use centreon::plugins::constants qw(:counters :values);
 use centreon::plugins::misc qw(is_empty is_excluded);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
-my $COMPONENT_COMMANDS = [
+my $component_commands = [
     { command => 'lsenclosure',          label => 'enclosure' },
     { command => 'lsnodecanister',       label => 'node canister' },
     { command => 'lsenclosurecanister',  label => 'expansion canister', id_fields => [ 'canister_id' ] },
@@ -41,34 +41,17 @@ my $COMPONENT_COMMANDS = [
     { command => 'lsquorum',             label => 'quorum', id_fields => [ 'quorum_index' ] }
 ];
 
-my $ENCLOSURE_SUBSYSTEMS = [
+my $enclosure_subsystems = [
     { field => 'PSUs',        label => 'power supplies' },
     { field => 'canisters',   label => 'canisters' },
     { field => 'fan_modules', label => 'fan modules' },
     { field => 'sems',        label => 'secondary expander modules' }
 ];
 
-my $ENVIRONMENT_STATS = [
+my $environment_stats = [
     { stat => 'temp_c',  key => 'temperature' },
     { stat => 'power_w', key => 'power' }
 ];
-
-sub custom_component_output {
-    my ($self, %options) = @_;
-
-    return sprintf('status: %s', $self->{result_values}->{status});
-}
-
-sub custom_subsystem_output {
-    my ($self, %options) = @_;
-
-    return sprintf(
-        '%s online: %s/%s',
-        $self->{result_values}->{label},
-        $self->{result_values}->{online},
-        $self->{result_values}->{total}
-    );
-}
 
 sub prefix_component_output {
     my ($self, %options) = @_;
@@ -126,7 +109,7 @@ sub set_counters {
             warning_default => '%{status} =~ /^(degraded|degraded_paths|degraded_ports)$/i',
             set => {
                 key_values => [ { name => 'name' }, { name => 'type' }, { name => 'status' } ],
-                closure_custom_output => $self->can('custom_component_output'),
+                output_template => 'status: %{status}',
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
@@ -141,7 +124,7 @@ sub set_counters {
             warning_default => '%{online} < %{total}',
             set => {
                 key_values => [ { name => 'enclosure' }, { name => 'label' }, { name => 'online' }, { name => 'total' } ],
-                closure_custom_output => $self->can('custom_subsystem_output'),
+                output_template => '%{label} online: %{online}/%{total}',
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
@@ -173,22 +156,22 @@ sub manage_selection {
     $self->{subsystems} = {};
 
     my %stats;
-    foreach my $entry (@{ $options{custom}->request_optional(command => 'lssystemstats') }) {
-        next unless (ref $entry eq 'HASH' && defined($entry->{stat_name}));
-        $stats{ $entry->{stat_name} } = $entry->{stat_current};
+    foreach my $entry (@{$options{custom}->request_optional(command => 'lssystemstats')}) {
+        next if (ref($entry) ne 'HASH' || !defined($entry->{stat_name}));
+        $stats{$entry->{stat_name}} = $entry->{stat_current};
     }
-    foreach my $measure (@$ENVIRONMENT_STATS) {
-        my $value = $stats{ $measure->{stat} };
+    foreach my $measure (@$environment_stats) {
+        my $value = $stats{$measure->{stat}};
         next if (!defined($value) || $value !~ /^-?\d+(?:\.\d+)?$/);
-        $self->{environment}->{ $measure->{key} } = $value;
+        $self->{environment}->{$measure->{key}} = $value;
     }
 
-    foreach my $family (@$COMPONENT_COMMANDS) {
+    foreach my $family (@$component_commands) {
         next if (is_excluded($family->{label}, $self->{option_results}->{include_type}, $self->{option_results}->{exclude_type}));
 
-        foreach my $entry (@{ $options{custom}->request_optional(command => $family->{command}) }) {
+        foreach my $entry (@{$options{custom}->request_optional(command => $family->{command})}) {
             my $name = '';
-            foreach my $field ('name', @{ $family->{id_fields} // [] }, 'id') {
+            foreach my $field ('name', @{$family->{id_fields} // []}, 'id') {
                 next if (is_empty($entry->{$field}));
                 $name = $entry->{$field};
                 last;
@@ -200,7 +183,7 @@ sub manage_selection {
             $self->{global}->{detected}++;
             $self->{global}->{degraded}++ if ($status !~ /^online$/i);
 
-            $self->{components}->{ $family->{label} . '.' . $name } = {
+            $self->{components}->{$family->{label} . '.' . $name} = {
                 name => $name,
                 type => $family->{label},
                 status => $status
@@ -208,14 +191,14 @@ sub manage_selection {
 
             next if ($family->{command} ne 'lsenclosure');
 
-            foreach my $subsystem (@$ENCLOSURE_SUBSYSTEMS) {
+            foreach my $subsystem (@$enclosure_subsystems) {
                 my $online = $entry->{'online_' . $subsystem->{field}};
-                my $total  = $entry->{'total_' . $subsystem->{field}};
+                my $total = $entry->{'total_' . $subsystem->{field}};
 
                 next if (!defined($online) || !defined($total) || $online !~ /^\d+$/ || $total !~ /^\d+$/);
                 next if ($total == 0);
 
-                $self->{subsystems}->{ $name . '.' . $subsystem->{field} } = {
+                $self->{subsystems}->{$name . '.' . $subsystem->{field}} = {
                     enclosure => $name,
                     label => $subsystem->{label},
                     online => $online,

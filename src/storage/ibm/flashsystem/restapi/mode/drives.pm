@@ -24,7 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::constants qw/:counters :values/;
+use centreon::plugins::constants qw(:counters :values);
 use centreon::plugins::misc qw(convert_bytes is_empty is_excluded is_not_empty);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
@@ -55,7 +55,7 @@ sub set_counters {
 
     $self->{maps_counters_type} = [
         { name => 'global', type => COUNTER_TYPE_GLOBAL, prefix_output => 'Drives: ' },
-        { name => 'drives', type => COUNTER_TYPE_INSTANCE, prefix_output => "Drive '%{display}' (enclosure %{enclosure} slot %{slot}) ",
+        { name => 'drives', type => COUNTER_TYPE_INSTANCE, prefix_output => "Drive '%{name}' (enclosure %{enclosure} slot %{slot}) ",
           message_multiple => 'All drives are ok', skipped_code => { NO_VALUE() => 1 } }
     ];
 
@@ -76,7 +76,7 @@ sub set_counters {
             warning_default => '%{paths_online} < %{paths_total}',
             set => {
                 key_values => [
-                    { name => 'display' }, { name => 'paths_online' }, { name => 'paths_total' },
+                    { name => 'name' }, { name => 'paths_online' }, { name => 'paths_total' },
                     { name => 'port_1_status' }, { name => 'port_2_status' },
                     { name => 'use' }, { name => 'firmware' }
                 ],
@@ -90,24 +90,22 @@ sub set_counters {
             type => COUNTER_KIND_TEXT,
             warning_default => '%{replacement_date} ne ""',
             set => {
-                key_values => [ { name => 'display' }, { name => 'replacement_date' } ],
+                key_values => [ { name => 'name' }, { name => 'replacement_date' } ],
                 closure_custom_output => $self->can('custom_replacement_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
         { label => 'endurance', nlabel => 'drive.endurance.used.percentage', set => {
-                key_values => [ { name => 'endurance' }, { name => 'display' } ],
+                key_values => [ { name => 'endurance' }, { name => 'name' } ],
                 output_template => 'endurance used %s %%',
-                perfdatas => [ { template => '%s', unit => '%', min => 0, max => 100,
-                                 label_extra_instance => 1, instance_use => 'display' } ]
+                perfdatas => [ { template => '%s', unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'name' } ]
             }
         },
         { label => 'physical-usage-prct', nlabel => 'drive.physical.space.usage.percentage', set => {
-                key_values => [ { name => 'physical_used_prct' }, { name => 'display' } ],
+                key_values => [ { name => 'physical_used_prct' }, { name => 'name' } ],
                 output_template => 'physical used %.2f %%',
-                perfdatas => [ { template => '%.2f', unit => '%', min => 0, max => 100,
-                                 label_extra_instance => 1, instance_use => 'display' } ]
+                perfdatas => [ { template => '%.2f', unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'name' } ]
             }
         }
     ];
@@ -136,18 +134,18 @@ sub manage_selection {
     $self->{global} = { detected => 0 };
     $self->{drives} = {};
 
-    foreach my $drive (@{ $options{custom}->request(command => 'lsdrive') }) {
-        next unless (ref $drive eq 'HASH' && defined($drive->{id}) && $drive->{id} =~ /^\d+$/);
+    foreach my $drive (@{$options{custom}->request(command => 'lsdrive')}) {
+        next if (ref($drive) ne 'HASH' || !defined($drive->{id}) || $drive->{id} !~ /^\d+$/);
         next if (is_excluded($drive->{id}, $self->{option_results}->{include_id}, $self->{option_results}->{exclude_id}));
 
         # Wear, paths and physical fill are only in the detailed view.
         my $detail = $options{custom}->request_optional(command => 'lsdrive/' . $drive->{id})->[0];
-        $detail = $drive unless (ref $detail eq 'HASH');
+        $detail = $drive if (ref($detail) ne 'HASH');
 
         $self->{global}->{detected}++;
 
         my $entry = {
-            display => $drive->{id},
+            name => $drive->{id},
             enclosure => $detail->{enclosure_id} // '',
             slot => $detail->{slot_id} // '',
             use => $detail->{use} // '',
@@ -174,7 +172,7 @@ sub manage_selection {
         $entry->{physical_used_prct} = $pused * 100 / $ptot
             if (defined($ptot) && defined($pused) && $ptot > 0);
 
-        $self->{drives}->{ $drive->{id} } = $entry;
+        $self->{drives}->{$drive->{id}} = $entry;
     }
 
     $self->{output}->option_exit(short_msg => 'No drive returned by lsdrive.')
@@ -219,7 +217,7 @@ Exclude drives by id (can be a regexp).
 =item B<--unknown-path-status>
 
 Define the conditions to match for the path status to be UNKNOWN.
-You can use the following variables: C<%{display}>, C<%{paths_online}>,
+You can use the following variables: C<%{name}>, C<%{paths_online}>,
 C<%{paths_total}>, C<%{port_1_status}>, C<%{port_2_status}>, C<%{use}>,
 C<%{firmware}>. Paths without a known state are not counted in
 C<%{paths_total}>.
@@ -228,7 +226,7 @@ C<%{paths_total}>.
 
 Define the conditions to match for the path status to be WARNING
 (default: C<'%{paths_online} < %{paths_total}'>).
-You can use the following variables: C<%{display}>, C<%{paths_online}>,
+You can use the following variables: C<%{name}>, C<%{paths_online}>,
 C<%{paths_total}>, C<%{port_1_status}>, C<%{port_2_status}>, C<%{use}>,
 C<%{firmware}>.
 
@@ -236,25 +234,25 @@ C<%{firmware}>.
 
 Define the conditions to match for the path status to be CRITICAL
 (default: C<< '%{paths_total} > 0 and %{paths_online} == 0' >>).
-You can use the following variables: C<%{display}>, C<%{paths_online}>,
+You can use the following variables: C<%{name}>, C<%{paths_online}>,
 C<%{paths_total}>, C<%{port_1_status}>, C<%{port_2_status}>, C<%{use}>,
 C<%{firmware}>.
 
 =item B<--unknown-replacement-status>
 
 Define the conditions to match for the replacement status to be UNKNOWN.
-You can use the following variables: C<%{display}>, C<%{replacement_date}>.
+You can use the following variables: C<%{name}>, C<%{replacement_date}>.
 
 =item B<--warning-replacement-status>
 
 Define the conditions to match for the replacement status to be WARNING
 (default: C<'%{replacement_date} ne ""'>): the array predicts an end of life.
-You can use the following variables: C<%{display}>, C<%{replacement_date}>.
+You can use the following variables: C<%{name}>, C<%{replacement_date}>.
 
 =item B<--critical-replacement-status>
 
 Define the conditions to match for the replacement status to be CRITICAL.
-You can use the following variables: C<%{display}>, C<%{replacement_date}>.
+You can use the following variables: C<%{name}>, C<%{replacement_date}>.
 
 =item B<--warning-endurance>
 

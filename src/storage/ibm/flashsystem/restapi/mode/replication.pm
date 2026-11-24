@@ -24,7 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::constants qw/:counters :values/;
+use centreon::plugins::constants qw(:counters :values);
 use centreon::plugins::misc qw(is_empty is_excluded is_not_empty);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
@@ -70,26 +70,6 @@ sub custom_group_output {
         if ($self->{result_values}->{recovery_test_active} =~ /^yes$/i);
 
     return $msg;
-}
-
-sub custom_partnership_output {
-    my ($self, %options) = @_;
-
-    return sprintf(
-        'partnership: %s, type: %s',
-        $self->{result_values}->{partnership},
-        $self->{result_values}->{type}
-    );
-}
-
-sub custom_relationship_output {
-    my ($self, %options) = @_;
-
-    return sprintf(
-        'state: %s, progress: %s%%',
-        $self->{result_values}->{state},
-        $self->{result_values}->{progress}
-    );
 }
 
 sub set_counters {
@@ -152,8 +132,8 @@ sub set_counters {
             label => 'volume-group-status',
             type => COUNTER_KIND_TEXT,
             critical_default => '%{link1_status} !~ /^(synchronized|running|connected)$/i'
-                . ' || %{location1_within_rpo} =~ /^no$/i'
-                . ' || %{location2_within_rpo} =~ /^no$/i',
+                . ' or %{location1_within_rpo} =~ /^no$/i'
+                . ' or %{location2_within_rpo} =~ /^no$/i',
             set => {
                 key_values => [
                     { name => 'name' }, { name => 'partition_name' }, { name => 'link1_status' },
@@ -175,7 +155,7 @@ sub set_counters {
             critical_default => '%{partnership} !~ /^fully_configured$/i',
             set => {
                 key_values => [ { name => 'name' }, { name => 'partnership' }, { name => 'type' }, { name => 'location' } ],
-                closure_custom_output => $self->can('custom_partnership_output'),
+                output_template => 'partnership: %{partnership}, type: %{type}',
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
@@ -189,7 +169,7 @@ sub set_counters {
             critical_default => '%{state} !~ /^(consistent_synchronized|consistent_copying)$/i',
             set => {
                 key_values => [ { name => 'name' }, { name => 'state' }, { name => 'progress' }, { name => 'freeze_time' } ],
-                closure_custom_output => $self->can('custom_relationship_output'),
+                output_template => 'state: %{state}, progress: %{progress}%%',
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
@@ -219,11 +199,7 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{global} = {
-        partitions_detected => 0,
-        groups_detected => 0,
-        relationships_detected => 0
-    };
+    $self->{global} = { partitions_detected => 0, groups_detected => 0, relationships_detected => 0 };
     $self->{partitions} = {};
     $self->{groups} = {};
     $self->{partnerships} = {};
@@ -231,9 +207,9 @@ sub manage_selection {
 
     # Each form of replication depends on the firmware (lspartition since 8.7,
     # policy-based replication since 8.5.2).
-    my $partitions    = $options{custom}->request_optional(command => 'lspartition');
-    my $groups        = $options{custom}->request_optional(command => 'lsvolumegroupreplication');
-    my $partnerships  = $options{custom}->request_optional(command => 'lspartnership');
+    my $partitions = $options{custom}->request_optional(command => 'lspartition');
+    my $groups = $options{custom}->request_optional(command => 'lsvolumegroupreplication');
+    my $partnerships = $options{custom}->request_optional(command => 'lspartnership');
     my $relationships = $options{custom}->request_optional(command => 'lsrcrelationship');
 
     foreach my $entry (@$partitions) {
@@ -301,7 +277,8 @@ sub manage_selection {
     }
 
     $self->{output}->output_add(short_msg => 'No replication configured on this system')
-        if (!%{$self->{partitions}} && !%{$self->{groups}} && !%{$self->{partnerships}} && !%{$self->{relationships}});
+        if (scalar(keys %{$self->{partitions}}) == 0 && scalar(keys %{$self->{groups}}) == 0
+            && scalar(keys %{$self->{partnerships}}) == 0 && scalar(keys %{$self->{relationships}}) == 0);
 }
 
 1;

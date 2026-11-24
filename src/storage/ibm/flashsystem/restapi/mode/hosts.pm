@@ -24,7 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::constants qw/:counters :values/;
+use centreon::plugins::constants qw(:counters :values);
 use centreon::plugins::misc qw(is_excluded is_not_empty);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
@@ -119,7 +119,7 @@ sub manage_selection {
     $self->{global} = { detected => 0, online => 0, offline => 0, degraded => 0 };
     $self->{hosts} = {};
 
-    foreach my $entry (@{ $options{custom}->request(command => 'lshost') }) {
+    foreach my $entry (@{$options{custom}->request(command => 'lshost')}) {
         my $name = $entry->{name} // '';
         my $partition = $entry->{partition_name} // '';
 
@@ -129,8 +129,8 @@ sub manage_selection {
         my $status = $entry->{status} // '';
 
         $self->{global}->{detected}++;
-        $self->{global}->{online}++   if ($status =~ /^online$/i);
-        $self->{global}->{offline}++  if ($status =~ /^offline$/i);
+        $self->{global}->{online}++ if ($status =~ /^online$/i);
+        $self->{global}->{offline}++ if ($status =~ /^offline$/i);
         $self->{global}->{degraded}++ if ($status =~ /^degraded$/i);
 
         $self->{hosts}->{$name} = {

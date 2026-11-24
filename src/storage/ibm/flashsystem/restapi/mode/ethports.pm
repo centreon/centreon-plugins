@@ -24,7 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::constants qw/:counters :values/;
+use centreon::plugins::constants qw(:counters :values);
 use centreon::plugins::misc qw(is_excluded is_not_empty);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
@@ -118,8 +118,8 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     my %addresses;
-    foreach my $entry (@{ $options{custom}->request_optional(command => 'lsportip') }) {
-        next unless (ref $entry eq 'HASH');
+    foreach my $entry (@{$options{custom}->request_optional(command => 'lsportip')}) {
+        next if (ref($entry) ne 'HASH');
         next if (($entry->{state} // '') =~ /^unconfigured$/i);
 
         my $key = ($entry->{node_name} // '') . '-' . ($entry->{id} // '');
@@ -130,7 +130,7 @@ sub manage_selection {
     $self->{global} = { detected => 0, active => 0, with_role => 0, ip_configured => scalar(keys %addresses) };
     $self->{ports} = {};
 
-    foreach my $port (@{ $options{custom}->request(command => 'lsportethernet') }) {
+    foreach my $port (@{$options{custom}->request(command => 'lsportethernet')}) {
         my $name = ($port->{node_name} // '') . '-' . ($port->{port_id} // '');
         next if (is_excluded($name, $self->{option_results}->{include_name}, $self->{option_results}->{exclude_name}));
 
@@ -143,7 +143,7 @@ sub manage_selection {
 
         $self->{global}->{detected}++;
         $self->{global}->{active}++ if ($link =~ /^active$/i);
-        $self->{global}->{with_role}++ if (@roles);
+        $self->{global}->{with_role}++ if (scalar(@roles) > 0);
 
         my $configured = defined($addresses{$name}) ? 'yes' : 'no';
         next if ($configured eq 'no' && $link !~ /^active$/i && !defined($self->{option_results}->{add_unused}));
