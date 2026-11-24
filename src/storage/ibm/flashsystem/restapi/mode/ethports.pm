@@ -18,30 +18,6 @@
 # limitations under the License.
 #
 
-#
-# Ethernet and IP ports.
-#
-# Two commands, two different objects, and mixing them up is easy:
-#
-#   lsportethernet  the PHYSICAL port: link_state, negotiated speed, and the
-#                   flags saying what it is for - management, host, storage,
-#                   replication.
-#   lsportip        the IP configuration laid on top. One entry per port and
-#                   per use, hence several rows for one physical port.
-#
-# On the arrays surveyed, all 12 IP entries were 'unconfigured' - iSCSI not in
-# use, everything over Fibre Channel - and 2 of the 6 physical ports were
-# active at 1 Gb/s. So the mode does not treat an inactive port as a fault: an
-# uncabled port is a cabling choice, not a defect.
-#
-# BEWARE of the management/host/storage/replication flags: they are the uses
-# ALLOWED on the port, not the uses in progress. The first version of this
-# mode alerted on "carries a role and link inactive", which put the four
-# uncabled ports in permanent CRITICAL - they carry every role because nothing
-# forbids it, not because they serve. The one sign a port is really in service
-# is an IP address configured on it.
-#
-
 package storage::ibm::flashsystem::restapi::mode::ethports;
 
 use base qw(centreon::plugins::templates::counter);
@@ -49,16 +25,8 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::plugins::constants qw/:counters :values/;
+use centreon::plugins::misc qw(is_excluded is_not_empty);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
-
-# lsportethernet flags giving a role to the port. A port without any role is
-# not watched: it is simply not used.
-my $ROLES = [
-    { field => 'management',  label => 'management' },
-    { field => 'host',        label => 'host' },
-    { field => 'storage',     label => 'storage' },
-    { field => 'replication', label => 'replication' }
-];
 
 sub custom_port_output {
     my ($self, %options) = @_;
@@ -66,33 +34,21 @@ sub custom_port_output {
     my $msg = sprintf('link %s', $self->{result_values}->{link_state});
 
     $msg .= sprintf(', speed %s', $self->{result_values}->{speed})
-        if ($self->{result_values}->{speed} ne '-');
+        if (is_not_empty($self->{result_values}->{speed}));
     $msg .= sprintf(', roles: %s', $self->{result_values}->{roles})
-        if ($self->{result_values}->{roles} ne '-');
+        if (is_not_empty($self->{result_values}->{roles}));
     $msg .= sprintf(', %s', $self->{result_values}->{ip})
-        if ($self->{result_values}->{ip} ne '-');
+        if (is_not_empty($self->{result_values}->{ip}));
 
     return $msg;
-}
-
-sub prefix_global_output {
-    my ($self, %options) = @_;
-
-    return 'Ethernet ports: ';
-}
-
-sub prefix_port_output {
-    my ($self, %options) = @_;
-
-    return "Port '" . $options{instance_value}->{name} . "' ";
 }
 
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => COUNTER_TYPE_GLOBAL, cb_prefix_output => 'prefix_global_output' },
-        { name => 'ports', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_port_output',
+        { name => 'global', type => COUNTER_TYPE_GLOBAL, prefix_output => 'Ethernet ports: ' },
+        { name => 'ports', type => COUNTER_TYPE_INSTANCE, prefix_output => "Port '%{name}' ",
           message_multiple => 'All Ethernet ports in service are active',
           skipped_code => { NO_VALUE() => 1 } }
     ];
@@ -110,9 +66,7 @@ sub set_counters {
                 perfdatas => [ { template => '%s', min => 0 } ]
             }
         },
-        # "role-capable" and not "carrying a role": the flags say what a port is
-        # allowed to carry. All six can, two serve. The counter that says how
-        # many really serve is ip-configured.
+        # The role flags say what a port is allowed to carry, not what it carries.
         { label => 'with-role', nlabel => 'ethports.withrole.count', set => {
                 key_values => [ { name => 'with_role' } ],
                 output_template => '%s role-capable',
@@ -127,9 +81,6 @@ sub set_counters {
         }
     ];
 
-    # An inactive, unconfigured port is normal: it is not cabled. The threshold
-    # only covers ports carrying an IP address, the one sign they are really
-    # in service.
     $self->{maps_counters}->{ports} = [
         {
             label => 'status',
@@ -155,79 +106,55 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-name:s'  => { name => 'filter_name' },
+        'include-name:s' => { name => 'include_name' },
+        'exclude-name:s' => { name => 'exclude_name' },
         'add-unused'     => { name => 'add_unused' }
     });
 
     return $self;
 }
 
-sub field {
-    my ($entry, $name) = @_;
-
-    return '-' if (!defined($entry->{$name}) || $entry->{$name} eq '');
-    return $entry->{$name};
-}
-
 sub manage_selection {
     my ($self, %options) = @_;
 
-    # lsportip has several entries per physical port, keyed on 'id' and not on
-    # 'port_id'. The first really configured address is kept.
     my %addresses;
     my $ip_configured = 0;
     foreach my $entry (@{ $options{custom}->request_optional(command => 'lsportip') }) {
         next unless (ref $entry eq 'HASH');
-        my $state = field($entry, 'state');
-        next if ($state =~ /^unconfigured$/i);
+        next if (($entry->{state} // '') =~ /^unconfigured$/i);
         $ip_configured++;
 
-        my $key = field($entry, 'node_name') . '-' . field($entry, 'id');
-        my $address = field($entry, 'IP_address');
-        $addresses{$key} = $address if ($address ne '-' && !exists($addresses{$key}));
+        my $key = ($entry->{node_name} // '') . '-' . ($entry->{id} // '');
+        $addresses{$key} = $entry->{IP_address}
+            if (is_not_empty($entry->{IP_address}) && !exists($addresses{$key}));
     }
 
     $self->{global} = { detected => 0, active => 0, with_role => 0, ip_configured => $ip_configured };
     $self->{ports} = {};
 
     foreach my $port (@{ $options{custom}->request(command => 'lsportethernet') }) {
-        my $name = field($port, 'node_name') . '-' . field($port, 'port_id');
+        my $name = ($port->{node_name} // '') . '-' . ($port->{port_id} // '');
+        next if (is_excluded($name, $self->{option_results}->{include_name}, $self->{option_results}->{exclude_name}));
 
-        next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne ''
-            && $name !~ /$self->{option_results}->{filter_name}/);
+        my $link = $port->{link_state} // '';
 
-        my $link = field($port, 'link_state');
-
-        # A port "carries a role" as soon as one flag is set. Observed values
-        # are 'yes'/'no', but some firmwares return the role name: anything that
-        # is neither empty nor 'no' is accepted.
-        my @roles;
-        foreach my $role (@$ROLES) {
-            my $value = field($port, $role->{field});
-            push @roles, $role->{label} if ($value ne '-' && $value !~ /^no$/i);
-        }
-        my $roles = @roles ? join('/', @roles) : '-';
+        my @roles = grep { is_not_empty($port->{$_}) && $port->{$_} !~ /^no$/i } qw(management host storage replication);
 
         $self->{global}->{detected}++;
         $self->{global}->{active}++ if ($link =~ /^active$/i);
-        $self->{global}->{with_role}++ if ($roles ne '-');
+        $self->{global}->{with_role}++ if (@roles);
 
         my $configured = exists($addresses{$name}) ? 'yes' : 'no';
-
-        # Neither address nor link: the port is not cabled. Exposing it would
-        # make permanent noise. --add-unused shows it when the full inventory
-        # is wanted.
-        next if ($configured eq 'no' && $link !~ /^active$/i
-                 && !defined($self->{option_results}->{add_unused}));
+        next if ($configured eq 'no' && $link !~ /^active$/i && !defined($self->{option_results}->{add_unused}));
 
         $self->{ports}->{$name} = {
             name => $name,
             link_state => $link,
-            speed => field($port, 'speed'),
-            roles => $roles,
-            ip => exists($addresses{$name}) ? $addresses{$name} : '-',
-            node_name => field($port, 'node_name'),
-            port_id => field($port, 'port_id'),
+            speed => $port->{speed} // '',
+            roles => join('/', @roles),
+            ip => $addresses{$name} // '',
+            node_name => $port->{node_name} // '',
+            port_id => $port->{port_id} // '',
             configured => $configured
         };
     }
@@ -281,9 +208,13 @@ Example:
 
 =over 8
 
-=item B<--filter-name>
+=item B<--include-name>
 
-Only check ports whose C<node-port> name matches this regular expression.
+Filter ports by C<node-port> name (can be a regexp).
+
+=item B<--exclude-name>
+
+Exclude ports by C<node-port> name (can be a regexp).
 
 =item B<--add-unused>
 

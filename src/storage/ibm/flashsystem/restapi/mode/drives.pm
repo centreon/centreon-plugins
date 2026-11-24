@@ -18,28 +18,6 @@
 # limitations under the License.
 #
 
-#
-# Drive tracking: wear, paths and fill, per drive.
-#
-# The concise lsdrive view only carries status and capacity. Everything that
-# makes drive TRACKING lives in the detailed view, one call per drive:
-#
-#   write_endurance_used     FlashCore Module wear, in % - the long-term
-#                            metric of a flash drive
-#   port_1/2_status          the two NVMe paths to the drive
-#   physical_used_capacity   real physical fill of the module
-#   replacement_date         set when IBM predicts an end of life
-#
-# Drive STATUS stays with the hardware mode, which already covers every drive
-# among its components: carrying it here too would double each alert. This
-# mode covers what hardware does not see - path redundancy, wear and fill -
-# and by default only alerts on a fallen path or a predicted end of life.
-#
-# Wear thresholds are not coded here: they are set on the service side
-# (--warning-endurance=80 --critical-endurance=90), visible and adjustable in
-# Centreon.
-#
-
 package storage::ibm::flashsystem::restapi::mode::drives;
 
 use base qw(centreon::plugins::templates::counter);
@@ -47,6 +25,7 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::plugins::constants qw/:counters :values/;
+use centreon::plugins::misc qw(convert_bytes is_excluded is_not_empty);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_drive_output {
@@ -59,38 +38,19 @@ sub custom_drive_output {
         $self->{result_values}->{use}
     );
     $msg .= sprintf(', firmware %s', $self->{result_values}->{firmware})
-        if ($self->{result_values}->{firmware} ne '-');
-    # A replacement date is only set when the array predicts an end of life:
-    # when it exists, it is the most important piece of information.
+        if (is_not_empty($self->{result_values}->{firmware}));
     $msg .= sprintf(', REPLACEMENT PREDICTED %s', $self->{result_values}->{replacement_date})
-        if ($self->{result_values}->{replacement_date} ne '-');
+        if (is_not_empty($self->{result_values}->{replacement_date}));
 
     return $msg;
-}
-
-sub prefix_global_output {
-    my ($self, %options) = @_;
-
-    return 'Drives: ';
-}
-
-sub prefix_drive_output {
-    my ($self, %options) = @_;
-
-    return sprintf(
-        "Drive '%s' (enclosure %s slot %s) ",
-        $options{instance_value}->{display},
-        $options{instance_value}->{enclosure},
-        $options{instance_value}->{slot}
-    );
 }
 
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => COUNTER_TYPE_GLOBAL, cb_prefix_output => 'prefix_global_output' },
-        { name => 'drives', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_drive_output',
+        { name => 'global', type => COUNTER_TYPE_GLOBAL, prefix_output => 'Drives: ' },
+        { name => 'drives', type => COUNTER_TYPE_INSTANCE, prefix_output => "Drive '%{display}' (enclosure %{enclosure} slot %{slot}) ",
           message_multiple => 'All drives have both paths online', skipped_code => { NO_VALUE() => 1 } }
     ];
 
@@ -104,16 +64,11 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{drives} = [
-        # Drive status belongs to the hardware mode: here we watch REDUNDANCY. A
-        # path down while the drive still serves is exactly the fault a global
-        # status does not show.
         {
             label => 'status',
             type => COUNTER_KIND_TEXT,
-            # A path state of '-' means the detailed view was not available
-            # (older firmware): unknown is not down.
-            critical_default => '%{port_1_status} ne "-" and %{port_2_status} ne "-" and %{port_1_status} !~ /^online$/i and %{port_2_status} !~ /^online$/i',
-            warning_default => '(%{port_1_status} ne "-" and %{port_1_status} !~ /^online$/i) or (%{port_2_status} ne "-" and %{port_2_status} !~ /^online$/i) or %{replacement_date} ne "-"',
+            critical_default => '%{port_1_status} ne "" and %{port_2_status} ne "" and %{port_1_status} !~ /^online$/i and %{port_2_status} !~ /^online$/i',
+            warning_default => '(%{port_1_status} ne "" and %{port_1_status} !~ /^online$/i) or (%{port_2_status} ne "" and %{port_2_status} !~ /^online$/i) or %{replacement_date} ne ""',
             set => {
                 key_values => [
                     { name => 'display' }, { name => 'use' },
@@ -125,8 +80,6 @@ sub set_counters {
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
-        # Wear only goes one way: the curve is the real deliverable, the threshold
-        # is set on the service side.
         { label => 'endurance', nlabel => 'drive.endurance.used.percentage', set => {
                 key_values => [ { name => 'endurance' }, { name => 'display' } ],
                 output_template => 'endurance used %s %%',
@@ -150,33 +103,28 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-id:s' => { name => 'filter_id' }
+        'include-id:s' => { name => 'include_id' },
+        'exclude-id:s' => { name => 'exclude_id' }
     });
 
     return $self;
 }
 
-sub field {
-    my ($entry, $name) = @_;
-
-    return '-' if (!defined($entry->{$name}) || $entry->{$name} eq '');
-    return $entry->{$name};
-}
-
 sub manage_selection {
     my ($self, %options) = @_;
+
+    my $to_bytes = sub { # base 1024 unit-suffixed strings ("3.49TB").
+        return convert_bytes(value => $_[0] // '', pattern => '^\s*([0-9]+(?:\.[0-9]+)?)\s*([KMGTP]?B?)\s*$');
+    };
 
     $self->{global} = { detected => 0 };
     $self->{drives} = {};
 
     foreach my $drive (@{ $options{custom}->request(command => 'lsdrive') }) {
         next unless (ref $drive eq 'HASH' && defined($drive->{id}) && $drive->{id} =~ /^\d+$/);
+        next if (is_excluded($drive->{id}, $self->{option_results}->{include_id}, $self->{option_results}->{exclude_id}));
 
-        next if (defined($self->{option_results}->{filter_id}) && $self->{option_results}->{filter_id} ne ''
-            && $drive->{id} !~ /$self->{option_results}->{filter_id}/);
-
-        # Everything that makes the tracking is in the detailed view. A dozen
-        # calls per check: the token is cached, the cost is low.
+        # Wear, paths and physical fill are only in the detailed view.
         my $detail = $options{custom}->request_optional(command => 'lsdrive/' . $drive->{id})->[0];
         $detail = $drive unless (ref $detail eq 'HASH');
 
@@ -184,32 +132,30 @@ sub manage_selection {
 
         my $entry = {
             display => $drive->{id},
-            enclosure => field($detail, 'enclosure_id'),
-            slot => field($detail, 'slot_id'),
-            use => field($detail, 'use'),
-            port_1_status => field($detail, 'port_1_status'),
-            port_2_status => field($detail, 'port_2_status'),
-            replacement_date => field($detail, 'replacement_date'),
-            firmware => field($detail, 'firmware_level')
+            enclosure => $detail->{enclosure_id} // '',
+            slot => $detail->{slot_id} // '',
+            use => $detail->{use} // '',
+            port_1_status => $detail->{port_1_status} // '',
+            port_2_status => $detail->{port_2_status} // '',
+            replacement_date => $detail->{replacement_date} // '',
+            firmware => $detail->{firmware_level} // ''
         };
-        # firmware_level comes with trailing spaces on some firmwares.
         $entry->{firmware} =~ s/\s+$//;
 
         my $endurance = $detail->{write_endurance_used};
         $entry->{endurance} = $endurance
             if (defined($endurance) && $endurance =~ /^\d+(?:\.\d+)?$/);
 
-        my $ptot = $options{custom}->size_to_bytes(value => $detail->{physical_capacity});
-        my $pused = $options{custom}->size_to_bytes(value => $detail->{physical_used_capacity});
+        my $ptot = $to_bytes->($detail->{physical_capacity});
+        my $pused = $to_bytes->($detail->{physical_used_capacity});
         $entry->{physical_used_prct} = $pused * 100 / $ptot
             if (defined($ptot) && defined($pused) && $ptot > 0);
 
         $self->{drives}->{ $drive->{id} } = $entry;
     }
 
-    if ($self->{global}->{detected} == 0) {
-        $self->{output}->option_exit(short_msg => 'No drive returned by lsdrive.');
-    }
+    $self->{output}->option_exit(short_msg => 'No drive returned by lsdrive.')
+        if ($self->{global}->{detected} == 0);
 }
 
 1;
@@ -239,9 +185,13 @@ Example:
 
 =over 8
 
-=item B<--filter-id>
+=item B<--include-id>
 
-Only check drives whose id matches this regular expression.
+Filter drives by id (can be a regexp).
+
+=item B<--exclude-id>
+
+Exclude drives by id (can be a regexp).
 
 =item B<--unknown-status>
 
@@ -258,7 +208,7 @@ Threshold on each drive. Available macros: C<display>, C<use>,
 C<port_1_status>, C<port_2_status>, C<replacement_date>, C<firmware>.
 
 Default warning:
-C<(%{port_1_status} ne "-" and %{port_1_status} !~ /^online$/i) or (%{port_2_status} ne "-" and %{port_2_status} !~ /^online$/i) or %{replacement_date} ne "-">.
+C<(%{port_1_status} ne "" and %{port_1_status} !~ /^online$/i) or (%{port_2_status} ne "" and %{port_2_status} !~ /^online$/i) or %{replacement_date} ne "">.
 One path left, or an end of life the array predicts.
 
 =item B<--critical-status>
@@ -269,7 +219,7 @@ Threshold on each drive. Available macros: C<display>, C<use>,
 C<port_1_status>, C<port_2_status>, C<replacement_date>, C<firmware>.
 
 Default critical:
-C<%{port_1_status} ne "-" and %{port_2_status} ne "-" and %{port_1_status} !~ /^online$/i and %{port_2_status} !~ /^online$/i> - both.
+C<%{port_1_status} ne "" and %{port_2_status} ne "" and %{port_1_status} !~ /^online$/i and %{port_2_status} !~ /^online$/i> - both.
 NVMe paths down, the drive is unreachable.
 
 =item B<--warning-endurance>

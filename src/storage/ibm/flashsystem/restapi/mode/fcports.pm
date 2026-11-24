@@ -18,23 +18,6 @@
 # limitations under the License.
 #
 
-#
-# Fibre Channel ports - the data path, which the hardware mode does not cover.
-#
-# Two facts taken from the API:
-#
-#   - lsportfc exposes NEITHER error counters NOR throughput. The only states
-#     are the status, the negotiated speed and the attachment. FC throughput
-#     is only available at node level, through lsnodecanisterstats.
-#   - a port fitted with an SFP but not connected reports 'inactive_configured'
-#     permanently, by IBM design, and no option changes that behaviour. The
-#     default threshold therefore does not treat it as a fault: it alerts on
-#     what stopped being active, not on what never was.
-#
-# lstargetportfc adds the number of host logins per port: an active port that
-# loses its logins is a lost path, invisible otherwise.
-#
-
 package storage::ibm::flashsystem::restapi::mode::fcports;
 
 use base qw(centreon::plugins::templates::counter);
@@ -42,6 +25,7 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::plugins::constants qw/:counters :values/;
+use centreon::plugins::misc qw(is_excluded is_not_empty);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_port_output {
@@ -55,29 +39,17 @@ sub custom_port_output {
     );
 
     $msg .= sprintf(', host logins: %s', $self->{result_values}->{active_login_count})
-        if ($self->{result_values}->{active_login_count} ne '-');
+        if (is_not_empty($self->{result_values}->{active_login_count}));
 
     return $msg;
-}
-
-sub prefix_global_output {
-    my ($self, %options) = @_;
-
-    return 'Fibre Channel ports: ';
-}
-
-sub prefix_port_output {
-    my ($self, %options) = @_;
-
-    return "Port '" . $options{instance_value}->{name} . "' ";
 }
 
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => COUNTER_TYPE_GLOBAL, cb_prefix_output => 'prefix_global_output' },
-        { name => 'ports', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_port_output',
+        { name => 'global', type => COUNTER_TYPE_GLOBAL, prefix_output => 'Fibre Channel ports: ' },
+        { name => 'ports', type => COUNTER_TYPE_INSTANCE, prefix_output => "Port '%{name}' ",
           message_multiple => 'All Fibre Channel ports are active', skipped_code => { NO_VALUE() => 1 } }
     ];
 
@@ -108,11 +80,6 @@ sub set_counters {
         }
     ];
 
-    # 'inactive_unconfigured' = no SFP, 'inactive_configured' = SFP fitted but
-    # nothing plugged: two normal states on a partially cabled array. Alerting
-    # on them would produce a perpetual Critical, which teaches the team to
-    # ignore the service. Only the states reflecting a real degradation are
-    # retained.
     $self->{maps_counters}->{ports} = [
         {
             label => 'status',
@@ -140,52 +107,39 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-name:s' => { name => 'filter_name' },
-        'filter-type:s' => { name => 'filter_type' }
+        'include-name:s' => { name => 'include_name' },
+        'exclude-name:s' => { name => 'exclude_name' },
+        'include-type:s' => { name => 'include_type' },
+        'exclude-type:s' => { name => 'exclude_type' }
     });
 
     return $self;
 }
 
-sub field {
-    my ($entry, $name) = @_;
-
-    return '-' if (!defined($entry->{$name}) || $entry->{$name} eq '');
-    return $entry->{$name};
-}
-
 sub manage_selection {
     my ($self, %options) = @_;
 
-    # Host logins are read on the virtualised (NPIV) ports, keyed on
-    # fc_io_port_id. They are aggregated before being attached to the physical
-    # ports.
+    # Host logins are read on the virtual (NPIV) target ports, keyed on
+    # fc_io_port_id, then summed per physical port.
     my %logins;
     foreach my $target (@{ $options{custom}->request_optional(command => 'lstargetportfc') }) {
-        my $port = field($target, 'fc_io_port_id');
         my $count = $target->{active_login_count};
-        next if ($port eq '-' || !defined($count) || $count !~ /^\d+$/);
-        $logins{$port} += $count;
+        next if (!is_not_empty($target->{fc_io_port_id}) || !defined($count) || $count !~ /^\d+$/);
+        $logins{ $target->{fc_io_port_id} } += $count;
     }
 
     $self->{global} = { detected => 0, active => 0, inactive => 0, host_logins => 0 };
     $self->{ports} = {};
 
     foreach my $port (@{ $options{custom}->request(command => 'lsportfc') }) {
-        # Port ids are not contiguous - 0 to 3 then 24 to 27 - so a "Port 24"
-        # service would help nobody. Ports are named by node and port number,
-        # what an operator reads.
-        my $name = field($port, 'node_name') . '-' . field($port, 'port_id');
-        my $type = field($port, 'type');
+        my $name = ($port->{node_name} // '') . '-' . ($port->{port_id} // '');
+        my $type = $port->{type} // '';
 
-        next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne ''
-            && $name !~ /$self->{option_results}->{filter_name}/);
-        next if (defined($self->{option_results}->{filter_type}) && $self->{option_results}->{filter_type} ne ''
-            && $type !~ /$self->{option_results}->{filter_type}/);
+        next if (is_excluded($name, $self->{option_results}->{include_name}, $self->{option_results}->{exclude_name}));
+        next if (is_excluded($type, $self->{option_results}->{include_type}, $self->{option_results}->{exclude_type}));
 
-        my $status = field($port, 'status');
-        my $io_port = field($port, 'fc_io_port_id');
-        my $login_count = defined($logins{$io_port}) ? $logins{$io_port} : '-';
+        my $status = $port->{status} // '';
+        my $login_count = $logins{ $port->{fc_io_port_id} // '' } // '';
 
         $self->{global}->{detected}++;
         if ($status =~ /^active$/i) {
@@ -193,15 +147,15 @@ sub manage_selection {
         } else {
             $self->{global}->{inactive}++;
         }
-        $self->{global}->{host_logins} += $login_count if ($login_count ne '-');
+        $self->{global}->{host_logins} += $login_count if (is_not_empty($login_count));
 
         $self->{ports}->{$name} = {
             name => $name,
             status => $status,
-            port_speed => field($port, 'port_speed'),
-            attachment => field($port, 'attachment'),
-            node_name => field($port, 'node_name'),
-            port_id => field($port, 'port_id'),
+            port_speed => $port->{port_speed} // '',
+            attachment => $port->{attachment} // '',
+            node_name => $port->{node_name} // '',
+            port_id => $port->{port_id} // '',
             type => $type,
             active_login_count => $login_count
         };
@@ -236,13 +190,21 @@ Example:
 
 =over 8
 
-=item B<--filter-name>
+=item B<--include-name>
 
-Only check ports whose C<node-port> name matches this regular expression.
+Filter ports by C<node-port> name (can be a regexp).
 
-=item B<--filter-type>
+=item B<--exclude-name>
 
-Only check ports of this type (C<fc>, C<ethernet>...).
+Exclude ports by C<node-port> name (can be a regexp).
+
+=item B<--include-type>
+
+Filter ports by type (can be a regexp), for example C<fc> or C<ethernet>.
+
+=item B<--exclude-type>
+
+Exclude ports by type (can be a regexp).
 
 =item B<--unknown-status>
 

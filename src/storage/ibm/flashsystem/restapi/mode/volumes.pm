@@ -18,28 +18,6 @@
 # limitations under the License.
 #
 
-#
-# Overall volume state.
-#
-# This mode is aggregated on purpose. Neither lsvdisk nor lsvdiskcopy exposes
-# used_capacity in the concise view: a volume's consumption would need the
-# detailed view, one call per volume - several hundred per cycle on a typical
-# array. The only state really available per volume is its status, and they
-# are all 'online'. One service per volume would therefore show "online" and a
-# fixed size, hundreds of times.
-#
-# The service counts the states and NAMES the abnormal volumes in its output:
-# the diagnostic granularity is kept, the hundreds of services are not. For a
-# per-object monitoring, see the volume-groups mode, whose objects carry a real
-# state.
-#
-# Two reading traps:
-#   - fast_write_state = 'not_empty' is the NORMAL state of a working volume
-#     (data in the write cache). Only 'corrupt' is abnormal.
-#   - a volume 'full' with regard to its provisioned size means nothing with
-#     thin provisioning: capacity is managed at pool level.
-#
-
 package storage::ibm::flashsystem::restapi::mode::volumes;
 
 use base qw(centreon::plugins::templates::counter);
@@ -47,6 +25,7 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::plugins::constants qw/:counters :values/;
+use centreon::plugins::misc qw(is_excluded is_not_empty);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_volume_output {
@@ -55,11 +34,12 @@ sub custom_volume_output {
     my $msg = sprintf('status: %s', $self->{result_values}->{status});
 
     $msg .= sprintf(', pool: %s', $self->{result_values}->{mdisk_grp_name})
-        if ($self->{result_values}->{mdisk_grp_name} ne '-');
+        if (is_not_empty($self->{result_values}->{mdisk_grp_name}));
     $msg .= sprintf(', volume group: %s', $self->{result_values}->{volume_group_name})
-        if ($self->{result_values}->{volume_group_name} ne '-');
+        if (is_not_empty($self->{result_values}->{volume_group_name}));
     $msg .= sprintf(', write cache: %s', $self->{result_values}->{fast_write_state})
-        if ($self->{result_values}->{fast_write_state} !~ /^(empty|not_empty)$/i);
+        if (is_not_empty($self->{result_values}->{fast_write_state})
+            && $self->{result_values}->{fast_write_state} !~ /^(empty|not_empty)$/i);
     $msg .= ', formatting'
         if ($self->{result_values}->{formatting} =~ /^yes$/i);
     $msg .= ', copies not synchronised'
@@ -68,24 +48,12 @@ sub custom_volume_output {
     return $msg;
 }
 
-sub prefix_global_output {
-    my ($self, %options) = @_;
-
-    return 'Volumes: ';
-}
-
-sub prefix_volume_output {
-    my ($self, %options) = @_;
-
-    return "Volume '" . $options{instance_value}->{name} . "' ";
-}
-
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => COUNTER_TYPE_GLOBAL, cb_prefix_output => 'prefix_global_output' },
-        { name => 'volumes', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_volume_output',
+        { name => 'global', type => COUNTER_TYPE_GLOBAL, prefix_output => 'Volumes: ' },
+        { name => 'volumes', type => COUNTER_TYPE_INSTANCE, prefix_output => "Volume '%{name}' ",
           message_multiple => 'All volumes are online and synchronised', skipped_code => { NO_VALUE() => 1 } }
     ];
 
@@ -122,8 +90,6 @@ sub set_counters {
         }
     ];
 
-    # Only abnormal volumes become instances: hundreds of lines are not
-    # created to say that all is well.
     $self->{maps_counters}->{volumes} = [
         {
             label => 'status',
@@ -150,31 +116,26 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-name:s'         => { name => 'filter_name' },
-        'filter-pool:s'         => { name => 'filter_pool' },
-        'filter-volume-group:s' => { name => 'filter_volume_group' },
-        'add-all-volumes'       => { name => 'add_all_volumes' }
+        'include-name:s'         => { name => 'include_name' },
+        'exclude-name:s'         => { name => 'exclude_name' },
+        'include-pool:s'         => { name => 'include_pool' },
+        'exclude-pool:s'         => { name => 'exclude_pool' },
+        'include-volume-group:s' => { name => 'include_volume_group' },
+        'exclude-volume-group:s' => { name => 'exclude_volume_group' },
+        'add-all-volumes'        => { name => 'add_all_volumes' }
     });
 
     return $self;
 }
 
-sub field {
-    my ($entry, $name) = @_;
-
-    return '-' if (!defined($entry->{$name}) || $entry->{$name} eq '');
-    return $entry->{$name};
-}
-
 sub manage_selection {
     my ($self, %options) = @_;
 
-    # Copy synchronisation lives on lsvdiskcopy, not on lsvdisk: a volume can
-    # be 'online' with an out-of-sync copy.
+    # Copy synchronisation is only in lsvdiskcopy: a volume can be online with
+    # an out-of-sync copy.
     my %unsynced;
     foreach my $copy (@{ $options{custom}->request_optional(command => 'lsvdiskcopy') }) {
-        my $name = field($copy, 'vdisk_name');
-        $unsynced{$name} = 1 if (field($copy, 'sync') =~ /^no$/i);
+        $unsynced{ $copy->{vdisk_name} // '' } = 1 if (($copy->{sync} // '') =~ /^no$/i);
     }
 
     $self->{global} = {
@@ -183,19 +144,17 @@ sub manage_selection {
     $self->{volumes} = {};
 
     foreach my $volume (@{ $options{custom}->request(command => 'lsvdisk') }) {
-        my $name = field($volume, 'name');
-        my $pool = field($volume, 'mdisk_grp_name');
-        my $group = field($volume, 'volume_group_name');
+        my $name = $volume->{name} // '';
+        my $pool = $volume->{mdisk_grp_name} // '';
+        my $group = $volume->{volume_group_name} // '';
 
-        next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne ''
-            && $name !~ /$self->{option_results}->{filter_name}/);
-        next if (defined($self->{option_results}->{filter_pool}) && $self->{option_results}->{filter_pool} ne ''
-            && $pool !~ /$self->{option_results}->{filter_pool}/);
-        next if (defined($self->{option_results}->{filter_volume_group}) && $self->{option_results}->{filter_volume_group} ne ''
-            && $group !~ /$self->{option_results}->{filter_volume_group}/);
+        next if (is_excluded($name, $self->{option_results}->{include_name}, $self->{option_results}->{exclude_name}));
+        next if (is_excluded($pool, $self->{option_results}->{include_pool}, $self->{option_results}->{exclude_pool}));
+        next if (is_excluded($group, $self->{option_results}->{include_volume_group}, $self->{option_results}->{exclude_volume_group}));
 
-        my $status = field($volume, 'status');
-        my $fast_write = field($volume, 'fast_write_state');
+        my $status = $volume->{status} // '';
+        my $fast_write = $volume->{fast_write_state} // '';
+        my $formatting = $volume->{formatting} // '';
         my $sync = $unsynced{$name} ? 'no' : 'yes';
 
         $self->{global}->{detected}++;
@@ -204,19 +163,15 @@ sub manage_selection {
         $self->{global}->{offline}++  if ($status =~ /^offline$/i);
         $self->{global}->{unsynchronised}++ if ($sync eq 'no');
 
-        my $healthy = ($status =~ /^online$/i)
-            && ($fast_write !~ /^corrupt$/i)
-            && ($sync eq 'yes')
-            && (field($volume, 'formatting') !~ /^yes$/i);
-
-        # By default, only abnormal volumes become instances.
+        # Aggregated mode: only abnormal volumes become instances by default.
+        my $healthy = $status =~ /^online$/i && $fast_write !~ /^corrupt$/i && $sync eq 'yes' && $formatting !~ /^yes$/i;
         next if ($healthy && !defined($self->{option_results}->{add_all_volumes}));
 
         $self->{volumes}->{$name} = {
             name => $name,
             status => $status,
             fast_write_state => $fast_write,
-            formatting => field($volume, 'formatting'),
+            formatting => $formatting,
             sync => $sync,
             mdisk_grp_name => $pool,
             volume_group_name => $group
@@ -269,20 +224,29 @@ Example:
 
 =over 8
 
-=item B<--filter-name>
+=item B<--include-name>
 
-Only check volumes whose name, pool or volume group matches this regular
-expression. Empty by default.
+Filter volumes by name (can be a regexp).
 
-=item B<--filter-pool>
+=item B<--exclude-name>
 
-Only check volumes whose name, pool or volume group matches this regular
-expression. Empty by default.
+Exclude volumes by name (can be a regexp).
 
-=item B<--filter-volume-group>
+=item B<--include-pool>
 
-Only check volumes whose name, pool or volume group matches this regular
-expression. Empty by default.
+Filter volumes by pool name (can be a regexp).
+
+=item B<--exclude-pool>
+
+Exclude volumes by pool name (can be a regexp).
+
+=item B<--include-volume-group>
+
+Filter volumes by volume group name (can be a regexp).
+
+=item B<--exclude-volume-group>
+
+Exclude volumes by volume group name (can be a regexp).
 
 =item B<--add-all-volumes>
 
@@ -290,7 +254,7 @@ Turn every volume into a checkable instance, not just the abnormal ones. Use
 with a filter, this is what makes a per-volume service possible if you really
 want one:
 
-    --mode=volumes --add-all-volumes --filter-name='^VOL_PRD_01$'
+    --mode=volumes --add-all-volumes --include-name='^VOL_PRD_01$'
 
 =item B<--unknown-status>
 

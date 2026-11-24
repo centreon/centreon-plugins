@@ -18,15 +18,6 @@
 # limitations under the License.
 #
 
-#
-# Monitoring of IBM Storage Virtualize systems (FlashSystem, Storwize, SVC)
-# through the REST API served on port 7443.
-#
-# Design principle: the plugin knows nothing specific to a given array.
-# Everything is discovered through the API. Adding an array comes down to
-# creating a host with the template and two macros; no code change.
-#
-
 package storage::ibm::flashsystem::restapi::plugin;
 
 use strict;
@@ -40,9 +31,6 @@ sub new {
 
     $self->{version} = '1.0';
 
-    # Only the modes that really exist are declared: a mode declared without
-    # its module shows up in --list-mode and then fails at run time with
-    # "Cannot load module".
     $self->{modes} = {
         'capacity'      => 'storage::ibm::flashsystem::restapi::mode::capacity',
         'drives'        => 'storage::ibm::flashsystem::restapi::mode::drives',
@@ -53,15 +41,9 @@ sub new {
         'hosts'         => 'storage::ibm::flashsystem::restapi::mode::hosts',
         'performance'   => 'storage::ibm::flashsystem::restapi::mode::performance',
         'replication'   => 'storage::ibm::flashsystem::restapi::mode::replication',
-        # Meant for the HOST check command, not for a service.
         'system-status' => 'storage::ibm::flashsystem::restapi::mode::systemstatus',
         'volume-groups' => 'storage::ibm::flashsystem::restapi::mode::volumegroups',
         'volumes'       => 'storage::ibm::flashsystem::restapi::mode::volumes'
-        # Still to be written, for the day automatic service discovery is set
-        # up (it also needs discovery rules on the Centreon side, which
-        # neither CLAPI nor the v2 API expose):
-        # 'list-fc-ports'      => '...::mode::listfcports',
-        # 'list-volume-groups' => '...::mode::listvolumegroups'
     };
 
     $self->{custom_modes}->{api} = 'storage::ibm::flashsystem::restapi::custom::api';
@@ -110,7 +92,7 @@ services: C<--filter-counters=latency>,
 C<--filter-counters=iops|bandwidth|cache> and C<--filter-counters=cpu>.
 
 The same idea restricts a scope rather than a counter set:
-C<--filter-partition> gives one replication service per storage partition.
+C<--include-partition> gives one replication service per storage partition.
 
 =back
 

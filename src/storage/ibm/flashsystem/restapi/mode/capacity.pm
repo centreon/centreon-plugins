@@ -18,20 +18,6 @@
 # limitations under the License.
 #
 
-#
-# How full the system is.
-#
-# Central trap: on a system fitted with FlashCore Modules, a pool's capacity is
-# a VIRTUAL, over-allocated view laid over the hardware. A pool can announce
-# 630 TB free while 164 TB remain physically out of 311. Putting the alert
-# threshold on the pool's free space therefore watches a number unrelated to
-# the moment the array fills up.
-#
-# The threshold therefore belongs on physical_free_capacity, reported by
-# lssystem. Pool figures stay published as metrics, for the trend and for the
-# over-allocation ratio, but trigger nothing by themselves.
-#
-
 package storage::ibm::flashsystem::restapi::mode::capacity;
 
 use base qw(centreon::plugins::templates::counter);
@@ -39,6 +25,7 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::plugins::constants qw/:counters :values/;
+use centreon::plugins::misc qw(convert_bytes is_excluded is_not_empty);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_pool_output {
@@ -52,45 +39,18 @@ sub custom_pool_output {
     );
 }
 
-sub prefix_physical_output {
-    my ($self, %options) = @_;
-
-    return 'Physical capacity: ';
-}
-
-sub prefix_logical_output {
-    my ($self, %options) = @_;
-
-    return 'Logical: ';
-}
-
-sub prefix_reduction_output {
-    my ($self, %options) = @_;
-
-    return 'Data reduction: ';
-}
-
-sub prefix_pool_output {
-    my ($self, %options) = @_;
-
-    return "Pool '" . $options{instance_value}->{name} . "' ";
-}
-
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'physical', type => COUNTER_TYPE_GLOBAL, cb_prefix_output => 'prefix_physical_output' },
-        { name => 'logical', type => COUNTER_TYPE_GLOBAL, cb_prefix_output => 'prefix_logical_output' },
-        { name => 'reduction', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_reduction_output',
+        { name => 'physical', type => COUNTER_TYPE_GLOBAL, prefix_output => 'Physical capacity: ' },
+        { name => 'logical', type => COUNTER_TYPE_GLOBAL, prefix_output => 'Logical: ' },
+        { name => 'reduction', type => COUNTER_TYPE_INSTANCE, prefix_output => 'Data reduction: ',
           skipped_code => { NO_VALUE() => 1 } },
-        { name => 'pools', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_pool_output',
+        { name => 'pools', type => COUNTER_TYPE_INSTANCE, prefix_output => "Pool '%{name}' ",
           message_multiple => 'All pools are online', skipped_code => { NO_VALUE() => 1 } }
     ];
 
-    # This is the counter that carries the alert. No default is shipped: the
-    # right value depends on how long an extension takes to be delivered, not
-    # on a general rule.
     $self->{maps_counters}->{physical} = [
         { label => 'physical-usage-prct', nlabel => 'system.physical.space.usage.percentage',
           set => {
@@ -99,9 +59,6 @@ sub set_counters {
                 perfdatas => [ { template => '%.2f', unit => '%', min => 0, max => 100 } ]
             }
         },
-        # output_change_bytes converts the value AND returns the unit: the template
-        # must carry TWO %s. With one, the unit is lost and the output reads
-        # "used 146.45" without saying of what.
         { label => 'physical-usage', nlabel => 'system.physical.space.usage.bytes', set => {
                 key_values => [ { name => 'physical_used' }, { name => 'physical_total' } ],
                 output_template => '%s %s',
@@ -141,15 +98,6 @@ sub set_counters {
         }
     ];
 
-    # What data reduction saves. The ratio speaks better than bytes: "2.40:1"
-    # compares from one array to another and from one month to the next,
-    # "12 TB" does not.
-    #
-    # These two counters live in a SEPARATE group, of type 1, for a precise
-    # reason: a type 0 counter whose value is missing is not silent, it prints
-    # "skipped (no value(s))". When no pool enables reduction - a common case -
-    # that put two skip mentions in an otherwise normal output, which read like
-    # a fault. An empty type 1 group prints nothing at all.
     $self->{maps_counters}->{reduction} = [
         { label => 'data-reduction-ratio', nlabel => 'system.data.reduction.ratio.count', set => {
                 key_values => [ { name => 'reduction_ratio' } ],
@@ -205,30 +153,25 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-pool:s' => { name => 'filter_pool' }
+        'include-pool:s' => { name => 'include_pool' },
+        'exclude-pool:s' => { name => 'exclude_pool' }
     });
 
     return $self;
 }
 
-sub field {
-    my ($entry, $name) = @_;
-
-    return '-' if (!defined($entry->{$name}) || $entry->{$name} eq '');
-    return $entry->{$name};
-}
-
 sub manage_selection {
     my ($self, %options) = @_;
 
+    my $to_bytes = sub { # base 1024 unit-suffixed strings ("310.99TB").
+        return convert_bytes(value => $_[0] // '', pattern => '^\s*([0-9]+(?:\.[0-9]+)?)\s*([KMGTP]?B?)\s*$');
+    };
+
     my $system = $options{custom}->request(command => 'lssystem')->[0];
 
-    my $physical_total = $options{custom}->size_to_bytes(value => $system->{physical_capacity});
-    my $physical_free = $options{custom}->size_to_bytes(value => $system->{physical_free_capacity});
+    my $physical_total = $to_bytes->($system->{physical_capacity});
+    my $physical_free = $to_bytes->($system->{physical_free_capacity});
 
-    # Without physical capacity we are probably on a model without FlashCore
-    # Modules. Rather than making a figure up, say so and stick to the pools,
-    # whose thresholds remain usable.
     if (!defined($physical_total) || !defined($physical_free) || $physical_total == 0) {
         $self->{output}->output_add(
             long_msg => 'System reports no physical capacity: thresholds on pools only.',
@@ -242,34 +185,18 @@ sub manage_selection {
             physical_free => $physical_free,
             physical_used => $physical_used,
             physical_used_prct => $physical_used * 100 / $physical_total,
-            overallocation => field($system, 'total_overallocation')
+            overallocation => is_not_empty($system->{total_overallocation}) ? $system->{total_overallocation} : undef
         };
     }
 
     $self->{logical} = {
-        logical_used => $options{custom}->size_to_bytes(value => $system->{total_used_capacity}),
-        logical_free => $options{custom}->size_to_bytes(value => $system->{total_free_space})
+        logical_used => $to_bytes->($system->{total_used_capacity}),
+        logical_free => $to_bytes->($system->{total_free_space})
     };
 
-    # Reduction ratio: what was written over what is really stored. Both
-    # counters are 0 when no pool enables data reduction - then neither ratio
-    # nor saving is published, rather than showing a misleading 1:1.
-    my $before = $options{custom}->size_to_bytes(value => $system->{used_capacity_before_reduction});
-    my $after = $options{custom}->size_to_bytes(value => $system->{used_capacity_after_reduction});
+    my $before = $to_bytes->($system->{used_capacity_before_reduction});
+    my $after = $to_bytes->($system->{used_capacity_after_reduction});
 
-    # Data reduction can happen at TWO layers, published by different fields:
-    #
-    #   - the software layer (Data Reduction Pools): the
-    #     used_capacity_before/after_reduction counters of lssystem. They are 0
-    #     as soon as the pools are in data_reduction=no.
-    #   - the HARDWARE compression of the FlashCore Modules, one layer below,
-    #     in the drives. It ONLY shows in the detailed view of the mdisks
-    #     (effective_used_capacity = written before compression, against the
-    #     physical capacity really consumed). It is what the GUI calls "Data
-    #     reduction" on such systems: 265.45/146.45 = 1.81:1 on a surveyed
-    #     FlashSystem 5300, verified to the decimal against the display.
-    #
-    # The active layer is published, and named in the long output.
     $self->{reduction} = {};
     if (defined($before) && defined($after) && $after > 0) {
         $self->{reduction}->{system} = {
@@ -283,16 +210,12 @@ sub manage_selection {
         my ($effective, $used) = (0, 0);
         foreach my $mdisk (@{ $options{custom}->request_optional(command => 'lsmdisk') }) {
             next unless (ref $mdisk eq 'HASH' && defined($mdisk->{id}) && $mdisk->{id} =~ /^\d+$/);
-            # The concise view carries none of these fields: the detailed view is
-            # needed, one call per mdisk. There are one or two per array.
             my $detail = $options{custom}->request_optional(command => 'lsmdisk/' . $mdisk->{id})->[0];
             next unless (ref $detail eq 'HASH');
 
-            my $eff   = $options{custom}->size_to_bytes(value => $detail->{effective_used_capacity});
-            my $ptot  = $options{custom}->size_to_bytes(value => $detail->{physical_capacity});
-            my $pfree = $options{custom}->size_to_bytes(value => $detail->{physical_free_capacity});
-            # An mdisk without physical capacity is not backed by FCMs (classic
-            # drives): it compresses nothing.
+            my $eff   = $to_bytes->($detail->{effective_used_capacity});
+            my $ptot  = $to_bytes->($detail->{physical_capacity});
+            my $pfree = $to_bytes->($detail->{physical_free_capacity});
             next if (!defined($eff) || !defined($ptot) || !defined($pfree) || $ptot == 0);
 
             $effective += $eff;
@@ -308,8 +231,6 @@ sub manage_selection {
                 long_msg => 'Data reduction measured at the drive layer (FlashCore Module compression).'
             );
         } else {
-            # Say it once, in the long output, rather than letting two empty
-            # counters clutter the summary line.
             $self->{output}->output_add(
                 long_msg => 'No data reduction active at any layer: no ratio to report.'
             );
@@ -318,18 +239,17 @@ sub manage_selection {
 
     $self->{pools} = {};
     foreach my $pool (@{ $options{custom}->request(command => 'lsmdiskgrp') }) {
-        my $name = field($pool, 'name');
-        next if (defined($self->{option_results}->{filter_pool}) && $self->{option_results}->{filter_pool} ne ''
-            && $name !~ /$self->{option_results}->{filter_pool}/);
+        my $name = $pool->{name} // '';
+        next if (is_excluded($name, $self->{option_results}->{include_pool}, $self->{option_results}->{exclude_pool}));
 
-        my $capacity = $options{custom}->size_to_bytes(value => $pool->{capacity});
-        my $free = $options{custom}->size_to_bytes(value => $pool->{free_capacity});
+        my $capacity = $to_bytes->($pool->{capacity});
+        my $free = $to_bytes->($pool->{free_capacity});
 
         $self->{pools}->{$name} = {
             name => $name,
-            status => field($pool, 'status'),
-            overallocation => field($pool, 'overallocation'),
-            data_reduction => field($pool, 'data_reduction'),
+            status => $pool->{status} // '',
+            overallocation => $pool->{overallocation} // '',
+            data_reduction => $pool->{data_reduction} // '',
             free => $free,
             used_prct => (defined($capacity) && defined($free) && $capacity > 0)
                 ? ($capacity - $free) * 100 / $capacity
@@ -374,9 +294,13 @@ Example:
 
 =over 8
 
-=item B<--filter-pool>
+=item B<--include-pool>
 
-Only check pools whose name matches this regular expression.
+Filter pools by name (can be a regexp).
+
+=item B<--exclude-pool>
+
+Exclude pools by name (can be a regexp).
 
 =item B<--warning-physical-usage-prct>
 

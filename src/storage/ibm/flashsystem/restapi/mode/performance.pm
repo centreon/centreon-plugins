@@ -18,25 +18,6 @@
 # limitations under the License.
 #
 
-#
-# Array performance: latency, throughput, IOPS and processor load.
-#
-# lssystemstats returns a list of counters { stat_name, stat_current,
-# stat_peak, stat_peak_time }. The current value is exposed as the metric and
-# the peak as extra information: on a five-minute sampling, the peak says what
-# the average erases.
-#
-# No counter ships with a default threshold: IOPS, throughput and processor
-# have no good absolute value - they are set against what is observed. Latency
-# is the one indicator with a physical norm (on all-flash, a few ms are normal,
-# a few tens are not): the help suggests 5/15 ms as a starting point, to be set
-# with --warning-latency / --critical-latency on the service side.
-#
-# Fine metrology usually lives in the vendor tool (IBM Storage Insights keeps
-# a year of history and dozens of metrics). This mode exists for the ALERT,
-# which has to be raised by the monitoring platform.
-#
-
 package storage::ibm::flashsystem::restapi::mode::performance;
 
 use base qw(centreon::plugins::templates::counter);
@@ -44,10 +25,8 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::plugins::constants qw/:counters :values/;
+use centreon::plugins::misc qw(is_empty);
 
-# Mapping between the array counters and the published metrics. 'scale'
-# converts to the unit Centreon expects; the array's MB/s become bytes per
-# second.
 my $MEASURES = [
     { stat => 'vdisk_ms',           key => 'latency',            unit => 'ms' },
     { stat => 'vdisk_r_ms',         key => 'read_latency',       unit => 'ms' },
@@ -58,43 +37,21 @@ my $MEASURES = [
     { stat => 'compression_cpu_pc', key => 'compression_cpu',    unit => '%' },
     { stat => 'write_cache_pc',     key => 'write_cache',        unit => '%' },
     { stat => 'total_cache_pc',     key => 'total_cache',        unit => '%' },
-    # Back end: useful to tell a latency seen by the hosts from a latency really
-    # produced by the drives.
     { stat => 'mdisk_ms',           key => 'backend_latency',    unit => 'ms' },
     { stat => 'drive_ms',           key => 'drive_latency',      unit => 'ms' },
     { stat => 'fc_io',              key => 'fc_iops',            unit => 'iops' },
     { stat => 'fc_mb',              key => 'fc_bandwidth',       unit => 'B/s', scale => 1024 * 1024 }
 ];
 
-sub prefix_system_output {
-    my ($self, %options) = @_;
-
-    return 'Performance: ';
-}
-
-sub prefix_node_output {
-    my ($self, %options) = @_;
-
-    return "Node '" . $options{instance_value}->{display} . "' ";
-}
-
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'system', type => COUNTER_TYPE_GLOBAL, cb_prefix_output => 'prefix_system_output' },
-        { name => 'nodes', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_node_output',
+        { name => 'system', type => COUNTER_TYPE_GLOBAL, prefix_output => 'Performance: ' },
+        { name => 'nodes', type => COUNTER_TYPE_INSTANCE, prefix_output => "Node '%{display}' ",
           message_multiple => 'All node CPUs are ok', skipped_code => { NO_VALUE() => 1 } }
     ];
 
-    # There is no "load average" on Storage Virtualize: the closest equivalent
-    # is the CPU load PER CANISTER (lsnodecanisterstats). On an active/active
-    # pair it is the imbalance that speaks: one node carrying everything while
-    # the other idles signals a failover or sick paths - invisible in the global
-    # CPU, which averages.
-    #
-    # The 'node-cpu' label is chosen so that --filter-counters=cpu picks it up
-    # as is: a service split on the CPU counters gets it without any change.
     $self->{maps_counters}->{nodes} = [
         { label => 'node-cpu', nlabel => 'node.cpu.utilization.percentage', set => {
                 key_values => [ { name => 'cpu' }, { name => 'display' } ],
@@ -106,9 +63,6 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{system} = [
-        # Latency is the one counter with a physical norm: on all-flash, beyond a
-        # few tens of milliseconds the problem is real whatever the load. No
-        # default is shipped; the help gives a suggested starting point.
         { label => 'latency', nlabel => 'system.io.latency.milliseconds',
           set => {
                 key_values => [ { name => 'latency' } ],
@@ -134,13 +88,7 @@ sub set_counters {
                 perfdatas => [ { template => '%s', unit => 'iops', min => 0 } ]
             }
         },
-        # output_change_bytes returns a (value, unit) pair: without the second
-        # %s, the output reads "bandwidth 1.34" and the unit disappears.
-        #
-        # And it must be mode 1, not 2: mode 2 is meant for networking, where
-        # BITS are counted, and returns a unit in "b" - "1.74 Gb/s" for a value
-        # that is in bytes per second. A factor of eight in the reader's head.
-        # Mode 1 returns "GB", what the measure really is.
+        # output_change_bytes 1 (bytes), not 2 (bits for networking).
         { label => 'bandwidth', nlabel => 'system.io.usage.bytespersecond', set => {
                 key_values => [ { name => 'bandwidth' } ],
                 output_template => 'bandwidth %s %s/s',
@@ -215,19 +163,12 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    # statistics_status at 'off' freezes lssystemstats without saying so: the
-    # values stay readable but no longer move. Better to say it than to
-    # publish a dead curve.
+    # statistics_status 'off' freezes lssystemstats: the values no longer move.
     my $system = $options{custom}->request(command => 'lssystem')->[0];
-    if (defined($system->{statistics_status}) && $system->{statistics_status} !~ /^on$/i) {
-        $self->{output}->output_add(
-            severity => 'UNKNOWN',
-            short_msg => 'Statistics collection is ' . $system->{statistics_status}
-                . ' on this system: the counters below would be stale.'
-        );
-        $self->{output}->display();
-        $self->{output}->exit();
-    }
+    $self->{output}->option_exit(
+        short_msg => 'Statistics collection is ' . $system->{statistics_status}
+            . ' on this system: the counters would be stale.'
+    ) if (defined($system->{statistics_status}) && $system->{statistics_status} !~ /^on$/i);
 
     my %stats;
     foreach my $entry (@{ $options{custom}->request(command => 'lssystemstats') }) {
@@ -235,16 +176,12 @@ sub manage_selection {
         $stats{ $entry->{stat_name} } = $entry;
     }
 
-    # CPU load per canister. request_optional: a firmware that would not
-    # return the command loses the per-node detail, not the whole check.
     $self->{nodes} = {};
     foreach my $entry (@{ $options{custom}->request_optional(command => 'lsnodecanisterstats') }) {
-        next unless (ref $entry eq 'HASH'
-            && defined($entry->{stat_name}) && $entry->{stat_name} eq 'cpu_pc');
+        next unless (ref $entry eq 'HASH' && ($entry->{stat_name} // '') eq 'cpu_pc');
         my $node = $entry->{node_name};
-        next if (!defined($node) || $node eq '');
         my $value = $entry->{stat_current};
-        next if (!defined($value) || $value !~ /^-?\d+(?:\.\d+)?$/);
+        next if (is_empty($node) || !defined($value) || $value !~ /^-?\d+(?:\.\d+)?$/);
         $self->{nodes}->{$node} = { display => $node, cpu => $value };
     }
 
@@ -258,28 +195,20 @@ sub manage_selection {
         my $current = $entry->{stat_current};
         next if (!defined($current) || $current !~ /^-?\d+(?:\.\d+)?$/);
 
-        my $scale = defined($measure->{scale}) ? $measure->{scale} : 1;
-        $self->{system}->{ $measure->{key} } = $current * $scale;
+        $self->{system}->{ $measure->{key} } = $current * ($measure->{scale} // 1);
 
         next if (!defined($self->{option_results}->{add_peaks}));
         my $peak = $entry->{stat_peak};
         next if (!defined($peak) || $peak !~ /^-?\d+(?:\.\d+)?$/);
         push @peaks, sprintf(
             '%s peak %s%s at %s',
-            $measure->{stat}, $peak, $measure->{unit},
-            defined($entry->{stat_peak_time}) ? $entry->{stat_peak_time} : 'unknown'
+            $measure->{stat}, $peak, $measure->{unit}, $entry->{stat_peak_time} // 'unknown'
         );
     }
 
-    if (!keys %{ $self->{system} }) {
-        $self->{output}->add_option_msg(
-            short_msg => 'No usable counter returned by lssystemstats.'
-        );
-        $self->{output}->option_exit();
-    }
+    $self->{output}->option_exit(short_msg => 'No usable counter returned by lssystemstats.')
+        if (!keys %{ $self->{system} });
 
-    # The peak is what the five-minute average erases: it is shown in the long
-    # output rather than turned into one more metric.
     $self->{output}->output_add(long_msg => join("\n", @peaks)) if (@peaks);
 }
 

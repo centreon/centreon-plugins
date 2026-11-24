@@ -18,19 +18,6 @@
 # limitations under the License.
 #
 
-#
-# Volume groups - the per-object granularity that makes sense on these systems.
-#
-# A volume only carries a status, identical across hundreds of them. A group
-# carries a backup state, a last backup time, a restore in progress and the
-# policies attached to it. And its names are business names: Volume_Group_ESXi,
-# Volume_Group_DB01 - readable on call.
-#
-# A group without a policy is not an anomaly in itself: it is an operational
-# decision. The mode therefore exposes it as a metric and lets --warning-status
-# decide, rather than imposing a judgement.
-#
-
 package storage::ibm::flashsystem::restapi::mode::volumegroups;
 
 use base qw(centreon::plugins::templates::counter);
@@ -38,6 +25,7 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::plugins::constants qw/:counters :values/;
+use centreon::plugins::misc qw(is_empty is_excluded is_not_empty);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_group_output {
@@ -50,37 +38,25 @@ sub custom_group_output {
     );
 
     $msg .= sprintf(', last backup: %s', $self->{result_values}->{last_backup_time})
-        if ($self->{result_values}->{last_backup_time} ne '-');
+        if (is_not_empty($self->{result_values}->{last_backup_time}));
     $msg .= sprintf(', partition: %s', $self->{result_values}->{partition_name})
-        if ($self->{result_values}->{partition_name} ne '-');
+        if (is_not_empty($self->{result_values}->{partition_name}));
     $msg .= sprintf(', replication: %s', $self->{result_values}->{replication_policy})
-        if ($self->{result_values}->{replication_policy} ne '-');
+        if (is_not_empty($self->{result_values}->{replication_policy}));
     $msg .= sprintf(', snapshot policy: %s', $self->{result_values}->{snapshot_policy})
-        if ($self->{result_values}->{snapshot_policy} ne '-');
+        if (is_not_empty($self->{result_values}->{snapshot_policy}));
     $msg .= ', restore in progress'
         if ($self->{result_values}->{restore_in_progress} =~ /^yes$/i);
 
     return $msg;
 }
 
-sub prefix_global_output {
-    my ($self, %options) = @_;
-
-    return 'Volume groups: ';
-}
-
-sub prefix_group_output {
-    my ($self, %options) = @_;
-
-    return "Volume group '" . $options{instance_value}->{name} . "' ";
-}
-
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => COUNTER_TYPE_GLOBAL, cb_prefix_output => 'prefix_global_output' },
-        { name => 'groups', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_group_output',
+        { name => 'global', type => COUNTER_TYPE_GLOBAL, prefix_output => 'Volume groups: ' },
+        { name => 'groups', type => COUNTER_TYPE_INSTANCE, prefix_output => "Volume group '%{name}' ",
           message_multiple => 'All volume groups are healthy', skipped_code => { NO_VALUE() => 1 } }
     ];
 
@@ -111,9 +87,6 @@ sub set_counters {
         }
     ];
 
-    # Nothing is critical by default: on the arrays surveyed backup_status was
-    # 'off' everywhere, which is an operational choice and not a failure. The
-    # threshold is set once the backup policy is decided, not before.
     $self->{maps_counters}->{groups} = [
         {
             label => 'status',
@@ -140,18 +113,13 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-name:s'      => { name => 'filter_name' },
-        'filter-partition:s' => { name => 'filter_partition' }
+        'include-name:s'      => { name => 'include_name' },
+        'exclude-name:s'      => { name => 'exclude_name' },
+        'include-partition:s' => { name => 'include_partition' },
+        'exclude-partition:s' => { name => 'exclude_partition' }
     });
 
     return $self;
-}
-
-sub field {
-    my ($entry, $name) = @_;
-
-    return '-' if (!defined($entry->{$name}) || $entry->{$name} eq '');
-    return $entry->{$name};
 }
 
 sub manage_selection {
@@ -163,37 +131,33 @@ sub manage_selection {
     $self->{groups} = {};
 
     foreach my $group (@{ $options{custom}->request(command => 'lsvolumegroup') }) {
-        my $name = field($group, 'name');
-        my $partition = field($group, 'partition_name');
+        my $name = $group->{name} // '';
+        my $partition = $group->{partition_name} // '';
 
-        next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne ''
-            && $name !~ /$self->{option_results}->{filter_name}/);
-        next if (defined($self->{option_results}->{filter_partition}) && $self->{option_results}->{filter_partition} ne ''
-            && $partition !~ /$self->{option_results}->{filter_partition}/);
+        next if (is_excluded($name, $self->{option_results}->{include_name}, $self->{option_results}->{exclude_name}));
+        next if (is_excluded($partition, $self->{option_results}->{include_partition}, $self->{option_results}->{exclude_partition}));
 
-        # The replication policy is read either directly, or through the HA
-        # policy when the system is in 2-site-ha: both fields coexist and only
-        # one is set depending on the topology.
-        my $replication = field($group, 'replication_policy_name');
-        $replication = field($group, 'ha_replication_policy_name') if ($replication eq '-');
-
-        my $snapshot = field($group, 'snapshot_policy_name');
-        my $restore = field($group, 'restore_in_progress');
+        # In 2-site-ha, the replication policy is carried by the HA policy field.
+        my $replication = is_not_empty($group->{replication_policy_name})
+            ? $group->{replication_policy_name}
+            : $group->{ha_replication_policy_name} // '';
+        my $snapshot = $group->{snapshot_policy_name} // '';
+        my $restore = $group->{restore_in_progress} // '';
 
         $self->{global}->{detected}++;
-        $self->{global}->{replicated}++ if ($replication ne '-');
-        $self->{global}->{without_snapshot_policy}++ if ($snapshot eq '-');
+        $self->{global}->{replicated}++ if (is_not_empty($replication));
+        $self->{global}->{without_snapshot_policy}++ if (is_empty($snapshot));
         $self->{global}->{restoring}++ if ($restore =~ /^yes$/i);
 
         $self->{groups}->{$name} = {
             name => $name,
-            volume_count => field($group, 'volume_count'),
-            backup_status => field($group, 'backup_status'),
-            last_backup_time => field($group, 'last_backup_time'),
+            volume_count => $group->{volume_count} // '',
+            backup_status => $group->{backup_status} // '',
+            last_backup_time => $group->{last_backup_time} // '',
             partition_name => $partition,
             replication_policy => $replication,
             snapshot_policy => $snapshot,
-            safeguarded_policy => field($group, 'safeguarded_policy_name'),
+            safeguarded_policy => $group->{safeguarded_policy_name} // '',
             restore_in_progress => $restore
         };
     }
@@ -218,19 +182,25 @@ Example, one service per group through service discovery:
     perl centreon_plugins.pl --plugin=storage::ibm::flashsystem::restapi::plugin \
         --mode=volume-groups --hostname=10.0.0.1 \
         --api-username=svc_monitor --api-password=xxx --insecure \
-        --filter-name='^Volume_Group_ESXi$'
+        --include-name='^Volume_Group_ESXi$'
 
 =over 8
 
-=item B<--filter-name>
+=item B<--include-name>
 
-Only check groups whose name or storage partition matches this regular
-expression. Empty by default.
+Filter volume groups by name (can be a regexp).
 
-=item B<--filter-partition>
+=item B<--exclude-name>
 
-Only check groups whose name or storage partition matches this regular
-expression. Empty by default.
+Exclude volume groups by name (can be a regexp).
+
+=item B<--include-partition>
+
+Filter volume groups by storage partition name (can be a regexp).
+
+=item B<--exclude-partition>
+
+Exclude volume groups by storage partition name (can be a regexp).
 
 =item B<--unknown-status>
 
@@ -246,7 +216,7 @@ everywhere and no group references a snapshot policy, an operational choice,
 not a fault. Once that choice is settled, express it here rather than in the
 code:
 
-    --warning-status='%{snapshot_policy} eq "-"'
+    --warning-status='%{snapshot_policy} eq ""'
 
 =item B<--warning-status>
 
@@ -262,7 +232,7 @@ everywhere and no group references a snapshot policy, an operational choice,
 not a fault. Once that choice is settled, express it here rather than in the
 code:
 
-    --warning-status='%{snapshot_policy} eq "-"'
+    --warning-status='%{snapshot_policy} eq ""'
 
 =item B<--critical-status>
 
@@ -280,7 +250,7 @@ everywhere and no group references a snapshot policy, an operational choice,
 not a fault. Once that choice is settled, express it here rather than in the
 code:
 
-    --warning-status='%{snapshot_policy} eq "-"'
+    --warning-status='%{snapshot_policy} eq ""'
 
 =item B<--warning-without-snapshot-policy>
 

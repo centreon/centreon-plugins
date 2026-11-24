@@ -18,20 +18,6 @@
 # limitations under the License.
 #
 
-#
-# Unresolved event log.
-#
-# Central trap of this command: filtering on 'fixed=no' alone is not enough.
-# The log mixes 'alert' entries, which call for an action, with purely
-# informational 'message' entries, which never get resolved because a message
-# cannot be fixed. An array can thus carry hundreds of unresolved entries with
-# none of them being a problem.
-#
-# The 'alert' entries are what reproduce the GUI "Recommended Actions" panel.
-# The 'message' entries are counted and exposed as a metric, but trigger
-# nothing by default.
-#
-
 package storage::ibm::flashsystem::restapi::mode::eventlog;
 
 use base qw(centreon::plugins::templates::counter);
@@ -39,6 +25,7 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::plugins::constants qw/:counters :values/;
+use centreon::plugins::misc qw(is_excluded is_not_empty);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_event_output {
@@ -47,37 +34,25 @@ sub custom_event_output {
     my $msg = sprintf('status: %s', $self->{result_values}->{status});
 
     $msg .= sprintf(', error code: %s', $self->{result_values}->{error_code})
-        if ($self->{result_values}->{error_code} ne '-');
+        if (is_not_empty($self->{result_values}->{error_code}));
     $msg .= sprintf(', event id: %s', $self->{result_values}->{event_id})
-        if ($self->{result_values}->{event_id} ne '-');
+        if (is_not_empty($self->{result_values}->{event_id}));
     $msg .= sprintf(', object: %s %s', $self->{result_values}->{object_type}, $self->{result_values}->{object_name})
-        if ($self->{result_values}->{object_name} ne '-');
+        if (is_not_empty($self->{result_values}->{object_name}));
     $msg .= sprintf(', last seen: %s', $self->{result_values}->{last_timestamp})
-        if ($self->{result_values}->{last_timestamp} ne '-');
+        if (is_not_empty($self->{result_values}->{last_timestamp}));
     $msg .= sprintf(' [%s]', $self->{result_values}->{description})
-        if ($self->{result_values}->{description} ne '-');
+        if (is_not_empty($self->{result_values}->{description}));
 
     return $msg;
-}
-
-sub prefix_global_output {
-    my ($self, %options) = @_;
-
-    return 'Unfixed event log entries: ';
-}
-
-sub prefix_event_output {
-    my ($self, %options) = @_;
-
-    return "Event '" . $options{instance_value}->{sequence_number} . "' ";
 }
 
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => COUNTER_TYPE_GLOBAL, cb_prefix_output => 'prefix_global_output' },
-        { name => 'events', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_event_output',
+        { name => 'global', type => COUNTER_TYPE_GLOBAL, prefix_output => 'Unfixed event log entries: ' },
+        { name => 'events', type => COUNTER_TYPE_INSTANCE, prefix_output => "Event '%{sequence_number}' ",
           message_multiple => 'No actionable event', skipped_code => { NO_VALUE() => 1 } }
     ];
 
@@ -96,8 +71,6 @@ sub set_counters {
         }
     ];
 
-    # Every retained entry is reported: the sorting already happened at
-    # selection time. Nothing is hidden here.
     $self->{maps_counters}->{events} = [
         {
             label => 'event-status',
@@ -123,46 +96,34 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-status:s'      => { name => 'filter_status' },
-        'filter-error-code:s'  => { name => 'filter_error_code' },
-        'filter-event-id:s'    => { name => 'filter_event_id' },
-        'filter-object-type:s' => { name => 'filter_object_type' },
-        'filter-object-name:s' => { name => 'filter_object_name' }
+        'include-status:s'      => { name => 'include_status', default => '^alert$' },
+        'exclude-status:s'      => { name => 'exclude_status' },
+        'include-error-code:s'  => { name => 'include_error_code' },
+        'exclude-error-code:s'  => { name => 'exclude_error_code' },
+        'include-event-id:s'    => { name => 'include_event_id' },
+        'exclude-event-id:s'    => { name => 'exclude_event_id' },
+        'include-object-type:s' => { name => 'include_object_type' },
+        'exclude-object-type:s' => { name => 'exclude_object_type' },
+        'include-object-name:s' => { name => 'include_object_name' },
+        'exclude-object-name:s' => { name => 'exclude_object_name' }
     });
 
     return $self;
 }
 
-sub field {
-    my ($entry, $name) = @_;
-
-    return '-' if (!defined($entry->{$name}) || $entry->{$name} eq '');
-    return $entry->{$name};
-}
-
 sub manage_selection {
     my ($self, %options) = @_;
 
-    # The sorting is done plugin-side rather than in the API filtervalue: the
-    # 'message' entries are counted to be exposed as a metric, without turning
-    # them into instances to evaluate.
     my $entries = $options{custom}->request(
         command => 'lseventlog',
         payload => { filtervalue => 'fixed=no' }
     );
 
-    # By default only alerts are retained as instances to evaluate. The filter
-    # is an option, not a hard-coded value: an array whose messages should
-    # also be seen is configured without touching the code.
-    my $status_filter = defined($self->{option_results}->{filter_status}) && $self->{option_results}->{filter_status} ne ''
-        ? $self->{option_results}->{filter_status}
-        : '^alert$';
-
     $self->{global} = { alerts => 0, messages => 0 };
     $self->{events} = {};
 
     foreach my $entry (@$entries) {
-        my $status = field($entry, 'status');
+        my $status = $entry->{status} // '';
 
         if ($status =~ /^alert$/i) {
             $self->{global}->{alerts}++;
@@ -170,33 +131,22 @@ sub manage_selection {
             $self->{global}->{messages}++;
         }
 
-        next if ($status !~ /$status_filter/i);
-
-        my $error_code  = field($entry, 'error_code');
-        my $event_id    = field($entry, 'event_id');
-        my $object_type = field($entry, 'object_type');
-        my $object_name = field($entry, 'object_name');
-
-        next if (defined($self->{option_results}->{filter_error_code}) && $self->{option_results}->{filter_error_code} ne ''
-            && $error_code !~ /$self->{option_results}->{filter_error_code}/);
-        next if (defined($self->{option_results}->{filter_event_id}) && $self->{option_results}->{filter_event_id} ne ''
-            && $event_id !~ /$self->{option_results}->{filter_event_id}/);
-        next if (defined($self->{option_results}->{filter_object_type}) && $self->{option_results}->{filter_object_type} ne ''
-            && $object_type !~ /$self->{option_results}->{filter_object_type}/);
-        next if (defined($self->{option_results}->{filter_object_name}) && $self->{option_results}->{filter_object_name} ne ''
-            && $object_name !~ /$self->{option_results}->{filter_object_name}/);
-
-        my $sequence = field($entry, 'sequence_number');
-        $self->{events}->{$sequence} = {
-            sequence_number => $sequence,
+        my $event = {
+            sequence_number => $entry->{sequence_number} // '',
             status => $status,
-            error_code => $error_code,
-            event_id => $event_id,
-            object_type => $object_type,
-            object_name => $object_name,
-            description => field($entry, 'description'),
-            last_timestamp => field($entry, 'last_timestamp')
+            error_code => $entry->{error_code} // '',
+            event_id => $entry->{event_id} // '',
+            object_type => $entry->{object_type} // '',
+            object_name => $entry->{object_name} // '',
+            description => $entry->{description} // '',
+            last_timestamp => $entry->{last_timestamp} // ''
         };
+
+        next if (grep {
+            is_excluded($event->{$_}, $self->{option_results}->{'include_' . $_}, $self->{option_results}->{'exclude_' . $_})
+        } qw(status error_code event_id object_type object_name));
+
+        $self->{events}->{ $event->{sequence_number} } = $event;
     }
 }
 
@@ -221,30 +171,46 @@ Example:
 
 =over 8
 
-=item B<--filter-status>
+=item B<--include-status>
 
-Regular expression selecting which entries become checkable instances
-(default: C<^alert$>). Set it to C<.> to also evaluate informational messages.
+Filter entries by status (can be a regexp, default: C<^alert$>). Set it to an
+empty value to also evaluate informational messages.
 
-=item B<--filter-error-code>
+=item B<--exclude-status>
 
-Further restrict the selected entries. Empty by default: nothing is hidden
-unless it is explicitly excluded.
+Exclude entries by status (can be a regexp).
 
-=item B<--filter-event-id>
+=item B<--include-error-code>
 
-Further restrict the selected entries. Empty by default: nothing is hidden
-unless it is explicitly excluded.
+Filter entries by error code (can be a regexp).
 
-=item B<--filter-object-type>
+=item B<--exclude-error-code>
 
-Further restrict the selected entries. Empty by default: nothing is hidden
-unless it is explicitly excluded.
+Exclude entries by error code (can be a regexp).
 
-=item B<--filter-object-name>
+=item B<--include-event-id>
 
-Further restrict the selected entries. Empty by default: nothing is hidden
-unless it is explicitly excluded.
+Filter entries by event id (can be a regexp).
+
+=item B<--exclude-event-id>
+
+Exclude entries by event id (can be a regexp).
+
+=item B<--include-object-type>
+
+Filter entries by object type (can be a regexp).
+
+=item B<--exclude-object-type>
+
+Exclude entries by object type (can be a regexp).
+
+=item B<--include-object-name>
+
+Filter entries by object name (can be a regexp).
+
+=item B<--exclude-object-name>
+
+Exclude entries by object name (can be a regexp).
 
 =item B<--unknown-event-status>
 

@@ -18,19 +18,6 @@
 # limitations under the License.
 #
 
-#
-# Status of the hosts declared on the system.
-#
-# No exclusion is written in the plugin. An offline host is reported, whether
-# it is offline by failure or by design: reflecting the real state is what
-# monitoring is for. A host knowingly offline is acknowledged or put in
-# downtime in Centreon - which leaves a trace and a review date, where a
-# hard-coded filter would make it disappear silently.
-#
-# --filter-name remains available to restrict the scope of a service, but it
-# is empty by default.
-#
-
 package storage::ibm::flashsystem::restapi::mode::hosts;
 
 use base qw(centreon::plugins::templates::counter);
@@ -38,6 +25,7 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::plugins::constants qw/:counters :values/;
+use centreon::plugins::misc qw(is_excluded is_not_empty);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_host_output {
@@ -46,33 +34,21 @@ sub custom_host_output {
     my $msg = sprintf('status: %s', $self->{result_values}->{status});
 
     $msg .= sprintf(', ports: %s', $self->{result_values}->{port_count})
-        if ($self->{result_values}->{port_count} ne '-');
+        if (is_not_empty($self->{result_values}->{port_count}));
     $msg .= sprintf(', host cluster: %s', $self->{result_values}->{host_cluster_name})
-        if ($self->{result_values}->{host_cluster_name} ne '-');
+        if (is_not_empty($self->{result_values}->{host_cluster_name}));
     $msg .= sprintf(', partition: %s', $self->{result_values}->{partition_name})
-        if ($self->{result_values}->{partition_name} ne '-');
+        if (is_not_empty($self->{result_values}->{partition_name}));
 
     return $msg;
-}
-
-sub prefix_global_output {
-    my ($self, %options) = @_;
-
-    return 'Hosts: ';
-}
-
-sub prefix_host_output {
-    my ($self, %options) = @_;
-
-    return "Host '" . $options{instance_value}->{name} . "' ";
 }
 
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => COUNTER_TYPE_GLOBAL, cb_prefix_output => 'prefix_global_output' },
-        { name => 'hosts', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_host_output',
+        { name => 'global', type => COUNTER_TYPE_GLOBAL, prefix_output => 'Hosts: ' },
+        { name => 'hosts', type => COUNTER_TYPE_INSTANCE, prefix_output => "Host '%{name}' ",
           message_multiple => 'All hosts are online', skipped_code => { NO_VALUE() => 1 } }
     ];
 
@@ -103,19 +79,6 @@ sub set_counters {
         }
     ];
 
-    # The two states do not mean what one expects, and the natural order of
-    # severity is INVERTED:
-    #
-    #   offline  = no WWPN of the host connects any more. The array cannot
-    #              tell a deliberately powered-off server from a failed one -
-    #              and the common case is the former (spares, backup hosts).
-    #              It is not a fault of the array: WARNING, visible without
-    #              waking anyone up.
-    #   degraded = only PART of the paths answer. The host is running, in
-    #              production, on eaten-into redundancy: the next lost path
-    #              cuts its storage. Actionable right away (zoning, SFP,
-    #              switch) and often the only place such a fabric fault
-    #              shows: CRITICAL.
     $self->{maps_counters}->{hosts} = [
         {
             label => 'status',
@@ -141,38 +104,29 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-name:s'      => { name => 'filter_name' },
-        'filter-partition:s' => { name => 'filter_partition' }
+        'include-name:s'      => { name => 'include_name' },
+        'exclude-name:s'      => { name => 'exclude_name' },
+        'include-partition:s' => { name => 'include_partition' },
+        'exclude-partition:s' => { name => 'exclude_partition' }
     });
 
     return $self;
 }
 
-sub field {
-    my ($entry, $name) = @_;
-
-    return '-' if (!defined($entry->{$name}) || $entry->{$name} eq '');
-    return $entry->{$name};
-}
-
 sub manage_selection {
     my ($self, %options) = @_;
-
-    my $entries = $options{custom}->request(command => 'lshost');
 
     $self->{global} = { detected => 0, online => 0, offline => 0, degraded => 0 };
     $self->{hosts} = {};
 
-    foreach my $entry (@$entries) {
-        my $name = field($entry, 'name');
-        my $partition = field($entry, 'partition_name');
+    foreach my $entry (@{ $options{custom}->request(command => 'lshost') }) {
+        my $name = $entry->{name} // '';
+        my $partition = $entry->{partition_name} // '';
 
-        next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne ''
-            && $name !~ /$self->{option_results}->{filter_name}/);
-        next if (defined($self->{option_results}->{filter_partition}) && $self->{option_results}->{filter_partition} ne ''
-            && $partition !~ /$self->{option_results}->{filter_partition}/);
+        next if (is_excluded($name, $self->{option_results}->{include_name}, $self->{option_results}->{exclude_name}));
+        next if (is_excluded($partition, $self->{option_results}->{include_partition}, $self->{option_results}->{exclude_partition}));
 
-        my $status = field($entry, 'status');
+        my $status = $entry->{status} // '';
 
         $self->{global}->{detected}++;
         $self->{global}->{online}++   if ($status =~ /^online$/i);
@@ -182,8 +136,8 @@ sub manage_selection {
         $self->{hosts}->{$name} = {
             name => $name,
             status => $status,
-            port_count => field($entry, 'port_count'),
-            host_cluster_name => field($entry, 'host_cluster_name'),
+            port_count => $entry->{port_count} // '',
+            host_cluster_name => $entry->{host_cluster_name} // '',
             partition_name => $partition
         };
     }
@@ -210,14 +164,21 @@ Example:
 
 =over 8
 
-=item B<--filter-name>
+=item B<--include-name>
 
-Only check hosts whose name matches this regular expression. Empty by default.
+Filter hosts by name (can be a regexp).
 
-=item B<--filter-partition>
+=item B<--exclude-name>
 
-Only check hosts belonging to a storage partition matching this regular
-expression. Empty by default.
+Exclude hosts by name (can be a regexp).
+
+=item B<--include-partition>
+
+Filter hosts by storage partition name (can be a regexp).
+
+=item B<--exclude-partition>
+
+Exclude hosts by storage partition name (can be a regexp).
 
 =item B<--unknown-status>
 

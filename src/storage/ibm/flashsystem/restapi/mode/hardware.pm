@@ -18,18 +18,6 @@
 # limitations under the License.
 #
 
-#
-# Hardware health.
-#
-# lsenclosure already carries the online/total counters of every enclosure
-# subsystem: power supplies, canisters, fan modules, SEMs. One command is thus
-# enough where the naive approach needed four.
-#
-# A subsystem whose total is 0 is not fitted on that model: it is skipped and
-# not counted as failed. That is what lets the same mode cover a FlashSystem
-# 5300 without SEMs and an enclosure that has some.
-#
-
 package storage::ibm::flashsystem::restapi::mode::hardware;
 
 use base qw(centreon::plugins::templates::counter);
@@ -37,36 +25,32 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::plugins::constants qw/:counters :values/;
+use centreon::plugins::misc qw(is_excluded is_not_empty);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
-# The object families queried, with the displayed label. The list is walked
-# as is: adding a family takes one line.
-#
-# id_fields: the fields where to look for the identity, in order. The first
-# one set wins. Storage Virtualize objects do not all carry the same key - a
-# fan module is called fan_module_id, an application quorum has neither name
-# nor id and is only designated by quorum_index. Trying several fields avoids
-# guessing family by family, and above all avoids the "'-'" that made the
-# alert message unreadable.
 my $COMPONENT_COMMANDS = [
-    { command => 'lsenclosure',         label => 'enclosure' },
-    { command => 'lsnodecanister',      label => 'node canister' },
-    { command => 'lsenclosurecanister', label => 'expansion canister', id_fields => [ 'canister_id' ] },
-    { command => 'lsenclosurepsu',      label => 'power supply', id_fields => [ 'PSU_id' ] },
-    { command => 'lsenclosurebattery',  label => 'battery', id_fields => [ 'battery_id' ] },
+    { command => 'lsenclosure',          label => 'enclosure' },
+    { command => 'lsnodecanister',       label => 'node canister' },
+    { command => 'lsenclosurecanister',  label => 'expansion canister', id_fields => [ 'canister_id' ] },
+    { command => 'lsenclosurepsu',       label => 'power supply', id_fields => [ 'PSU_id' ] },
+    { command => 'lsenclosurebattery',   label => 'battery', id_fields => [ 'battery_id' ] },
     { command => 'lsenclosurefanmodule', label => 'fan module', id_fields => [ 'fan_module_id' ] },
-    { command => 'lsdrive',             label => 'drive' },
-    { command => 'lsarray',             label => 'array', id_fields => [ 'mdisk_name', 'mdisk_id' ] },
-    { command => 'lsmdisk',             label => 'mdisk' },
-    { command => 'lsquorum',            label => 'quorum', id_fields => [ 'quorum_index' ] }
+    { command => 'lsdrive',              label => 'drive' },
+    { command => 'lsarray',              label => 'array', id_fields => [ 'mdisk_name', 'mdisk_id' ] },
+    { command => 'lsmdisk',              label => 'mdisk' },
+    { command => 'lsquorum',             label => 'quorum', id_fields => [ 'quorum_index' ] }
 ];
 
-# Subsystems described by an online_X / total_X pair in lsenclosure.
 my $ENCLOSURE_SUBSYSTEMS = [
     { field => 'PSUs',        label => 'power supplies' },
     { field => 'canisters',   label => 'canisters' },
     { field => 'fan_modules', label => 'fan modules' },
     { field => 'sems',        label => 'secondary expander modules' }
+];
+
+my $ENVIRONMENT_STATS = [
+    { stat => 'temp_c',  key => 'temperature' },
+    { stat => 'power_w', key => 'power' }
 ];
 
 sub custom_component_output {
@@ -86,52 +70,24 @@ sub custom_subsystem_output {
     );
 }
 
-# Environmental counters exposed by lssystemstats. They are physical measures
-# of the enclosure, not performance: their place is here.
-my $ENVIRONMENT_STATS = [
-    { stat => 'temp_c',  key => 'temperature', label => 'temperature', unit => 'C' },
-    { stat => 'power_w', key => 'power',       label => 'power draw',  unit => 'W' }
-];
-
-sub prefix_global_output {
-    my ($self, %options) = @_;
-
-    return 'Hardware: ';
-}
-
-sub prefix_environment_output {
-    my ($self, %options) = @_;
-
-    return 'Enclosure: ';
-}
-
 sub prefix_component_output {
     my ($self, %options) = @_;
 
     return ucfirst($options{instance_value}->{type}) . " '" . $options{instance_value}->{name} . "' ";
 }
 
-sub prefix_subsystem_output {
-    my ($self, %options) = @_;
-
-    return "Enclosure '" . $options{instance_value}->{enclosure} . "' ";
-}
-
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => COUNTER_TYPE_GLOBAL, cb_prefix_output => 'prefix_global_output' },
+        { name => 'global', type => COUNTER_TYPE_GLOBAL, prefix_output => 'Hardware: ' },
         { name => 'components', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_component_output',
           message_multiple => 'All hardware components are online', skipped_code => { NO_VALUE() => 1 } },
-        { name => 'environment', type => COUNTER_TYPE_GLOBAL, cb_prefix_output => 'prefix_environment_output' },
-        { name => 'subsystems', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_subsystem_output',
+        { name => 'environment', type => COUNTER_TYPE_GLOBAL, prefix_output => 'Enclosure: ' },
+        { name => 'subsystems', type => COUNTER_TYPE_INSTANCE, prefix_output => "Enclosure '%{enclosure}' ",
           message_multiple => 'All enclosure subsystems are fully populated', skipped_code => { NO_VALUE() => 1 } }
     ];
 
-    # Physical measures of the enclosure. No default threshold: the right
-    # setting depends on the room and the model, not on a general rule. The
-    # metric is graphed in every case, which allows tuning it on what is seen.
     $self->{maps_counters}->{environment} = [
         { label => 'temperature', nlabel => 'hardware.temperature.celsius', set => {
                 key_values => [ { name => 'temperature' } ],
@@ -162,11 +118,6 @@ sub set_counters {
         }
     ];
 
-    # CRITICAL = SERVICE lost, WARNING = REDUNDANCY lost. All this hardware is
-    # redundant (2 power supplies, 2 canisters, 6 fan modules, a DRAID across
-    # the drives): a 'degraded' component eats the margin, it stops nothing.
-    # Confusing it with 'offline' wakes someone up for a fault that can wait
-    # for business hours - and, conversely, buries the real outage among them.
     $self->{maps_counters}->{components} = [
         {
             label => 'component-status',
@@ -182,9 +133,6 @@ sub set_counters {
         }
     ];
 
-    # Same principle on the enclosure subsystems: one power supply out of two
-    # is a lost redundancy (WARNING), zero power supply online is an outage
-    # (CRITICAL).
     $self->{maps_counters}->{subsystems} = [
         {
             label => 'subsystem-status',
@@ -207,18 +155,13 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-type:s' => { name => 'filter_type' },
-        'filter-name:s' => { name => 'filter_name' }
+        'include-type:s' => { name => 'include_type' },
+        'exclude-type:s' => { name => 'exclude_type' },
+        'include-name:s' => { name => 'include_name' },
+        'exclude-name:s' => { name => 'exclude_name' }
     });
 
     return $self;
-}
-
-sub field {
-    my ($entry, $name) = @_;
-
-    return '-' if (!defined($entry->{$name}) || $entry->{$name} eq '');
-    return $entry->{$name};
 }
 
 sub manage_selection {
@@ -229,9 +172,6 @@ sub manage_selection {
     $self->{components} = {};
     $self->{subsystems} = {};
 
-    # Temperature and power draw come from lssystemstats, with the performance
-    # counters - but they are physical measures of the enclosure, so they are
-    # read here rather than in the performance mode.
     my %stats;
     foreach my $entry (@{ $options{custom}->request_optional(command => 'lssystemstats') }) {
         next unless (ref $entry eq 'HASH' && defined($entry->{stat_name}));
@@ -244,38 +184,20 @@ sub manage_selection {
     }
 
     foreach my $family (@$COMPONENT_COMMANDS) {
-        next if (defined($self->{option_results}->{filter_type}) && $self->{option_results}->{filter_type} ne ''
-            && $family->{label} !~ /$self->{option_results}->{filter_type}/);
+        next if (is_excluded($family->{label}, $self->{option_results}->{include_type}, $self->{option_results}->{exclude_type}));
 
-        # A family missing from the model or the firmware must not fail the
-        # check of the others.
-        my $entries = $options{custom}->request_optional(command => $family->{command});
+        foreach my $entry (@{ $options{custom}->request_optional(command => $family->{command}) }) {
+            my ($name) = grep { is_not_empty($_) }
+                map { $entry->{$_} } ('name', @{ $family->{id_fields} // [] }, 'id');
+            $name //= '';
+            next if (is_excluded($name, $self->{option_results}->{include_name}, $self->{option_results}->{exclude_name}));
 
-        foreach my $entry (@$entries) {
-            # Not every object has a 'name' field: a drive or a power supply only
-            # carries an identifier. The first field set is taken, starting with
-            # those specific to the family.
-            my @candidates = ('name');
-            push @candidates, @{ $family->{id_fields} } if (defined($family->{id_fields}));
-            push @candidates, 'id';
-
-            my $name = '-';
-            foreach my $candidate (@candidates) {
-                next if (!defined($entry->{$candidate}) || $entry->{$candidate} eq '');
-                $name = $entry->{$candidate};
-                last;
-            }
-            my $instance = $family->{label} . '.' . $name;
-
-            next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne ''
-                && $name !~ /$self->{option_results}->{filter_name}/);
-
-            my $status = field($entry, 'status');
+            my $status = $entry->{status} // '';
 
             $self->{global}->{detected}++;
             $self->{global}->{degraded}++ if ($status !~ /^online$/i);
 
-            $self->{components}->{$instance} = {
+            $self->{components}->{ $family->{label} . '.' . $name } = {
                 name => $name,
                 type => $family->{label},
                 status => $status
@@ -283,14 +205,11 @@ sub manage_selection {
 
             next if ($family->{command} ne 'lsenclosure');
 
-            # online/total counters carried by the enclosure itself.
             foreach my $subsystem (@$ENCLOSURE_SUBSYSTEMS) {
                 my $online = $entry->{'online_' . $subsystem->{field}};
                 my $total  = $entry->{'total_' . $subsystem->{field}};
 
-                next if (!defined($online) || !defined($total));
-                next if ($online !~ /^\d+$/ || $total !~ /^\d+$/);
-                # total = 0: the subsystem does not exist on this hardware.
+                next if (!defined($online) || !defined($total) || $online !~ /^\d+$/ || $total !~ /^\d+$/);
                 next if ($total == 0);
 
                 $self->{subsystems}->{ $name . '.' . $subsystem->{field} } = {
@@ -328,15 +247,23 @@ Example:
 
 =over 8
 
-=item B<--filter-type>
+=item B<--include-type>
 
-Only check component families whose label matches this regular expression
-(enclosure, node canister, expansion canister, power supply, battery, drive,
-array, mdisk, quorum).
+Filter component families by label (can be a regexp): C<enclosure>,
+C<node canister>, C<expansion canister>, C<power supply>, C<battery>,
+C<fan module>, C<drive>, C<array>, C<mdisk>, C<quorum>.
 
-=item B<--filter-name>
+=item B<--exclude-type>
 
-Only check components whose name or id matches this regular expression.
+Exclude component families by label (can be a regexp).
+
+=item B<--include-name>
+
+Filter components by name or id (can be a regexp).
+
+=item B<--exclude-name>
+
+Exclude components by name or id (can be a regexp).
 
 =item B<--unknown-component-status>
 

@@ -24,7 +24,7 @@ use strict;
 use warnings;
 use centreon::plugins::http;
 use centreon::plugins::statefile;
-use centreon::plugins::misc qw(json_decode json_encode is_empty is_not_empty);
+use centreon::plugins::misc qw(json_decode json_encode is_not_empty);
 use Digest::SHA qw(sha256_hex);
 
 sub new {
@@ -303,22 +303,6 @@ sub request_optional {
 
     my $result = $self->request(%options, optional => 1);
     return defined($result) ? $result : [];
-}
-
-# Capacities come as unit-suffixed strings ("310.99TB"). Returns undef when
-# the value is missing, so that a mode can tell zero from no information.
-sub size_to_bytes {
-    my ($self, %options) = @_;
-
-    my $value = $options{value};
-    return undef if (is_empty($value));
-    return undef if ($value !~ /^\s*([0-9]+(?:\.[0-9]+)?)\s*([KMGTPE]?)B?\s*$/i);
-
-    my ($number, $unit) = ($1, uc($2));
-    my %factor = ('' => 1, K => 1024, M => 1024**2, G => 1024**3,
-                  T => 1024**4, P => 1024**5, E => 1024**6);
-
-    return $number * $factor{$unit};
 }
 
 # Used by the system-status mode only, until its rewrite.

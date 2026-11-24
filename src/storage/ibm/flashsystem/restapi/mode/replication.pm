@@ -18,21 +18,6 @@
 # limitations under the License.
 #
 
-#
-# Replication health, in the three forms Storage Virtualize knows:
-#
-#   - storage partitions (8.7+): the partition is what carries the high
-#     availability health. An ha_status at 'problem' coexists without
-#     contradiction with volume groups all 'synchronized': looking at the
-#     groups alone would wrongly conclude that all is well.
-#   - policy-based replication (8.5.2+): lsvolumegroupreplication.
-#   - Metro / Global Mirror (legacy): lsrcrelationship.
-#
-# All three are queried systematically. A system using none of them reports
-# OK with an explicit mention that no replication is configured; a system
-# using two sees both. No mode has to be enabled by option.
-#
-
 package storage::ibm::flashsystem::restapi::mode::replication;
 
 use base qw(centreon::plugins::templates::counter);
@@ -40,6 +25,7 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::plugins::constants qw/:counters :values/;
+use centreon::plugins::misc qw(is_empty is_excluded is_not_empty);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_partition_output {
@@ -55,12 +41,12 @@ sub custom_partition_output {
     foreach my $side (1, 2) {
         my $system = $self->{result_values}->{'location' . $side . '_system_name'};
         my $status = $self->{result_values}->{'location' . $side . '_status'};
-        next if ($system eq '-' && $status eq '-');
+        next if (is_empty($system) && is_empty($status));
         $msg .= sprintf(', %s: %s', $system, $status);
     }
 
     $msg .= sprintf(', migration: %s', $self->{result_values}->{migration_status})
-        if ($self->{result_values}->{migration_status} ne '-');
+        if (is_not_empty($self->{result_values}->{migration_status}));
 
     return $msg;
 }
@@ -71,14 +57,12 @@ sub custom_group_output {
     my $msg = sprintf('link status: %s', $self->{result_values}->{link1_status});
 
     $msg .= sprintf(', partition: %s', $self->{result_values}->{partition_name})
-        if ($self->{result_values}->{partition_name} ne '-');
+        if (is_not_empty($self->{result_values}->{partition_name}));
 
-    # In 2-site-ha these fields stay empty: they only describe asynchronous
-    # replication. They are therefore only shown when they carry a value,
-    # which keeps the same mode readable in both topologies.
+    # Only set on asynchronous replication (empty in 2-site-ha).
     foreach my $side (1, 2) {
         my $rpo = $self->{result_values}->{'location' . $side . '_within_rpo'};
-        next if ($rpo eq '-');
+        next if (is_empty($rpo));
         $msg .= sprintf(', site %s within RPO: %s', $side, $rpo);
     }
 
@@ -108,48 +92,18 @@ sub custom_relationship_output {
     );
 }
 
-sub prefix_global_output {
-    my ($self, %options) = @_;
-
-    return 'Replication: ';
-}
-
-sub prefix_partition_output {
-    my ($self, %options) = @_;
-
-    return "Storage partition '" . $options{instance_value}->{name} . "' ";
-}
-
-sub prefix_group_output {
-    my ($self, %options) = @_;
-
-    return "Volume group replication '" . $options{instance_value}->{name} . "' ";
-}
-
-sub prefix_partnership_output {
-    my ($self, %options) = @_;
-
-    return "Partnership '" . $options{instance_value}->{name} . "' ";
-}
-
-sub prefix_relationship_output {
-    my ($self, %options) = @_;
-
-    return "Remote copy relationship '" . $options{instance_value}->{name} . "' ";
-}
-
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => COUNTER_TYPE_GLOBAL, cb_prefix_output => 'prefix_global_output' },
-        { name => 'partitions', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_partition_output',
+        { name => 'global', type => COUNTER_TYPE_GLOBAL, prefix_output => 'Replication: ' },
+        { name => 'partitions', type => COUNTER_TYPE_INSTANCE, prefix_output => "Storage partition '%{name}' ",
           message_multiple => 'All storage partitions are healthy', skipped_code => { NO_VALUE() => 1 } },
-        { name => 'groups', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_group_output',
+        { name => 'groups', type => COUNTER_TYPE_INSTANCE, prefix_output => "Volume group replication '%{name}' ",
           message_multiple => 'All replicated volume groups are healthy', skipped_code => { NO_VALUE() => 1 } },
-        { name => 'partnerships', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_partnership_output',
+        { name => 'partnerships', type => COUNTER_TYPE_INSTANCE, prefix_output => "Partnership '%{name}' ",
           message_multiple => 'All partnerships are healthy', skipped_code => { NO_VALUE() => 1 } },
-        { name => 'relationships', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_relationship_output',
+        { name => 'relationships', type => COUNTER_TYPE_INSTANCE, prefix_output => "Remote copy relationship '%{name}' ",
           message_multiple => 'All remote copy relationships are healthy', skipped_code => { NO_VALUE() => 1 } }
     ];
 
@@ -174,10 +128,6 @@ sub set_counters {
         }
     ];
 
-    # Default thresholds report everything that is not explicitly healthy. An
-    # unknown value - newer firmware, topology not met yet - is therefore
-    # raised rather than going unnoticed; --critical-status then allows
-    # accepting it, per service, without touching the code.
     $self->{maps_counters}->{partitions} = [
         {
             label => 'partition-status',
@@ -201,9 +151,6 @@ sub set_counters {
         {
             label => 'volume-group-status',
             type => COUNTER_KIND_TEXT,
-            # The expression on within_rpo is deliberately inert when the field
-            # is empty: it only triggers on asynchronous replication, where the
-            # array sets it.
             critical_default => '%{link1_status} !~ /^(synchronized|running|connected)$/i'
                 . ' || %{location1_within_rpo} =~ /^no$/i'
                 . ' || %{location2_within_rpo} =~ /^no$/i',
@@ -221,8 +168,6 @@ sub set_counters {
         }
     ];
 
-    # The local partnership has no state: it describes itself. Only remote
-    # partnerships are evaluated, hence the filter applied at selection.
     $self->{maps_counters}->{partnerships} = [
         {
             label => 'partnership-status',
@@ -258,31 +203,27 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-partition:s'    => { name => 'filter_partition' },
-        'filter-volume-group:s' => { name => 'filter_volume_group' },
-        'filter-partnership:s'  => { name => 'filter_partnership' },
-        'filter-relationship:s' => { name => 'filter_relationship' }
+        'include-partition:s'    => { name => 'include_partition' },
+        'exclude-partition:s'    => { name => 'exclude_partition' },
+        'include-volume-group:s' => { name => 'include_volume_group' },
+        'exclude-volume-group:s' => { name => 'exclude_volume_group' },
+        'include-partnership:s'  => { name => 'include_partnership' },
+        'exclude-partnership:s'  => { name => 'exclude_partnership' },
+        'include-relationship:s' => { name => 'include_relationship' },
+        'exclude-relationship:s' => { name => 'exclude_relationship' }
     });
 
     return $self;
 }
 
-# Returns the field value, or '-': thresholds and outputs then work on an
-# always-defined string, whatever the API version.
-sub field {
-    my ($entry, $name) = @_;
-
-    return '-' if (!defined($entry->{$name}) || $entry->{$name} eq '');
-    return $entry->{$name};
-}
-
-sub filtered {
+sub excluded {
     my ($self, %options) = @_;
 
-    my $filter = $self->{option_results}->{ $options{filter} };
-    return 0 if (!defined($filter) || $filter eq '');
-    return 1 if ($options{value} !~ /$filter/);
-    return 0;
+    return is_excluded(
+        $options{value},
+        $self->{option_results}->{'include_' . $options{filter}},
+        $self->{option_results}->{'exclude_' . $options{filter}}
+    );
 }
 
 sub manage_selection {
@@ -298,93 +239,74 @@ sub manage_selection {
     $self->{partnerships} = {};
     $self->{relationships} = {};
 
-    # request_optional: lspartition only exists from 8.7, and the other
-    # commands may be missing depending on the model. A missing command must
-    # not fail the check on a system where the other forms of replication
-    # work.
+    # Each form of replication depends on the firmware (lspartition since 8.7,
+    # policy-based replication since 8.5.2).
     my $partitions    = $options{custom}->request_optional(command => 'lspartition');
     my $groups        = $options{custom}->request_optional(command => 'lsvolumegroupreplication');
     my $partnerships  = $options{custom}->request_optional(command => 'lspartnership');
     my $relationships = $options{custom}->request_optional(command => 'lsrcrelationship');
 
     foreach my $entry (@$partitions) {
-        my $name = field($entry, 'name');
-        next if ($self->filtered(filter => 'filter_partition', value => $name));
+        my $name = $entry->{name} // '';
+        next if ($self->excluded(filter => 'partition', value => $name));
 
         $self->{global}->{partitions_detected}++;
         $self->{partitions}->{$name} = {
             name => $name,
-            ha_status => field($entry, 'ha_status'),
-            link_status => field($entry, 'link_status'),
-            location1_system_name => field($entry, 'location1_system_name'),
-            location1_status => field($entry, 'location1_status'),
-            location2_system_name => field($entry, 'location2_system_name'),
-            location2_status => field($entry, 'location2_status'),
-            migration_status => field($entry, 'migration_status')
+            map { $_ => $entry->{$_} // '' } qw(
+                ha_status link_status location1_system_name location1_status
+                location2_system_name location2_status migration_status
+            )
         };
     }
 
     foreach my $entry (@$groups) {
-        my $name = field($entry, 'name');
-        next if ($self->filtered(filter => 'filter_volume_group', value => $name));
-        # The partition filter also restricts the groups, by the partition
-        # they belong to: that is what allows one service PER partition -
-        # same command, same template, only the service macro changes.
-        # Partnerships stay unfiltered: a broken partnership concerns every
-        # partition.
-        next if ($self->filtered(filter => 'filter_partition', value => field($entry, 'partition_name')));
+        my $name = $entry->{name} // '';
+        my $partition = $entry->{partition_name} // '';
+        next if ($self->excluded(filter => 'volume_group', value => $name));
+        next if ($self->excluded(filter => 'partition', value => $partition));
 
         $self->{global}->{groups_detected}++;
         $self->{groups}->{$name} = {
             name => $name,
-            partition_name => field($entry, 'partition_name'),
-            link1_status => field($entry, 'link1_status'),
-            location1_within_rpo => field($entry, 'location1_within_rpo'),
-            location2_within_rpo => field($entry, 'location2_within_rpo'),
-            location1_replication_mode => field($entry, 'location1_replication_mode'),
-            location2_replication_mode => field($entry, 'location2_replication_mode'),
-            recovery_test_active => field($entry, 'recovery_test_active')
+            partition_name => $partition,
+            map { $_ => $entry->{$_} // '' } qw(
+                link1_status location1_within_rpo location2_within_rpo
+                location1_replication_mode location2_replication_mode recovery_test_active
+            )
         };
     }
 
     foreach my $entry (@$partnerships) {
-        my $name = field($entry, 'name');
-        my $location = field($entry, 'location');
+        my $name = $entry->{name} // '';
+        my $location = $entry->{location} // '';
 
-        # The 'local' entry describes the queried system, not a link: it has
-        # neither partnership nor type, hence no state to evaluate.
         next if ($location =~ /^local$/i);
-        next if ($self->filtered(filter => 'filter_partnership', value => $name));
+        next if ($self->excluded(filter => 'partnership', value => $name));
 
         $self->{partnerships}->{$name} = {
             name => $name,
             location => $location,
-            partnership => field($entry, 'partnership'),
-            type => field($entry, 'type')
+            partnership => $entry->{partnership} // '',
+            type => $entry->{type} // ''
         };
     }
 
     foreach my $entry (@$relationships) {
-        my $name = field($entry, 'name');
-        next if ($self->filtered(filter => 'filter_relationship', value => $name));
+        my $name = $entry->{name} // '';
+        next if ($self->excluded(filter => 'relationship', value => $name));
 
         $self->{global}->{relationships_detected}++;
         $self->{relationships}->{$name} = {
             name => $name,
-            state => field($entry, 'state'),
-            progress => field($entry, 'progress'),
-            freeze_time => field($entry, 'freeze_time')
+            state => $entry->{state} // '',
+            progress => $entry->{progress} // '',
+            freeze_time => $entry->{freeze_time} // ''
         };
     }
 
-    # No replication is a valid configuration, neither an anomaly nor a
-    # collection error: say so, and the service stays OK.
-    if (scalar(keys %{$self->{partitions}}) == 0
-        && scalar(keys %{$self->{groups}}) == 0
-        && scalar(keys %{$self->{partnerships}}) == 0
-        && scalar(keys %{$self->{relationships}}) == 0) {
-        $self->{output}->output_add(short_msg => 'No replication configured on this system');
-    }
+    $self->{output}->output_add(short_msg => 'No replication configured on this system')
+        if (!%{$self->{partitions}} && !%{$self->{groups}} && !%{$self->{partnerships}} && !%{$self->{relationships}});
 }
 
 1;
@@ -408,26 +330,40 @@ Example:
 
 =over 8
 
-=item B<--filter-partition>
+=item B<--include-partition>
 
-Only check storage partitions whose name matches this regular expression.
-Volume group replications are restricted to the matching partitions too, so
-one service per partition is a matter of Centreon configuration: create a
-service from the same template and set the service-level C<EXTRAOPTIONS>
-macro, e.g. C<--filter-partition=Partition_AIX_HA>. Partnerships stay
-unfiltered, a broken partnership concerns every partition.
+Filter storage partitions by name (can be a regexp). Volume group replications
+are restricted to the matching partitions too. Partnerships are not filtered:
+a broken partnership concerns every partition.
 
-=item B<--filter-volume-group>
+=item B<--exclude-partition>
 
-Only check volume group replications whose name matches this regular expression.
+Exclude storage partitions by name (can be a regexp). Volume group replications
+of the excluded partitions are excluded too.
 
-=item B<--filter-partnership>
+=item B<--include-volume-group>
 
-Only check partnerships whose name matches this regular expression.
+Filter volume group replications by name (can be a regexp).
 
-=item B<--filter-relationship>
+=item B<--exclude-volume-group>
 
-Only check remote copy relationships whose name matches this regular expression.
+Exclude volume group replications by name (can be a regexp).
+
+=item B<--include-partnership>
+
+Filter partnerships by name (can be a regexp).
+
+=item B<--exclude-partnership>
+
+Exclude partnerships by name (can be a regexp).
+
+=item B<--include-relationship>
+
+Filter remote copy relationships by name (can be a regexp).
+
+=item B<--exclude-relationship>
+
+Exclude remote copy relationships by name (can be a regexp).
 
 =item B<--unknown-partition-status>
 
