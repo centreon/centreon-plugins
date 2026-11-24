@@ -123,17 +123,9 @@ sub manage_selection {
     $self->{events} = {};
 
     foreach my $entry (@$entries) {
-        my $status = $entry->{status} // '';
-
-        if ($status =~ /^alert$/i) {
-            $self->{global}->{alerts}++;
-        } elsif ($status =~ /^message$/i) {
-            $self->{global}->{messages}++;
-        }
-
         my $event = {
             sequence_number => $entry->{sequence_number} // '',
-            status => $status,
+            status => $entry->{status} // '',
             error_code => $entry->{error_code} // '',
             event_id => $entry->{event_id} // '',
             object_type => $entry->{object_type} // '',
@@ -142,9 +134,17 @@ sub manage_selection {
             last_timestamp => $entry->{last_timestamp} // ''
         };
 
-        next if (grep {
-            is_excluded($event->{$_}, $self->{option_results}->{'include_' . $_}, $self->{option_results}->{'exclude_' . $_})
-        } qw(status error_code event_id object_type object_name));
+        next if (is_excluded($event->{error_code}, $self->{option_results}->{include_error_code}, $self->{option_results}->{exclude_error_code}));
+        next if (is_excluded($event->{event_id}, $self->{option_results}->{include_event_id}, $self->{option_results}->{exclude_event_id}));
+        next if (is_excluded($event->{object_type}, $self->{option_results}->{include_object_type}, $self->{option_results}->{exclude_object_type}));
+        next if (is_excluded($event->{object_name}, $self->{option_results}->{include_object_name}, $self->{option_results}->{exclude_object_name}));
+
+        # Messages are counted even though the default status filter keeps
+        # them out of the evaluated entries.
+        $self->{global}->{alerts}++ if ($event->{status} =~ /^alert$/i);
+        $self->{global}->{messages}++ if ($event->{status} =~ /^message$/i);
+
+        next if (is_excluded($event->{status}, $self->{option_results}->{include_status}, $self->{option_results}->{exclude_status}));
 
         $self->{events}->{ $event->{sequence_number} } = $event;
     }

@@ -305,35 +305,6 @@ sub request_optional {
     return defined($result) ? $result : [];
 }
 
-# Used by the system-status mode only, until its rewrite.
-sub reachability {
-    my ($self, %options) = @_;
-
-    $self->settings();
-
-    my $content = $self->{http}->request(
-        method => 'POST',
-        url_path => $self->{option_results}->{api_path} . '/auth',
-        header => [
-            'X-Auth-Username: ' . $self->{option_results}->{api_username},
-            'X-Auth-Password: ' . $self->{option_results}->{api_password},
-            'Accept: application/json'
-        ],
-        unknown_status => '',
-        warning_status => '',
-        critical_status => ''
-    );
-
-    my $code = $self->{http}->get_code();
-    return ('ok', 'API responded') if ($code == 200);
-
-    my $text = defined($content) ? $content : '';
-    return ('unreachable', $text)
-        if ($text =~ /can'?t connect|connection refused|no route to host|timeout|timed out/i);
-
-    return ('degraded', $self->response_message(code => $code, content => $text));
-}
-
 1;
 
 __END__

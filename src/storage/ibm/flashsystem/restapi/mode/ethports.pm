@@ -118,18 +118,16 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     my %addresses;
-    my $ip_configured = 0;
     foreach my $entry (@{ $options{custom}->request_optional(command => 'lsportip') }) {
         next unless (ref $entry eq 'HASH');
         next if (($entry->{state} // '') =~ /^unconfigured$/i);
-        $ip_configured++;
 
         my $key = ($entry->{node_name} // '') . '-' . ($entry->{id} // '');
         $addresses{$key} = $entry->{IP_address}
-            if (is_not_empty($entry->{IP_address}) && !exists($addresses{$key}));
+            if (is_not_empty($entry->{IP_address}) && !defined($addresses{$key}));
     }
 
-    $self->{global} = { detected => 0, active => 0, with_role => 0, ip_configured => $ip_configured };
+    $self->{global} = { detected => 0, active => 0, with_role => 0, ip_configured => scalar(keys %addresses) };
     $self->{ports} = {};
 
     foreach my $port (@{ $options{custom}->request(command => 'lsportethernet') }) {
@@ -138,13 +136,16 @@ sub manage_selection {
 
         my $link = $port->{link_state} // '';
 
-        my @roles = grep { is_not_empty($port->{$_}) && $port->{$_} !~ /^no$/i } qw(management host storage replication);
+        my @roles;
+        foreach my $role ('management', 'host', 'storage', 'replication') {
+            push @roles, $role if (is_not_empty($port->{$role}) && $port->{$role} !~ /^no$/i);
+        }
 
         $self->{global}->{detected}++;
         $self->{global}->{active}++ if ($link =~ /^active$/i);
         $self->{global}->{with_role}++ if (@roles);
 
-        my $configured = exists($addresses{$name}) ? 'yes' : 'no';
+        my $configured = defined($addresses{$name}) ? 'yes' : 'no';
         next if ($configured eq 'no' && $link !~ /^active$/i && !defined($self->{option_results}->{add_unused}));
 
         $self->{ports}->{$name} = {
@@ -218,8 +219,8 @@ Exclude ports by C<node-port> name (can be a regexp).
 
 =item B<--add-unused>
 
-Also report ports that carry no role and have no link, the full inventory
-rather than just what is in service.
+Also report the ports that have neither an IP address configured nor an active
+link (not cabled), for a full inventory.
 
 =item B<--unknown-status>
 

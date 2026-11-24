@@ -28,6 +28,20 @@ use centreon::plugins::constants qw/:counters :values/;
 use centreon::plugins::misc qw(convert_bytes is_excluded is_not_empty);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
+sub custom_usage_output {
+    my ($self, %options) = @_;
+
+    my ($total_value, $total_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{total});
+    my ($used_value, $used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used});
+    my ($free_value, $free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free});
+    return sprintf(
+        'usage total: %s used: %s (%.2f%%) free: %s (%.2f%%)',
+        $total_value . ' ' . $total_unit,
+        $used_value . ' ' . $used_unit, $self->{result_values}->{prct_used},
+        $free_value . ' ' . $free_unit, $self->{result_values}->{prct_free}
+    );
+}
+
 sub custom_pool_output {
     my ($self, %options) = @_;
 
@@ -43,8 +57,8 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'physical', type => COUNTER_TYPE_GLOBAL, prefix_output => 'Physical capacity: ' },
-        { name => 'logical', type => COUNTER_TYPE_GLOBAL, prefix_output => 'Logical: ' },
+        { name => 'physical', type => COUNTER_TYPE_GLOBAL, prefix_output => 'Physical space ' },
+        { name => 'logical', type => COUNTER_TYPE_GLOBAL, prefix_output => 'Logical space ' },
         { name => 'reduction', type => COUNTER_TYPE_INSTANCE, prefix_output => 'Data reduction: ',
           skipped_code => { NO_VALUE() => 1 } },
         { name => 'pools', type => COUNTER_TYPE_INSTANCE, prefix_output => "Pool '%{name}' ",
@@ -52,25 +66,22 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{physical} = [
-        { label => 'physical-usage-prct', nlabel => 'system.physical.space.usage.percentage',
-          set => {
-                key_values => [ { name => 'physical_used_prct' } ],
-                output_template => 'used %.2f %%',
-                perfdatas => [ { template => '%.2f', unit => '%', min => 0, max => 100 } ]
-            }
-        },
         { label => 'physical-usage', nlabel => 'system.physical.space.usage.bytes', set => {
-                key_values => [ { name => 'physical_used' }, { name => 'physical_total' } ],
-                output_template => '%s %s',
-                output_change_bytes => 1,
-                perfdatas => [ { template => '%d', unit => 'B', min => 0, max => 'physical_total' } ]
+                key_values => [ { name => 'used' }, { name => 'free' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' } ],
+                closure_custom_output => $self->can('custom_usage_output'),
+                perfdatas => [ { template => '%d', unit => 'B', min => 0, max => 'total' } ]
             }
         },
-        { label => 'physical-free', nlabel => 'system.physical.space.free.bytes', set => {
-                key_values => [ { name => 'physical_free' }, { name => 'physical_total' } ],
-                output_template => 'free %s %s',
-                output_change_bytes => 1,
-                perfdatas => [ { template => '%d', unit => 'B', min => 0, max => 'physical_total' } ]
+        { label => 'physical-usage-free', nlabel => 'system.physical.space.free.bytes', display_ok => 0, set => {
+                key_values => [ { name => 'free' }, { name => 'used' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' } ],
+                closure_custom_output => $self->can('custom_usage_output'),
+                perfdatas => [ { template => '%d', unit => 'B', min => 0, max => 'total' } ]
+            }
+        },
+        { label => 'physical-usage-prct', nlabel => 'system.physical.space.usage.percentage', display_ok => 0, set => {
+                key_values => [ { name => 'prct_used' }, { name => 'used' }, { name => 'free' }, { name => 'prct_free' }, { name => 'total' } ],
+                closure_custom_output => $self->can('custom_usage_output'),
+                perfdatas => [ { template => '%.2f', unit => '%', min => 0, max => 100 } ]
             }
         },
         { label => 'overallocation', nlabel => 'system.space.overallocation.percentage', set => {
@@ -83,17 +94,21 @@ sub set_counters {
 
     $self->{maps_counters}->{logical} = [
         { label => 'logical-usage', nlabel => 'system.logical.space.usage.bytes', set => {
-                key_values => [ { name => 'logical_used' } ],
-                output_template => 'used %s %s',
-                output_change_bytes => 1,
-                perfdatas => [ { template => '%d', unit => 'B', min => 0 } ]
+                key_values => [ { name => 'used' }, { name => 'free' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' } ],
+                closure_custom_output => $self->can('custom_usage_output'),
+                perfdatas => [ { template => '%d', unit => 'B', min => 0, max => 'total' } ]
             }
         },
-        { label => 'logical-free', nlabel => 'system.logical.space.free.bytes', set => {
-                key_values => [ { name => 'logical_free' } ],
-                output_template => 'free %s %s',
-                output_change_bytes => 1,
-                perfdatas => [ { template => '%d', unit => 'B', min => 0 } ]
+        { label => 'logical-usage-free', nlabel => 'system.logical.space.free.bytes', display_ok => 0, set => {
+                key_values => [ { name => 'free' }, { name => 'used' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' } ],
+                closure_custom_output => $self->can('custom_usage_output'),
+                perfdatas => [ { template => '%d', unit => 'B', min => 0, max => 'total' } ]
+            }
+        },
+        { label => 'logical-usage-prct', nlabel => 'system.logical.space.usage.percentage', display_ok => 0, set => {
+                key_values => [ { name => 'prct_used' }, { name => 'used' }, { name => 'free' }, { name => 'prct_free' }, { name => 'total' } ],
+                closure_custom_output => $self->can('custom_usage_output'),
+                perfdatas => [ { template => '%.2f', unit => '%', min => 0, max => 100 } ]
             }
         }
     ];
@@ -129,19 +144,22 @@ sub set_counters {
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
-        { label => 'pool-usage-prct', nlabel => 'pool.space.usage.percentage', set => {
-                key_values => [ { name => 'used_prct' }, { name => 'name' } ],
-                output_template => 'used %.2f %%',
-                perfdatas => [ { template => '%.2f', unit => '%', min => 0, max => 100,
-                                 label_extra_instance => 1, instance_use => 'name' } ]
+        { label => 'pool-usage', nlabel => 'pool.space.usage.bytes', set => {
+                key_values => [ { name => 'used' }, { name => 'free' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' }, { name => 'name' } ],
+                closure_custom_output => $self->can('custom_usage_output'),
+                perfdatas => [ { template => '%d', unit => 'B', min => 0, max => 'total', label_extra_instance => 1, instance_use => 'name' } ]
             }
         },
-        { label => 'pool-free', nlabel => 'pool.space.free.bytes', set => {
-                key_values => [ { name => 'free' }, { name => 'name' } ],
-                output_template => 'free %s %s',
-                output_change_bytes => 1,
-                perfdatas => [ { template => '%d', unit => 'B', min => 0,
-                                 label_extra_instance => 1, instance_use => 'name' } ]
+        { label => 'pool-usage-free', nlabel => 'pool.space.free.bytes', display_ok => 0, set => {
+                key_values => [ { name => 'free' }, { name => 'used' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' }, { name => 'name' } ],
+                closure_custom_output => $self->can('custom_usage_output'),
+                perfdatas => [ { template => '%d', unit => 'B', min => 0, max => 'total', label_extra_instance => 1, instance_use => 'name' } ]
+            }
+        },
+        { label => 'pool-usage-prct', nlabel => 'pool.space.usage.percentage', display_ok => 0, set => {
+                key_values => [ { name => 'prct_used' }, { name => 'used' }, { name => 'free' }, { name => 'prct_free' }, { name => 'total' }, { name => 'name' } ],
+                closure_custom_output => $self->can('custom_usage_output'),
+                perfdatas => [ { template => '%.2f', unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'name' } ]
             }
         }
     ];
@@ -160,6 +178,21 @@ sub new {
     return $self;
 }
 
+sub usage {
+    my ($self, %options) = @_;
+
+    return {} if (!defined($options{total}) || !defined($options{free}) || $options{total} == 0);
+
+    my $used = $options{total} - $options{free};
+    return {
+        total => $options{total},
+        used => $used,
+        free => $options{free},
+        prct_used => $used * 100 / $options{total},
+        prct_free => $options{free} * 100 / $options{total}
+    };
+}
+
 sub manage_selection {
     my ($self, %options) = @_;
 
@@ -169,30 +202,20 @@ sub manage_selection {
 
     my $system = $options{custom}->request(command => 'lssystem')->[0];
 
-    my $physical_total = $to_bytes->($system->{physical_capacity});
-    my $physical_free = $to_bytes->($system->{physical_free_capacity});
-
-    if (!defined($physical_total) || !defined($physical_free) || $physical_total == 0) {
-        $self->{output}->output_add(
-            long_msg => 'System reports no physical capacity: thresholds on pools only.',
-            severity => 'OK'
-        );
-        $self->{physical} = {};
-    } else {
-        my $physical_used = $physical_total - $physical_free;
-        $self->{physical} = {
-            physical_total => $physical_total,
-            physical_free => $physical_free,
-            physical_used => $physical_used,
-            physical_used_prct => $physical_used * 100 / $physical_total,
-            overallocation => is_not_empty($system->{total_overallocation}) ? $system->{total_overallocation} : undef
-        };
+    $self->{physical} = $self->usage(
+        total => $to_bytes->($system->{physical_capacity}),
+        free => $to_bytes->($system->{physical_free_capacity})
+    );
+    if (!defined($self->{physical}->{total})) {
+        $self->{output}->output_add(long_msg => 'System reports no physical capacity: thresholds on pools only.');
+    } elsif (is_not_empty($system->{total_overallocation})) {
+        $self->{physical}->{overallocation} = $system->{total_overallocation};
     }
 
-    $self->{logical} = {
-        logical_used => $to_bytes->($system->{total_used_capacity}),
-        logical_free => $to_bytes->($system->{total_free_space})
-    };
+    $self->{logical} = $self->usage(
+        total => $to_bytes->($system->{space_in_mdisk_grps}),
+        free => $to_bytes->($system->{total_free_space})
+    );
 
     my $before = $to_bytes->($system->{used_capacity_before_reduction});
     my $after = $to_bytes->($system->{used_capacity_after_reduction});
@@ -242,18 +265,12 @@ sub manage_selection {
         my $name = $pool->{name} // '';
         next if (is_excluded($name, $self->{option_results}->{include_pool}, $self->{option_results}->{exclude_pool}));
 
-        my $capacity = $to_bytes->($pool->{capacity});
-        my $free = $to_bytes->($pool->{free_capacity});
-
         $self->{pools}->{$name} = {
+            %{ $self->usage(total => $to_bytes->($pool->{capacity}), free => $to_bytes->($pool->{free_capacity})) },
             name => $name,
             status => $pool->{status} // '',
             overallocation => $pool->{overallocation} // '',
-            data_reduction => $pool->{data_reduction} // '',
-            free => $free,
-            used_prct => (defined($capacity) && defined($free) && $capacity > 0)
-                ? ($capacity - $free) * 100 / $capacity
-                : undef
+            data_reduction => $pool->{data_reduction} // ''
         };
     }
 }
@@ -302,35 +319,53 @@ Filter pools by name (can be a regexp).
 
 Exclude pools by name (can be a regexp).
 
+=item B<--warning-physical-usage>
+
+Threshold on the physical used space (in B).
+
+=item B<--critical-physical-usage>
+
+Threshold on the physical used space (in B).
+
+=item B<--warning-physical-usage-free>
+
+Threshold on the physical free space (in B).
+
+=item B<--critical-physical-usage-free>
+
+Threshold on the physical free space (in B).
+
 =item B<--warning-physical-usage-prct>
 
-Warning threshold.
-
-Thresholds on the percentage of B<physical> capacity used. This is the one to
-set. No default is shipped: the right value depends on how long it takes to get
-an extension delivered, not on a general rule.
+Threshold on the physical used space (in %).
 
 =item B<--critical-physical-usage-prct>
 
-Critical threshold.
+Threshold on the physical used space (in %).
 
-Thresholds on the percentage of B<physical> capacity used. This is the one to
-set. No default is shipped: the right value depends on how long it takes to get
-an extension delivered, not on a general rule.
+=item B<--warning-logical-usage>
 
-=item B<--warning-physical-free>
+Threshold on the logical used space (in B).
 
-Warning threshold.
+=item B<--critical-logical-usage>
 
-Thresholds on the physical space left, in bytes. Useful when the answer is "we
-need N TB of headroom" rather than a percentage.
+Threshold on the logical used space (in B).
 
-=item B<--critical-physical-free>
+=item B<--warning-logical-usage-free>
 
-Critical threshold.
+Threshold on the logical free space (in B).
 
-Thresholds on the physical space left, in bytes. Useful when the answer is "we
-need N TB of headroom" rather than a percentage.
+=item B<--critical-logical-usage-free>
+
+Threshold on the logical free space (in B).
+
+=item B<--warning-logical-usage-prct>
+
+Threshold on the logical used space (in %).
+
+=item B<--critical-logical-usage-prct>
+
+Threshold on the logical used space (in %).
 
 =item B<--warning-overallocation>
 
@@ -367,33 +402,29 @@ C<overallocation>, C<data_reduction>.
 
 Default critical: C<%{status} !~ /^online$/i>.
 
+=item B<--warning-pool-usage>
+
+Threshold on the pool used space (in B).
+
+=item B<--critical-pool-usage>
+
+Threshold on the pool used space (in B).
+
+=item B<--warning-pool-usage-free>
+
+Threshold on the pool free space (in B).
+
+=item B<--critical-pool-usage-free>
+
+Threshold on the pool free space (in B).
+
 =item B<--warning-pool-usage-prct>
 
-Warning threshold.
-
-Thresholds per pool. Remember these are virtual figures on a FlashCore Module
-system.
+Threshold on the pool used space (in %).
 
 =item B<--critical-pool-usage-prct>
 
-Critical threshold.
-
-Thresholds per pool. Remember these are virtual figures on a FlashCore Module
-system.
-
-=item B<--warning-pool-free>
-
-Warning threshold.
-
-Thresholds per pool. Remember these are virtual figures on a FlashCore Module
-system.
-
-=item B<--critical-pool-free>
-
-Critical threshold.
-
-Thresholds per pool. Remember these are virtual figures on a FlashCore Module
-system.
+Threshold on the pool used space (in %).
 
 =back
 

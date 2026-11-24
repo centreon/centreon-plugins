@@ -77,11 +77,9 @@ C<performance>, C<replication>, C<system-status>, C<volume-groups>, C<volumes>.
 Run C<--list-mode> to get the authoritative list: only implemented modes are
 declared, so anything listed can actually be run.
 
-C<system-status> is meant to be the B<host check command>, not a service: it
-reports DOWN only when the array stopped serving, no canister online, no pool
-online, or no answer at all. A dead power supply or a degraded partition must
-not take the host down, because that would make every service UNREACHABLE and
-silence them.
+C<system-status> can be used as the host check command: it is CRITICAL only
+when no canister or no pool is online. A dead power supply or a degraded
+partition does not alter it.
 
 =item B<Splitting a mode across several services>
 

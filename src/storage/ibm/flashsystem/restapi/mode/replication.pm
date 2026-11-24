@@ -216,16 +216,6 @@ sub new {
     return $self;
 }
 
-sub excluded {
-    my ($self, %options) = @_;
-
-    return is_excluded(
-        $options{value},
-        $self->{option_results}->{'include_' . $options{filter}},
-        $self->{option_results}->{'exclude_' . $options{filter}}
-    );
-}
-
 sub manage_selection {
     my ($self, %options) = @_;
 
@@ -248,32 +238,37 @@ sub manage_selection {
 
     foreach my $entry (@$partitions) {
         my $name = $entry->{name} // '';
-        next if ($self->excluded(filter => 'partition', value => $name));
+        next if (is_excluded($name, $self->{option_results}->{include_partition}, $self->{option_results}->{exclude_partition}));
 
         $self->{global}->{partitions_detected}++;
         $self->{partitions}->{$name} = {
             name => $name,
-            map { $_ => $entry->{$_} // '' } qw(
-                ha_status link_status location1_system_name location1_status
-                location2_system_name location2_status migration_status
-            )
+            ha_status => $entry->{ha_status} // '',
+            link_status => $entry->{link_status} // '',
+            location1_system_name => $entry->{location1_system_name} // '',
+            location1_status => $entry->{location1_status} // '',
+            location2_system_name => $entry->{location2_system_name} // '',
+            location2_status => $entry->{location2_status} // '',
+            migration_status => $entry->{migration_status} // ''
         };
     }
 
     foreach my $entry (@$groups) {
         my $name = $entry->{name} // '';
         my $partition = $entry->{partition_name} // '';
-        next if ($self->excluded(filter => 'volume_group', value => $name));
-        next if ($self->excluded(filter => 'partition', value => $partition));
+        next if (is_excluded($name, $self->{option_results}->{include_volume_group}, $self->{option_results}->{exclude_volume_group}));
+        next if (is_excluded($partition, $self->{option_results}->{include_partition}, $self->{option_results}->{exclude_partition}));
 
         $self->{global}->{groups_detected}++;
         $self->{groups}->{$name} = {
             name => $name,
             partition_name => $partition,
-            map { $_ => $entry->{$_} // '' } qw(
-                link1_status location1_within_rpo location2_within_rpo
-                location1_replication_mode location2_replication_mode recovery_test_active
-            )
+            link1_status => $entry->{link1_status} // '',
+            location1_within_rpo => $entry->{location1_within_rpo} // '',
+            location2_within_rpo => $entry->{location2_within_rpo} // '',
+            location1_replication_mode => $entry->{location1_replication_mode} // '',
+            location2_replication_mode => $entry->{location2_replication_mode} // '',
+            recovery_test_active => $entry->{recovery_test_active} // ''
         };
     }
 
@@ -282,7 +277,7 @@ sub manage_selection {
         my $location = $entry->{location} // '';
 
         next if ($location =~ /^local$/i);
-        next if ($self->excluded(filter => 'partnership', value => $name));
+        next if (is_excluded($name, $self->{option_results}->{include_partnership}, $self->{option_results}->{exclude_partnership}));
 
         $self->{partnerships}->{$name} = {
             name => $name,
@@ -294,7 +289,7 @@ sub manage_selection {
 
     foreach my $entry (@$relationships) {
         my $name = $entry->{name} // '';
-        next if ($self->excluded(filter => 'relationship', value => $name));
+        next if (is_excluded($name, $self->{option_results}->{include_relationship}, $self->{option_results}->{exclude_relationship}));
 
         $self->{global}->{relationships_detected}++;
         $self->{relationships}->{$name} = {

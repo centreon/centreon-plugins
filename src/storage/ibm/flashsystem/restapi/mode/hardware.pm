@@ -25,7 +25,7 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::plugins::constants qw/:counters :values/;
-use centreon::plugins::misc qw(is_excluded is_not_empty);
+use centreon::plugins::misc qw(is_empty is_excluded);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 my $COMPONENT_COMMANDS = [
@@ -187,9 +187,12 @@ sub manage_selection {
         next if (is_excluded($family->{label}, $self->{option_results}->{include_type}, $self->{option_results}->{exclude_type}));
 
         foreach my $entry (@{ $options{custom}->request_optional(command => $family->{command}) }) {
-            my ($name) = grep { is_not_empty($_) }
-                map { $entry->{$_} } ('name', @{ $family->{id_fields} // [] }, 'id');
-            $name //= '';
+            my $name = '';
+            foreach my $field ('name', @{ $family->{id_fields} // [] }, 'id') {
+                next if (is_empty($entry->{$field}));
+                $name = $entry->{$field};
+                last;
+            }
             next if (is_excluded($name, $self->{option_results}->{include_name}, $self->{option_results}->{exclude_name}));
 
             my $status = $entry->{status} // '';
