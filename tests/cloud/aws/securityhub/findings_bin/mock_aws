@@ -1,0 +1,51 @@
+#!/bin/sh
+
+cat<<EOF2
+{
+    "Findings": [
+        {
+            "Id": "finding-1",
+            "Severity": { "Label": "CRITICAL", "Normalized": 90 },
+            "Resources": [
+                { "Id": "arn:aws:ec2:eu-west-1:123456789012:instance/i-0001", "Type": "AwsEc2Instance" }
+            ]
+        },
+        {
+            "Id": "finding-2",
+            "Severity": { "Label": "CRITICAL", "Normalized": 90 },
+            "Resources": [
+                { "Id": "arn:aws:ec2:eu-west-1:123456789012:instance/i-0001", "Type": "AwsEc2Instance" },
+                { "Id": "arn:aws:s3:::my-bucket", "Type": "AwsS3Bucket" }
+            ]
+        },
+        {
+            "Id": "finding-3",
+            "Severity": { "Label": "HIGH", "Normalized": 70 },
+            "Resources": [
+                { "Id": "arn:aws:s3:::my-bucket", "Type": "AwsS3Bucket" }
+            ]
+        },
+        {
+            "Id": "finding-4",
+            "Severity": { "Label": "MEDIUM", "Normalized": 40 },
+            "Resources": [
+                { "Id": "arn:aws:ec2:eu-west-1:123456789012:instance/i-0002", "Type": "AwsEc2Instance" }
+            ]
+        },
+        {
+            "Id": "finding-5",
+            "Severity": { "Label": "INFORMATIONAL", "Normalized": 0 },
+            "Resources": [
+                { "Id": "arn:aws:ec2:eu-west-1:123456789012:instance/i-0002", "Type": "AwsEc2Instance" }
+            ]
+        },
+        {
+            "Id": "finding-6",
+            "Severity": { "Label": "LOW", "Normalized": 10 },
+            "Resources": [
+                { "Id": "arn:aws:ec2:eu-west-1:123456789012:instance/i-0002", "Type": "AwsEc2Instance" }
+            ]
+        }
+    ]
+}
+EOF2

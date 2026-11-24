@@ -39,7 +39,9 @@ Avigilon
 Avocent
 aws
 AWSCLI
+AwsEc2Instance
 --aws-role-arn
+AwsSecurityFindingFilters
 Backbox
 BackupJobSession
 BAM
@@ -69,6 +71,7 @@ cpu-utilization
 cpu-utilization-1m
 cpu-utilization-5m
 cpu-utilization-5s
+CSPM
 CX
 CXF
 Cyberoam
@@ -138,6 +141,7 @@ hashicorpvault
 HPE
 HTTPR
 Huawei
+IAM
 ICMP
 ifAlias
 ifDesc

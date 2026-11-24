@@ -1,0 +1,10 @@
+{
+    "pkg_name": "centreon-plugin-Cloud-Aws-Securityhub-Api",
+    "pkg_summary": "Centreon Plugin to monitor Amazon AWS Security Hub CSPM",
+    "plugin_name": "centreon_aws_securityhub_api.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "cloud/aws/custom/",
+        "cloud/aws/securityhub/"
+    ]
+}

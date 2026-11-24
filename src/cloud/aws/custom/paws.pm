@@ -911,6 +911,46 @@ sub cloudtrail_trail_status {
     return $trail_status;
 }
 
+sub securityhub_get_findings {
+    my ($self, %options) = @_;
+
+    my $findings = [];
+    eval {
+        my $sh;
+        if (defined($self->{option_results}->{endpoint}) && length($self->{option_results}->{endpoint})) {
+            $sh = $self->{paws}->service('SecurityHub', region => $self->{option_results}->{region}, endpoint => $self->{option_results}->{endpoint});
+        } else {
+            $sh = $self->{paws}->service('SecurityHub', region => $self->{option_results}->{region});
+        }
+
+        my %sh_options = (MaxResults => 100);
+        $sh_options{Filters} = $options{filters} if (defined($options{filters}));
+
+        while (my $results = $sh->GetFindings(%sh_options)) {
+            foreach my $finding (@{$results->{Findings}}) {
+                my $resources = [];
+                foreach my $resource (@{$finding->{Resources}}) {
+                    push @$resources, { Id => $resource->{Id}, Type => $resource->{Type} };
+                }
+                push @$findings, {
+                    Id => $finding->{Id},
+                    Severity => { Label => defined($finding->{Severity}) ? $finding->{Severity}->{Label} : undef },
+                    Resources => $resources
+                };
+            }
+
+            last if (!defined($results->{NextToken}) || $results->{NextToken} eq '');
+            $sh_options{NextToken} = $results->{NextToken};
+        }
+    };
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => "error: $@");
+        $self->{output}->option_exit();
+    }
+
+    return $findings;
+}
+
 1;
 
 __END__

@@ -1058,6 +1058,33 @@ sub cloudtrail_trail_status {
     return $trail_status;
 }
 
+sub securityhub_get_findings_set_cmd {
+    my ($self, %options) = @_;
+
+    return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
+
+    my $cmd_options = "securityhub get-findings --region $self->{option_results}->{region} --output json";
+    if (defined($options{filters})) {
+        my $filters = JSON::XS->new->utf8->canonical->encode($options{filters});
+        $filters =~ s/'/'\\''/g;
+        $cmd_options .= " --filters '$filters'";
+    }
+    $cmd_options .= " --endpoint-url $self->{endpoint_url}" if (defined($self->{endpoint_url}) && $self->{endpoint_url} ne '');
+    $cmd_options .= " --no-verify-ssl 2>/dev/null" if (defined($self->{option_results}->{skip_ssl_check}));
+
+    return $cmd_options;
+}
+
+sub securityhub_get_findings {
+    my ($self, %options) = @_;
+
+    # aws cli handles pagination by itself
+    my $cmd_options = $self->securityhub_get_findings_set_cmd(%options);
+    my $raw_results = $self->execute(cmd_options => $cmd_options);
+
+    return defined($raw_results->{Findings}) ? $raw_results->{Findings} : [];
+}
+
 1;
 
 __END__
