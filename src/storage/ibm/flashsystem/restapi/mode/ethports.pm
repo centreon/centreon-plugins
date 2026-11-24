@@ -161,6 +161,28 @@ sub manage_selection {
     }
 }
 
+sub disco_format {
+    my ($self, %options) = @_;
+
+    $self->{output}->add_disco_format(elements => ['name', 'node_name', 'port_id', 'link_state', 'configured', 'ip']);
+}
+
+sub disco_show {
+    my ($self, %options) = @_;
+
+    $self->manage_selection(custom => $options{custom});
+    foreach my $name (sort keys %{$self->{ports}}) {
+        $self->{output}->add_disco_entry(
+            name => $self->{ports}->{$name}->{name},
+            node_name => $self->{ports}->{$name}->{node_name},
+            port_id => $self->{ports}->{$name}->{port_id},
+            link_state => $self->{ports}->{$name}->{link_state},
+            configured => $self->{ports}->{$name}->{configured},
+            ip => $self->{ports}->{$name}->{ip}
+        );
+    }
+}
+
 1;
 
 __END__
@@ -168,6 +190,8 @@ __END__
 =head1 MODE
 
 Check the Ethernet ports and their IP configuration.
+
+This mode also supports service discovery (C<--disco-format>, C<--disco-show>).
 
 Two commands describe two different things, and mixing them up is easy:
 

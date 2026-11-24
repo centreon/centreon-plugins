@@ -143,6 +143,27 @@ sub manage_selection {
     }
 }
 
+sub disco_format {
+    my ($self, %options) = @_;
+
+    $self->{output}->add_disco_format(elements => ['name', 'status', 'partition_name', 'host_cluster_name', 'port_count']);
+}
+
+sub disco_show {
+    my ($self, %options) = @_;
+
+    $self->manage_selection(custom => $options{custom});
+    foreach my $name (sort keys %{$self->{hosts}}) {
+        $self->{output}->add_disco_entry(
+            name => $self->{hosts}->{$name}->{name},
+            status => $self->{hosts}->{$name}->{status},
+            partition_name => $self->{hosts}->{$name}->{partition_name},
+            host_cluster_name => $self->{hosts}->{$name}->{host_cluster_name},
+            port_count => $self->{hosts}->{$name}->{port_count}
+        );
+    }
+}
+
 1;
 
 __END__
@@ -150,6 +171,8 @@ __END__
 =head1 MODE
 
 Check the status of the hosts declared on the system.
+
+This mode also supports service discovery (C<--disco-format>, C<--disco-show>).
 
 Every declared host is evaluated. A host that is offline on purpose, a spare
 logical partition profile, an idle backup host, still reports offline: acknowledging it in

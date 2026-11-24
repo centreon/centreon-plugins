@@ -161,6 +161,28 @@ sub manage_selection {
     }
 }
 
+sub disco_format {
+    my ($self, %options) = @_;
+
+    $self->{output}->add_disco_format(elements => ['name', 'node_name', 'port_id', 'type', 'status', 'attachment']);
+}
+
+sub disco_show {
+    my ($self, %options) = @_;
+
+    $self->manage_selection(custom => $options{custom});
+    foreach my $name (sort keys %{$self->{ports}}) {
+        $self->{output}->add_disco_entry(
+            name => $self->{ports}->{$name}->{name},
+            node_name => $self->{ports}->{$name}->{node_name},
+            port_id => $self->{ports}->{$name}->{port_id},
+            type => $self->{ports}->{$name}->{type},
+            status => $self->{ports}->{$name}->{status},
+            attachment => $self->{ports}->{$name}->{attachment}
+        );
+    }
+}
+
 1;
 
 __END__
@@ -169,6 +191,8 @@ __END__
 
 Check the Fibre Channel ports, the data path, which the C<hardware> mode does
 not cover.
+
+This mode also supports service discovery (C<--disco-format>, C<--disco-show>).
 
 C<lsportfc> exposes neither error counters nor throughput: status, negotiated
 speed and attachment are all there is. Throughput is only available per node,

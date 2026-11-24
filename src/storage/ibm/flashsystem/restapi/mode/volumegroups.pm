@@ -161,6 +161,26 @@ sub manage_selection {
     }
 }
 
+sub disco_format {
+    my ($self, %options) = @_;
+
+    $self->{output}->add_disco_format(elements => ['name', 'partition_name', 'volume_count', 'replication_policy']);
+}
+
+sub disco_show {
+    my ($self, %options) = @_;
+
+    $self->manage_selection(custom => $options{custom});
+    foreach my $name (sort keys %{$self->{groups}}) {
+        $self->{output}->add_disco_entry(
+            name => $self->{groups}->{$name}->{name},
+            partition_name => $self->{groups}->{$name}->{partition_name},
+            volume_count => $self->{groups}->{$name}->{volume_count},
+            replication_policy => $self->{groups}->{$name}->{replication_policy}
+        );
+    }
+}
+
 1;
 
 __END__
@@ -169,6 +189,8 @@ __END__
 
 Check the volume groups, the per-object granularity that means something on
 these arrays.
+
+This mode also supports service discovery (C<--disco-format>, C<--disco-show>).
 
 A volume carries only a status, identical across all 349 of them. A group
 carries a backup state, a last backup time, a restore in progress and the
