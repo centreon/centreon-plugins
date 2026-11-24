@@ -189,138 +189,76 @@ __END__
 
 =head1 MODE
 
-Check the Fibre Channel ports, the data path, which the C<hardware> mode does
-not cover.
+Check Fibre Channel ports.
 
 This mode also supports service discovery (C<--disco-format>, C<--disco-show>).
 
-C<lsportfc> exposes neither error counters nor throughput: status, negotiated
-speed and attachment are all there is. Throughput is only available per node,
-through C<lsnodecanisterstats>.
-
-Host logins come from C<lstargetportfc>, aggregated per physical port. An active
-port that loses its logins is a lost path, and nothing else would show it.
-
-Ports are named after their node and port number, C<node1-1>, because port ids
-are not contiguous (0 to 3 then 24 to 27 on a two-canister system), so a service
-called "Port 24" would help nobody.
-
-Example:
-
-    perl centreon_plugins.pl --plugin=storage::ibm::flashsystem::restapi::plugin \
-        --mode=fc-ports --hostname=10.0.0.1 \
-        --api-username=svc_monitor --api-password=xxx --insecure
+Ports with the C<inactive_unconfigured> (no SFP) or C<inactive_configured> (nothing connected) status are not critical by default.
 
 =over 8
 
 =item B<--include-name>
 
-Filter ports by C<node-port> name (can be a regexp).
+Filter ports by name (C<node-port>, can be a regexp).
 
 =item B<--exclude-name>
 
-Exclude ports by C<node-port> name (can be a regexp).
+Exclude ports by name (C<node-port>, can be a regexp).
 
 =item B<--include-type>
 
-Filter ports by type (can be a regexp), for example C<fc> or C<ethernet>.
+Filter ports by type, for example C<fc> or C<ethernet> (can be a regexp).
 
 =item B<--exclude-type>
 
-Exclude ports by type (can be a regexp).
+Exclude ports by type, for example C<fc> or C<ethernet> (can be a regexp).
+
+=item B<--warning-status>
+
+Define the conditions to match for the status to be WARNING (default: C<'%{status} =~ /^inactive_configured$/i and %{attachment} =~ /^switch$/i'>).
+You can use the following variables: C<%{name}>, C<%{status}>, C<%{port_speed}>, C<%{attachment}>, C<%{node_name}>, C<%{port_id}>, C<%{type}>, C<%{active_login_count}>
+
+=item B<--critical-status>
+
+Define the conditions to match for the status to be CRITICAL (default: C<'%{status} !~ /^(active|inactive_configured|inactive_unconfigured)$/i'>).
+You can use the following variables: C<%{name}>, C<%{status}>, C<%{port_speed}>, C<%{attachment}>, C<%{node_name}>, C<%{port_id}>, C<%{type}>, C<%{active_login_count}>
 
 =item B<--unknown-status>
 
 Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: C<%{name}>, C<%{status}>, C<%{port_speed}>, C<%{attachment}>, C<%{node_name}>, C<%{port_id}>, C<%{type}>, C<%{active_login_count}>
 
-Threshold on each port. Available macros: C<name>, C<status>, C<port_speed>,
-C<attachment>, C<node_name>, C<port_id>, C<type>, C<active_login_count>.
+=item B<--warning-detected>
 
-A port fitted with an SFP but cabled to nothing reports C<inactive_configured>
-permanently, by IBM design, and no option changes that. Treating it as a fault
-would make the service critical forever, which teaches people to ignore it. The
-defaults therefore only warn when such a port claims to be attached to a switch,
-and only alert on states that mean something actually degraded.
+Threshold.
 
-To require a negotiated speed, add it explicitly:
+=item B<--critical-detected>
 
-    --critical-status='%{status} !~ /^active$/i || %{port_speed} !~ /^16Gb$/'
-
-=item B<--warning-status>
-
-Define the conditions to match for the status to be WARNING.
-
-Threshold on each port. Available macros: C<name>, C<status>, C<port_speed>,
-C<attachment>, C<node_name>, C<port_id>, C<type>, C<active_login_count>.
-
-Default warning: C<%{status} =~ /^inactive_configured$/i and %{attachment} =~ /^switch$/i>.
-
-A port fitted with an SFP but cabled to nothing reports C<inactive_configured>
-permanently, by IBM design, and no option changes that. Treating it as a fault
-would make the service critical forever, which teaches people to ignore it. The
-defaults therefore only warn when such a port claims to be attached to a switch,
-and only alert on states that mean something actually degraded.
-
-To require a negotiated speed, add it explicitly:
-
-    --critical-status='%{status} !~ /^active$/i || %{port_speed} !~ /^16Gb$/'
-
-=item B<--critical-status>
-
-Define the conditions to match for the status to be CRITICAL.
-
-Threshold on each port. Available macros: C<name>, C<status>, C<port_speed>,
-C<attachment>, C<node_name>, C<port_id>, C<type>, C<active_login_count>.
-
-Default critical: C<%{status} !~ /^(active|inactive_configured|inactive_unconfigured)$/i>.
-
-A port fitted with an SFP but cabled to nothing reports C<inactive_configured>
-permanently, by IBM design, and no option changes that. Treating it as a fault
-would make the service critical forever, which teaches people to ignore it. The
-defaults therefore only warn when such a port claims to be attached to a switch,
-and only alert on states that mean something actually degraded.
-
-To require a negotiated speed, add it explicitly:
-
-    --critical-status='%{status} !~ /^active$/i || %{port_speed} !~ /^16Gb$/'
+Threshold.
 
 =item B<--warning-active>
 
-Warning threshold.
-
-Thresholds on the number of active and inactive ports.
+Threshold.
 
 =item B<--critical-active>
 
-Critical threshold.
-
-Thresholds on the number of active and inactive ports.
+Threshold.
 
 =item B<--warning-inactive>
 
-Warning threshold.
-
-Thresholds on the number of active and inactive ports.
+Threshold.
 
 =item B<--critical-inactive>
 
-Critical threshold.
-
-Thresholds on the number of active and inactive ports.
+Threshold.
 
 =item B<--warning-host-logins>
 
-Warning threshold.
-
-Threshold on the total number of host logins across all ports. Useful to catch
-a fabric-wide loss that leaves every port nominally active.
+Threshold on the number of host logins.
 
 =item B<--critical-host-logins>
 
-Critical threshold.
-
-Threshold on the total number of host logins across all ports. Useful to catch
-a fabric-wide loss that leaves every port nominally active.
+Threshold on the number of host logins.
 
 =back
 

@@ -287,31 +287,19 @@ __END__
 
 =head1 MODE
 
-Check replication health: storage partitions, policy-based volume group
-replication, partnerships and remote copy relationships.
+Check replication: storage partitions (high availability), volume group replication (policy-based), partnerships and remote copy relationships.
 
-All four are queried on every run. A system using none of them reports OK with
-an explicit message; a system using several reports on each. Nothing has to be
-enabled per array.
-
-Example:
-
-    perl centreon_plugins.pl --plugin=storage::ibm::flashsystem::restapi::plugin \
-        --mode=replication --hostname=10.0.0.1 \
-        --api-username=svc_monitor --api-password=xxx
+A system without replication returns OK.
 
 =over 8
 
 =item B<--include-partition>
 
-Filter storage partitions by name (can be a regexp). Volume group replications
-are restricted to the matching partitions too. Partnerships are not filtered:
-a broken partnership concerns every partition.
+Filter storage partitions by name (can be a regexp). Volume group replications are filtered on their partition too.
 
 =item B<--exclude-partition>
 
-Exclude storage partitions by name (can be a regexp). Volume group replications
-of the excluded partitions are excluded too.
+Exclude storage partitions by name (can be a regexp). Volume group replications are filtered on their partition too.
 
 =item B<--include-volume-group>
 
@@ -337,136 +325,89 @@ Filter remote copy relationships by name (can be a regexp).
 
 Exclude remote copy relationships by name (can be a regexp).
 
-=item B<--unknown-partition-status>
-
-Define the conditions to match for the status to be UNKNOWN.
-
-Threshold on the partition state. Available macros: C<ha_status>,
-C<link_status>, C<location1_system_name>, C<location1_status>,
-C<location2_system_name>, C<location2_status>, C<migration_status>, C<name>.
-
 =item B<--warning-partition-status>
 
 Define the conditions to match for the status to be WARNING.
-
-Threshold on the partition state. Available macros: C<ha_status>,
-C<link_status>, C<location1_system_name>, C<location1_status>,
-C<location2_system_name>, C<location2_status>, C<migration_status>, C<name>.
+You can use the following variables: C<%{name}>, C<%{ha_status}>, C<%{link_status}>, C<%{location1_system_name}>, C<%{location1_status}>, C<%{location2_system_name}>, C<%{location2_status}>, C<%{migration_status}>
 
 =item B<--critical-partition-status>
 
-Define the conditions to match for the status to be CRITICAL.
+Define the conditions to match for the status to be CRITICAL (default: C<'%{ha_status} !~ /^(established|healthy|synchronized)$/i'>).
+You can use the following variables: C<%{name}>, C<%{ha_status}>, C<%{link_status}>, C<%{location1_system_name}>, C<%{location1_status}>, C<%{location2_system_name}>, C<%{location2_status}>, C<%{migration_status}>
 
-Threshold on the partition state. Available macros: C<ha_status>,
-C<link_status>, C<location1_system_name>, C<location1_status>,
-C<location2_system_name>, C<location2_status>, C<migration_status>, C<name>.
-
-Default critical: C<%{ha_status} !~ /^(established|healthy|synchronized)$/i>.
-
-=item B<--unknown-volume-group-status>
+=item B<--unknown-partition-status>
 
 Define the conditions to match for the status to be UNKNOWN.
-
-Threshold on the volume group replication state. Available macros:
-C<link1_status>, C<partition_name>, C<location1_within_rpo>,
-C<location2_within_rpo>, C<location1_replication_mode>,
-C<location2_replication_mode>, C<recovery_test_active>, C<name>.
-
-The C<within_rpo> macros stay empty in C<2-site-ha> topologies, where they do
-not apply; the default expression is inert in that case and only triggers on
-asynchronous replication.
+You can use the following variables: C<%{name}>, C<%{ha_status}>, C<%{link_status}>, C<%{location1_system_name}>, C<%{location1_status}>, C<%{location2_system_name}>, C<%{location2_status}>, C<%{migration_status}>
 
 =item B<--warning-volume-group-status>
 
 Define the conditions to match for the status to be WARNING.
-
-Threshold on the volume group replication state. Available macros:
-C<link1_status>, C<partition_name>, C<location1_within_rpo>,
-C<location2_within_rpo>, C<location1_replication_mode>,
-C<location2_replication_mode>, C<recovery_test_active>, C<name>.
-
-The C<within_rpo> macros stay empty in C<2-site-ha> topologies, where they do
-not apply; the default expression is inert in that case and only triggers on
-asynchronous replication.
+You can use the following variables: C<%{name}>, C<%{partition_name}>, C<%{link1_status}>, C<%{location1_within_rpo}>, C<%{location2_within_rpo}>, C<%{location1_replication_mode}>, C<%{location2_replication_mode}>, C<%{recovery_test_active}>
 
 =item B<--critical-volume-group-status>
 
-Define the conditions to match for the status to be CRITICAL.
+Define the conditions to match for the status to be CRITICAL (default: C<'%{link1_status} !~ /^(synchronized|running|connected)$/i or %{location1_within_rpo} =~ /^no$/i or %{location2_within_rpo} =~ /^no$/i'>).
+You can use the following variables: C<%{name}>, C<%{partition_name}>, C<%{link1_status}>, C<%{location1_within_rpo}>, C<%{location2_within_rpo}>, C<%{location1_replication_mode}>, C<%{location2_replication_mode}>, C<%{recovery_test_active}>
 
-Threshold on the volume group replication state. Available macros:
-C<link1_status>, C<partition_name>, C<location1_within_rpo>,
-C<location2_within_rpo>, C<location1_replication_mode>,
-C<location2_replication_mode>, C<recovery_test_active>, C<name>.
-
-The C<within_rpo> macros stay empty in C<2-site-ha> topologies, where they do
-not apply; the default expression is inert in that case and only triggers on
-asynchronous replication.
-
-=item B<--unknown-partnership-status>
+=item B<--unknown-volume-group-status>
 
 Define the conditions to match for the status to be UNKNOWN.
-
-Threshold on the partnership state. Available macros: C<partnership>, C<type>,
-C<location>, C<name>.
+You can use the following variables: C<%{name}>, C<%{partition_name}>, C<%{link1_status}>, C<%{location1_within_rpo}>, C<%{location2_within_rpo}>, C<%{location1_replication_mode}>, C<%{location2_replication_mode}>, C<%{recovery_test_active}>
 
 =item B<--warning-partnership-status>
 
 Define the conditions to match for the status to be WARNING.
-
-Threshold on the partnership state. Available macros: C<partnership>, C<type>,
-C<location>, C<name>.
+You can use the following variables: C<%{name}>, C<%{partnership}>, C<%{type}>, C<%{location}>
 
 =item B<--critical-partnership-status>
 
-Define the conditions to match for the status to be CRITICAL.
+Define the conditions to match for the status to be CRITICAL (default: C<'%{partnership} !~ /^fully_configured$/i'>).
+You can use the following variables: C<%{name}>, C<%{partnership}>, C<%{type}>, C<%{location}>
 
-Threshold on the partnership state. Available macros: C<partnership>, C<type>,
-C<location>, C<name>.
-
-=item B<--unknown-relationship-status>
+=item B<--unknown-partnership-status>
 
 Define the conditions to match for the status to be UNKNOWN.
-
-Threshold on the remote copy relationship state. Available macros: C<state>,
-C<progress>, C<freeze_time>, C<name>.
+You can use the following variables: C<%{name}>, C<%{partnership}>, C<%{type}>, C<%{location}>
 
 =item B<--warning-relationship-status>
 
 Define the conditions to match for the status to be WARNING.
-
-Threshold on the remote copy relationship state. Available macros: C<state>,
-C<progress>, C<freeze_time>, C<name>.
+You can use the following variables: C<%{name}>, C<%{state}>, C<%{progress}>, C<%{freeze_time}>
 
 =item B<--critical-relationship-status>
 
-Define the conditions to match for the status to be CRITICAL.
+Define the conditions to match for the status to be CRITICAL (default: C<'%{state} !~ /^(consistent_synchronized|consistent_copying)$/i'>).
+You can use the following variables: C<%{name}>, C<%{state}>, C<%{progress}>, C<%{freeze_time}>
 
-Threshold on the remote copy relationship state. Available macros: C<state>,
-C<progress>, C<freeze_time>, C<name>.
+=item B<--unknown-relationship-status>
+
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: C<%{name}>, C<%{state}>, C<%{progress}>, C<%{freeze_time}>
 
 =item B<--warning-partitions-detected>
 
-Warning threshold on the number of storage partitions detected.
+Threshold.
 
 =item B<--critical-partitions-detected>
 
-Critical threshold on the number of storage partitions detected.
+Threshold.
 
 =item B<--warning-volume-groups-detected>
 
-Warning threshold on the number of replicated volume groups detected.
+Threshold.
 
 =item B<--critical-volume-groups-detected>
 
-Critical threshold on the number of replicated volume groups detected.
+Threshold.
 
 =item B<--warning-relationships-detected>
 
-Warning threshold on the number of remote copy relationships detected.
+Threshold.
 
 =item B<--critical-relationships-detected>
 
-Critical threshold on the number of remote copy relationships detected.
+Threshold.
 
 =back
 

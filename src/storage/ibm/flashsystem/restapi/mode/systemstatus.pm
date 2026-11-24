@@ -83,35 +83,27 @@ __END__
 
 =head1 MODE
 
-Check that the array is serving: number of node canisters and of storage pools
-online (C<lsnodecanister>, C<lsmdiskgrp>).
+Check that the system is serving: number of node canisters and storage pools online.
 
-By default, the check is CRITICAL when no canister or no pool is online. It
-can be used as the host check command: a failed power supply, a dead drive or
-a degraded partition do not alter it, they are reported by the other modes.
+It can be used as the host check command.
 
 =over 8
 
-=item B<--filter-counters>
-
-Only display some counters (regexp can be used).
-Example: C<--filter-counters='canisters'>
-
 =item B<--warning-canisters-online>
 
-Threshold on the number of node canisters online.
+Threshold.
 
 =item B<--critical-canisters-online>
 
-Threshold on the number of node canisters online (default: C<1:>).
+Threshold (default: C<1:>).
 
 =item B<--warning-pools-online>
 
-Threshold on the number of storage pools online.
+Threshold.
 
 =item B<--critical-pools-online>
 
-Threshold on the number of storage pools online (default: C<1:>).
+Threshold (default: C<1:>).
 
 =back
 

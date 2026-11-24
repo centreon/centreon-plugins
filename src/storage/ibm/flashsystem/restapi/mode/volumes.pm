@@ -183,42 +183,9 @@ __END__
 
 =head1 MODE
 
-Check the volumes as a whole.
+Check volumes.
 
-This mode is aggregated on purpose. Neither C<lsvdisk> nor C<lsvdiskcopy>
-exposes C<used_capacity> in their concise output: a volume's consumption would
-need the detailed view, one call per volume, 349 per cycle on these arrays. The
-only per-volume state actually available is the status, and they are all
-C<online>. One service per volume would display "online" and a frozen size,
-seven hundred times over.
-
-So the service counts the states and B<names> the abnormal volumes in its
-output: the diagnostic detail is kept, the seven hundred services are not. For
-per-object monitoring, use the C<volume-groups> mode, whose objects carry a real
-state, replication, backup, attached policies.
-
-Two reading traps:
-
-=over 4
-
-=item *
-
-C<fast_write_state = not_empty> is the B<normal> state of a working
-volume, data sitting in the write cache. Only C<corrupt> is abnormal.
-
-=item *
-
-A volume "full" with respect to its provisioned size means nothing under
-thin provisioning. Capacity is managed at the pool level, see the C<capacity>
-mode.
-
-=back
-
-Example:
-
-    perl centreon_plugins.pl --plugin=storage::ibm::flashsystem::restapi::plugin \
-        --mode=volumes --hostname=10.0.0.1 \
-        --api-username=svc_monitor --api-password=xxx --insecure
+Only the volumes in an abnormal state are reported by default.
 
 =over 8
 
@@ -248,75 +215,62 @@ Exclude volumes by volume group name (can be a regexp).
 
 =item B<--add-all-volumes>
 
-Turn every volume into a checkable instance, not just the abnormal ones. Use
-with a filter, this is what makes a per-volume service possible if you really
-want one:
+Check all volumes, not only the ones in an abnormal state.
 
-    --mode=volumes --add-all-volumes --include-name='^VOL_PRD_01$'
+=item B<--warning-status>
+
+Define the conditions to match for the status to be WARNING (default: C<'%{status} =~ /^degraded$/i or %{sync} =~ /^no$/i'>).
+You can use the following variables: C<%{name}>, C<%{status}>, C<%{fast_write_state}>, C<%{formatting}>, C<%{sync}>, C<%{mdisk_grp_name}>, C<%{volume_group_name}>
+
+=item B<--critical-status>
+
+Define the conditions to match for the status to be CRITICAL (default: C<'%{status} =~ /^offline$/i or %{fast_write_state} =~ /^corrupt$/i'>).
+You can use the following variables: C<%{name}>, C<%{status}>, C<%{fast_write_state}>, C<%{formatting}>, C<%{sync}>, C<%{mdisk_grp_name}>, C<%{volume_group_name}>
 
 =item B<--unknown-status>
 
 Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: C<%{name}>, C<%{status}>, C<%{fast_write_state}>, C<%{formatting}>, C<%{sync}>, C<%{mdisk_grp_name}>, C<%{volume_group_name}>
 
-Threshold on each selected volume. Available macros: C<name>, C<status>,
-C<fast_write_state>, C<formatting>, C<sync>, C<mdisk_grp_name>,
-C<volume_group_name>.
+=item B<--warning-detected>
 
-=item B<--warning-status>
+Threshold.
 
-Define the conditions to match for the status to be WARNING.
+=item B<--critical-detected>
 
-Threshold on each selected volume. Available macros: C<name>, C<status>,
-C<fast_write_state>, C<formatting>, C<sync>, C<mdisk_grp_name>,
-C<volume_group_name>.
+Threshold.
 
-Default warning: C<%{status} =~ /^degraded$/i || %{sync} =~ /^no$/i>.
+=item B<--warning-online>
 
-=item B<--critical-status>
+Threshold.
 
-Define the conditions to match for the status to be CRITICAL.
+=item B<--critical-online>
 
-Threshold on each selected volume. Available macros: C<name>, C<status>,
-C<fast_write_state>, C<formatting>, C<sync>, C<mdisk_grp_name>,
-C<volume_group_name>.
-
-Default critical: C<%{status} =~ /^offline$/i || %{fast_write_state} =~ /^corrupt$/i>.
-
-=item B<--warning-offline>
-
-Warning threshold.
-
-Thresholds on the counts.
-
-=item B<--critical-offline>
-
-Critical threshold.
-
-Thresholds on the counts.
+Threshold.
 
 =item B<--warning-degraded>
 
-Warning threshold.
-
-Thresholds on the counts.
+Threshold.
 
 =item B<--critical-degraded>
 
-Critical threshold.
+Threshold.
 
-Thresholds on the counts.
+=item B<--warning-offline>
+
+Threshold.
+
+=item B<--critical-offline>
+
+Threshold.
 
 =item B<--warning-unsynchronised>
 
-Warning threshold.
-
-Thresholds on the counts.
+Threshold.
 
 =item B<--critical-unsynchronised>
 
-Critical threshold.
-
-Thresholds on the counts.
+Threshold.
 
 =back
 

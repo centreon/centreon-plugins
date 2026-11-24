@@ -187,22 +187,9 @@ __END__
 
 =head1 MODE
 
-Check the volume groups, the per-object granularity that means something on
-these arrays.
+Check volume groups.
 
 This mode also supports service discovery (C<--disco-format>, C<--disco-show>).
-
-A volume carries only a status, identical across all 349 of them. A group
-carries a backup state, a last backup time, a restore in progress and the
-policies attached to it. And its name is a business one, C<Volume_Group_ESXi>,
-C<Volume_Group_DBWMSPRTRI01>, which reads well on call.
-
-Example, one service per group through service discovery:
-
-    perl centreon_plugins.pl --plugin=storage::ibm::flashsystem::restapi::plugin \
-        --mode=volume-groups --hostname=10.0.0.1 \
-        --api-username=svc_monitor --api-password=xxx --insecure \
-        --include-name='^Volume_Group_ESXi$'
 
 =over 8
 
@@ -222,93 +209,52 @@ Filter volume groups by storage partition name (can be a regexp).
 
 Exclude volume groups by storage partition name (can be a regexp).
 
-=item B<--unknown-status>
-
-Define the conditions to match for the status to be UNKNOWN.
-
-Threshold on each group. Available macros: C<name>, C<volume_count>,
-C<backup_status>, C<last_backup_time>, C<partition_name>,
-C<replication_policy>, C<snapshot_policy>, C<safeguarded_policy>,
-C<restore_in_progress>.
-
-Nothing else alerts by default. On these arrays C<backup_status> is C<off>
-everywhere and no group references a snapshot policy, an operational choice,
-not a fault. Once that choice is settled, express it here rather than in the
-code:
-
-    --warning-status='%{snapshot_policy} eq ""'
-
 =item B<--warning-status>
 
 Define the conditions to match for the status to be WARNING.
-
-Threshold on each group. Available macros: C<name>, C<volume_count>,
-C<backup_status>, C<last_backup_time>, C<partition_name>,
-C<replication_policy>, C<snapshot_policy>, C<safeguarded_policy>,
-C<restore_in_progress>.
-
-Nothing else alerts by default. On these arrays C<backup_status> is C<off>
-everywhere and no group references a snapshot policy, an operational choice,
-not a fault. Once that choice is settled, express it here rather than in the
-code:
-
-    --warning-status='%{snapshot_policy} eq ""'
+You can use the following variables: C<%{name}>, C<%{volume_count}>, C<%{backup_status}>, C<%{last_backup_time}>, C<%{partition_name}>, C<%{replication_policy}>, C<%{snapshot_policy}>, C<%{safeguarded_policy}>, C<%{restore_in_progress}>
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL.
+Define the conditions to match for the status to be CRITICAL (default: C<'%{backup_status} =~ /^failed$/i'>).
+You can use the following variables: C<%{name}>, C<%{volume_count}>, C<%{backup_status}>, C<%{last_backup_time}>, C<%{partition_name}>, C<%{replication_policy}>, C<%{snapshot_policy}>, C<%{safeguarded_policy}>, C<%{restore_in_progress}>
 
-Threshold on each group. Available macros: C<name>, C<volume_count>,
-C<backup_status>, C<last_backup_time>, C<partition_name>,
-C<replication_policy>, C<snapshot_policy>, C<safeguarded_policy>,
-C<restore_in_progress>.
+=item B<--unknown-status>
 
-Default critical: C<%{backup_status} =~ /^failed$/i>.
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: C<%{name}>, C<%{volume_count}>, C<%{backup_status}>, C<%{last_backup_time}>, C<%{partition_name}>, C<%{replication_policy}>, C<%{snapshot_policy}>, C<%{safeguarded_policy}>, C<%{restore_in_progress}>
 
-Nothing else alerts by default. On these arrays C<backup_status> is C<off>
-everywhere and no group references a snapshot policy, an operational choice,
-not a fault. Once that choice is settled, express it here rather than in the
-code:
+=item B<--warning-detected>
 
-    --warning-status='%{snapshot_policy} eq ""'
+Threshold.
 
-=item B<--warning-without-snapshot-policy>
+=item B<--critical-detected>
 
-Warning threshold.
-
-Threshold on the number of groups with no snapshot policy attached. The blunt
-version of the same question, when the answer is "all of them should have one".
-
-=item B<--critical-without-snapshot-policy>
-
-Critical threshold.
-
-Threshold on the number of groups with no snapshot policy attached. The blunt
-version of the same question, when the answer is "all of them should have one".
+Threshold.
 
 =item B<--warning-replicated>
 
-Warning threshold.
-
-Thresholds on the counts.
+Threshold.
 
 =item B<--critical-replicated>
 
-Critical threshold.
+Threshold.
 
-Thresholds on the counts.
+=item B<--warning-without-snapshot-policy>
+
+Threshold.
+
+=item B<--critical-without-snapshot-policy>
+
+Threshold.
 
 =item B<--warning-restoring>
 
-Warning threshold.
-
-Thresholds on the counts.
+Threshold.
 
 =item B<--critical-restoring>
 
-Critical threshold.
-
-Thresholds on the counts.
+Threshold.
 
 =back
 

@@ -215,239 +215,125 @@ __END__
 
 =head1 MODE
 
-Check the array performance: latency, bandwidth, IOPS and processor load.
-
-C<lssystemstats> returns counters sampled every five minutes. The current value
-becomes the metric; C<--add-peaks> adds the peak and its timestamp to the long
-output, because on a five-minute average the peak is what the mean erases.
-
-Only latency ships with thresholds. It is the one indicator with a physical
-norm: on all-flash, a few milliseconds is normal and a few tens is not,
-whichever array you look at. IOPS, bandwidth and CPU have no good absolute
-value, they are set against what you observe, so no default is shipped.
-
-IBM Storage Insights Pro keeps a year of history and dozens of metrics: fine
-metrology lives there. This mode exists for the B<alert>, which has to be raised
-in Centreon because Centreon is what sends the notifications.
-
-Example:
-
-    perl centreon_plugins.pl --plugin=storage::ibm::flashsystem::restapi::plugin \
-        --mode=performance --hostname=10.0.0.1 \
-        --api-username=svc_monitor --api-password=xxx --insecure \
-        --warning-latency=10 --critical-latency=20
+Check system performance: latency, IOPS, throughput, CPU and cache usage.
 
 =over 8
 
 =item B<--add-peaks>
 
-Add each counter's peak value and peak time to the long output.
+Add the peak value of each counter, and its time, in the long output.
 
 =item B<--warning-latency>
 
-Warning threshold.
-
-Thresholds on the overall volume latency, in milliseconds. Suggested starting
-point on these all-flash systems: 10 and 20. Measured idle values sit around
-0.3 ms, so anything in that range is already an order of magnitude off.
+Threshold in milliseconds.
 
 =item B<--critical-latency>
 
-Critical threshold.
-
-Thresholds on the overall volume latency, in milliseconds. Suggested starting
-point on these all-flash systems: 10 and 20. Measured idle values sit around
-0.3 ms, so anything in that range is already an order of magnitude off.
+Threshold in milliseconds.
 
 =item B<--warning-read-latency>
 
-Warning threshold.
-
-Same, split by direction. Writes are normally slower than reads, around 0.5 ms
-against 0.2 on these arrays, so a single threshold on both hides a write
-problem.
+Threshold in milliseconds.
 
 =item B<--critical-read-latency>
 
-Critical threshold.
-
-Same, split by direction. Writes are normally slower than reads, around 0.5 ms
-against 0.2 on these arrays, so a single threshold on both hides a write
-problem.
+Threshold in milliseconds.
 
 =item B<--warning-write-latency>
 
-Warning threshold.
-
-Same, split by direction. Writes are normally slower than reads, around 0.5 ms
-against 0.2 on these arrays, so a single threshold on both hides a write
-problem.
+Threshold in milliseconds.
 
 =item B<--critical-write-latency>
 
-Critical threshold.
-
-Same, split by direction. Writes are normally slower than reads, around 0.5 ms
-against 0.2 on these arrays, so a single threshold on both hides a write
-problem.
-
-=item B<--warning-backend-latency>
-
-Warning threshold.
-
-Latency of the mdisks and of the drives. Compare with the volume latency: a
-system slow at the front but fast at the back points at the cache or the
-fabric, not at the disks.
-
-=item B<--critical-backend-latency>
-
-Critical threshold.
-
-Latency of the mdisks and of the drives. Compare with the volume latency: a
-system slow at the front but fast at the back points at the cache or the
-fabric, not at the disks.
-
-=item B<--warning-drive-latency>
-
-Warning threshold.
-
-Latency of the mdisks and of the drives. Compare with the volume latency: a
-system slow at the front but fast at the back points at the cache or the
-fabric, not at the disks.
-
-=item B<--critical-drive-latency>
-
-Critical threshold.
-
-Latency of the mdisks and of the drives. Compare with the volume latency: a
-system slow at the front but fast at the back points at the cache or the
-fabric, not at the disks.
+Threshold in milliseconds.
 
 =item B<--warning-iops>
 
-Warning threshold.
-
-Thresholds on volume IOPS and throughput. Throughput is in bytes per second:
-the array reports MB/s and the mode converts.
+Threshold in IOPS.
 
 =item B<--critical-iops>
 
-Critical threshold.
-
-Thresholds on volume IOPS and throughput. Throughput is in bytes per second:
-the array reports MB/s and the mode converts.
+Threshold in IOPS.
 
 =item B<--warning-bandwidth>
 
-Warning threshold.
-
-Thresholds on volume IOPS and throughput. Throughput is in bytes per second:
-the array reports MB/s and the mode converts.
+Threshold in bytes per second.
 
 =item B<--critical-bandwidth>
 
-Critical threshold.
-
-Thresholds on volume IOPS and throughput. Throughput is in bytes per second:
-the array reports MB/s and the mode converts.
+Threshold in bytes per second.
 
 =item B<--warning-cpu>
 
-Warning threshold.
-
-Thresholds on the processor load, overall and for compression.
+Threshold in percentage.
 
 =item B<--critical-cpu>
 
-Critical threshold.
-
-Thresholds on the processor load, overall and for compression.
+Threshold in percentage.
 
 =item B<--warning-compression-cpu>
 
-Warning threshold.
-
-Thresholds on the processor load, overall and for compression.
+Threshold in percentage.
 
 =item B<--critical-compression-cpu>
 
-Critical threshold.
-
-Thresholds on the processor load, overall and for compression.
-
-=item B<--warning-node-cpu>
-
-Warning threshold.
-
-Thresholds on the B<per-canister> CPU load. Storage Virtualize has no load
-average; on an active/active pair the telling figure is the imbalance, one
-canister carrying everything while the other idles, which the global average
-hides. The C<node-cpu> label is chosen so the Cpu service's
-C<--filter-counters=cpu> picks these counters up without touching any Centreon
-template.
-
-=item B<--critical-node-cpu>
-
-Critical threshold.
-
-Thresholds on the B<per-canister> CPU load. Storage Virtualize has no load
-average; on an active/active pair the telling figure is the imbalance, one
-canister carrying everything while the other idles, which the global average
-hides. The C<node-cpu> label is chosen so the Cpu service's
-C<--filter-counters=cpu> picks these counters up without touching any Centreon
-template.
+Threshold in percentage.
 
 =item B<--warning-write-cache>
 
-Warning threshold.
-
-Thresholds on cache occupancy. A write cache that stays full is a sign the
-backend cannot absorb what the hosts send.
+Threshold in percentage.
 
 =item B<--critical-write-cache>
 
-Critical threshold.
-
-Thresholds on cache occupancy. A write cache that stays full is a sign the
-backend cannot absorb what the hosts send.
+Threshold in percentage.
 
 =item B<--warning-total-cache>
 
-Warning threshold.
-
-Thresholds on cache occupancy. A write cache that stays full is a sign the
-backend cannot absorb what the hosts send.
+Threshold in percentage.
 
 =item B<--critical-total-cache>
 
-Critical threshold.
+Threshold in percentage.
 
-Thresholds on cache occupancy. A write cache that stays full is a sign the
-backend cannot absorb what the hosts send.
+=item B<--warning-backend-latency>
+
+Threshold in milliseconds.
+
+=item B<--critical-backend-latency>
+
+Threshold in milliseconds.
+
+=item B<--warning-drive-latency>
+
+Threshold in milliseconds.
+
+=item B<--critical-drive-latency>
+
+Threshold in milliseconds.
 
 =item B<--warning-fc-iops>
 
-Warning threshold.
-
-Thresholds on the Fibre Channel load, all ports together.
+Threshold in IOPS.
 
 =item B<--critical-fc-iops>
 
-Critical threshold.
-
-Thresholds on the Fibre Channel load, all ports together.
+Threshold in IOPS.
 
 =item B<--warning-fc-bandwidth>
 
-Warning threshold.
-
-Thresholds on the Fibre Channel load, all ports together.
+Threshold in bytes per second.
 
 =item B<--critical-fc-bandwidth>
 
-Critical threshold.
+Threshold in bytes per second.
 
-Thresholds on the Fibre Channel load, all ports together.
+=item B<--warning-node-cpu>
+
+Threshold in percentage.
+
+=item B<--critical-node-cpu>
+
+Threshold in percentage.
 
 =back
 

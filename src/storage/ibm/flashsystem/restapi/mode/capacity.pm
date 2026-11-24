@@ -270,33 +270,9 @@ __END__
 
 =head1 MODE
 
-Check how full the system is.
+Check space usage: physical space of the system, logical space and storage pools.
 
-On a system fitted with FlashCore Modules, a pool's capacity is a B<virtual>,
-over-allocated view of the hardware: a pool can report 630 TB free while only
-164 TB of 311 remain physically. A threshold on the pool's free space therefore
-watches a number unrelated to the moment the array fills up.
-
-Thresholds are meant to be set on B<physical-usage-prct>, taken from
-C<lssystem>. Pool figures are still published as metrics, for the trend and for
-the over-allocation ratio, but only the pool B<status> alerts on its own.
-
-The data reduction ratio is read from whichever layer actually reduces:
-the software layer (data reduction pools, C<used_capacity_*_reduction>) when a
-pool enables it, otherwise the B<FlashCore Module hardware compression>, which
-only the detailed per-mdisk view exposes (C<effective_used_capacity>, written
-by hosts, against the physical capacity actually consumed). The long output
-names the layer being measured. This matches the GUI's "Data reduction" figure;
-the GUI's larger "Total savings" ratio additionally counts thin provisioning
-and is deliberately not reproduced, over-allocation is already published as
-its own metric.
-
-Example:
-
-    perl centreon_plugins.pl --plugin=storage::ibm::flashsystem::restapi::plugin \
-        --mode=capacity --hostname=10.0.0.1 \
-        --api-username=svc_monitor --api-password=xxx --insecure \
-        --warning-physical-usage-prct=75 --critical-physical-usage-prct=85
+On systems with FlashCore Modules, the logical space is over-allocated: thresholds are meant to be set on the physical space.
 
 =over 8
 
@@ -308,112 +284,116 @@ Filter pools by name (can be a regexp).
 
 Exclude pools by name (can be a regexp).
 
-=item B<--warning-physical-usage>
+=item B<--warning-pool-status>
 
-Threshold on the physical used space (in B).
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: C<%{status}>, C<%{name}>, C<%{overallocation}>, C<%{data_reduction}>
 
-=item B<--critical-physical-usage>
+=item B<--critical-pool-status>
 
-Threshold on the physical used space (in B).
-
-=item B<--warning-physical-usage-free>
-
-Threshold on the physical free space (in B).
-
-=item B<--critical-physical-usage-free>
-
-Threshold on the physical free space (in B).
-
-=item B<--warning-physical-usage-prct>
-
-Threshold on the physical used space (in %).
-
-=item B<--critical-physical-usage-prct>
-
-Threshold on the physical used space (in %).
-
-=item B<--warning-logical-usage>
-
-Threshold on the logical used space (in B).
-
-=item B<--critical-logical-usage>
-
-Threshold on the logical used space (in B).
-
-=item B<--warning-logical-usage-free>
-
-Threshold on the logical free space (in B).
-
-=item B<--critical-logical-usage-free>
-
-Threshold on the logical free space (in B).
-
-=item B<--warning-logical-usage-prct>
-
-Threshold on the logical used space (in %).
-
-=item B<--critical-logical-usage-prct>
-
-Threshold on the logical used space (in %).
-
-=item B<--warning-overallocation>
-
-Warning threshold.
-
-Threshold on the over-allocation ratio, in percent.
-
-=item B<--critical-overallocation>
-
-Critical threshold.
-
-Threshold on the over-allocation ratio, in percent.
+Define the conditions to match for the status to be CRITICAL (default: C<'%{status} !~ /^online$/i'>).
+You can use the following variables: C<%{status}>, C<%{name}>, C<%{overallocation}>, C<%{data_reduction}>
 
 =item B<--unknown-pool-status>
 
 Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: C<%{status}>, C<%{name}>, C<%{overallocation}>, C<%{data_reduction}>
 
-Threshold on each pool. Available macros: C<name>, C<status>,
-C<overallocation>, C<data_reduction>.
+=item B<--warning-physical-usage>
 
-=item B<--warning-pool-status>
+Threshold in bytes.
 
-Define the conditions to match for the status to be WARNING.
+=item B<--critical-physical-usage>
 
-Threshold on each pool. Available macros: C<name>, C<status>,
-C<overallocation>, C<data_reduction>.
+Threshold in bytes.
 
-=item B<--critical-pool-status>
+=item B<--warning-physical-usage-free>
 
-Define the conditions to match for the status to be CRITICAL.
+Threshold in bytes.
 
-Threshold on each pool. Available macros: C<name>, C<status>,
-C<overallocation>, C<data_reduction>.
+=item B<--critical-physical-usage-free>
 
-Default critical: C<%{status} !~ /^online$/i>.
+Threshold in bytes.
+
+=item B<--warning-physical-usage-prct>
+
+Threshold in percentage.
+
+=item B<--critical-physical-usage-prct>
+
+Threshold in percentage.
+
+=item B<--warning-overallocation>
+
+Threshold in percentage.
+
+=item B<--critical-overallocation>
+
+Threshold in percentage.
+
+=item B<--warning-logical-usage>
+
+Threshold in bytes.
+
+=item B<--critical-logical-usage>
+
+Threshold in bytes.
+
+=item B<--warning-logical-usage-free>
+
+Threshold in bytes.
+
+=item B<--critical-logical-usage-free>
+
+Threshold in bytes.
+
+=item B<--warning-logical-usage-prct>
+
+Threshold in percentage.
+
+=item B<--critical-logical-usage-prct>
+
+Threshold in percentage.
+
+=item B<--warning-data-reduction-ratio>
+
+Threshold.
+
+=item B<--critical-data-reduction-ratio>
+
+Threshold.
+
+=item B<--warning-data-reduction-saved>
+
+Threshold in bytes.
+
+=item B<--critical-data-reduction-saved>
+
+Threshold in bytes.
 
 =item B<--warning-pool-usage>
 
-Threshold on the pool used space (in B).
+Threshold in bytes.
 
 =item B<--critical-pool-usage>
 
-Threshold on the pool used space (in B).
+Threshold in bytes.
 
 =item B<--warning-pool-usage-free>
 
-Threshold on the pool free space (in B).
+Threshold in bytes.
 
 =item B<--critical-pool-usage-free>
 
-Threshold on the pool free space (in B).
+Threshold in bytes.
 
 =item B<--warning-pool-usage-prct>
 
-Threshold on the pool used space (in %).
+Threshold in percentage.
 
 =item B<--critical-pool-usage-prct>
 
-Threshold on the pool used space (in %).
+Threshold in percentage.
 
 =back
 

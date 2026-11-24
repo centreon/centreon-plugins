@@ -309,78 +309,64 @@ __END__
 
 IBM Storage Virtualize REST API
 
+=head1 SYNOPSIS
+
+IBM Storage Virtualize REST API custom mode
+
 =head1 REST API OPTIONS
+
+IBM Storage Virtualize REST API
 
 =over 8
 
 =item B<--hostname>
 
-Management IP address or hostname of the system.
+Define the name or the address of the system.
 
 =item B<--port>
 
-API port (default: 7443).
+Define the port to connect to (default: 7443).
 
 =item B<--proto>
 
-Protocol (default: https).
+Define the protocol to reach the API (default: 'https').
 
 =item B<--api-username>
 
-Array account used to authenticate. The B<Monitor> role is sufficient and
-recommended: it grants read-only access to the information commands.
+Define the username of an account with the C<Monitor> role.
 
 =item B<--api-password>
 
-Password of that account. Storage Virtualize has no API key: the credentials
-are exchanged for a session token.
+Define the password of the account.
 
 =item B<--api-path>
 
-API prefix (default: C</rest/v1>). Set it to C</rest> for older firmware
-versions that do not serve C</rest/v1>.
-
-=item B<--token-lifetime>
-
-Seconds a cached session token is reused (default: 6600, just under the array's
-two-hour cap on an active session).
-
-Keep it long. The array rate-limits authentications and answers B<429 Too Many
-Requests> when pressed, whereas an expired token costs nothing: the plugin
-re-authenticates by itself when a command comes back 401 or 403. Expiring the
-token early protects against nothing and spends an authentication.
-
-=item B<--command-cache-ttl>
-
-Seconds a command B<response> is reused across checks of the same array
-(default: 0, disabled; 55 is a good value when several services read the same
-array).
-
-The array also rate-limits commands. Splitting the monitoring into
-single-purpose services multiplies plugin runs that read the B<same> C<ls*>
-commands within the same minute, the first check of the cycle fills the
-cache, the others read it, and the burst disappears without changing the
-check cadence. Every command is a read, so caching is semantically safe; the
-worst case is a detection delayed by under a minute on a five-minute cadence.
-When a command still gets a 429 after the retries, the last response is served
-if it is less than fifteen minutes old, rather than turning the check UNKNOWN.
-
-The token is cached per array and per account, so every check of the same
-system shares it. If authentications look far too frequent, check that the
-cache directory (C<--statefile-dir>, C</var/lib/centreon/centplugins> by
-default) is writable by the account running the checks.
-
-=item B<--rate-limit-max-wait>
-
-Maximum number of seconds a check waits in total before retrying requests the
-array answered with B<429 Too Many Requests> (default: 15). The delay given by
-the C<Retry-After> header is used when present. Keep the value well under the
-check timeout of the poller. Set it to 0 to never retry.
+Define the API path prefix (default: C</rest/v1>).
+Set it to C</rest> for older firmware versions that do not serve C</rest/v1>.
 
 =item B<--timeout>
 
-HTTP timeout in seconds (default: 30).
+Define the timeout in seconds (default: 30).
+
+=item B<--token-lifetime>
+
+Define the number of seconds a session token is cached and shared by the checks of the same system and account (default: 6600, under the two-hour limit of an active session).
+An expired or rejected token is renewed automatically.
+
+=item B<--command-cache-ttl>
+
+Define the number of seconds a command response is cached and shared by the checks of the same system (default: 0, disabled).
+When the system still answers HTTP 429 after the retries, a cached response less than 15 minutes old is used.
+
+=item B<--rate-limit-max-wait>
+
+Define the maximum number of seconds a check waits in total before retrying the requests answered with HTTP 429 (default: 15).
+The C<Retry-After> header is used when present. Set it to 0 to disable the retries.
 
 =back
+
+=head1 DESCRIPTION
+
+B<custom>.
 
 =cut

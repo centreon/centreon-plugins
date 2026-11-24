@@ -189,151 +189,72 @@ __END__
 
 =head1 MODE
 
-Check the Ethernet ports and their IP configuration.
+Check Ethernet ports.
 
 This mode also supports service discovery (C<--disco-format>, C<--disco-show>).
 
-Two commands describe two different things, and mixing them up is easy:
-
-=over 4
-
-=item *
-
-C<lsportethernet> is the B<physical> port: link state, negotiated speed,
-and the flags saying what it is used for, management, host, storage,
-replication.
-
-=item *
-
-C<lsportip> is the IP configuration laid on top. There is one entry per
-port B<and per use>, so a single physical port produces several rows, keyed on
-C<id> rather than C<port_id>.
-
-=back
-
-On the arrays surveyed, all twelve IP entries are C<unconfigured>, iSCSI is not
-used, everything goes over Fibre Channel, and two of the six physical ports are
-active at 1 Gb/s.
-
-So an inactive port is B<not> treated as a fault: an unconnected port is a cabling
-choice, not a defect, and alerting on it would produce permanent noise.
-
-B<Do not threshold on the role flags.> C<management>, C<host>, C<storage> and
-C<replication> report what a port is B<allowed> to carry, not what it currently
-carries: an unconnected port has them all set simply because nothing forbids them.
-A threshold on "carries a role and link is down" put all four unconnected ports in
-permanent CRITICAL. The one reliable sign that a port is in service is an IP
-address configured on it, which is what the default threshold uses.
-
-Example:
-
-    perl centreon_plugins.pl --plugin=storage::ibm::flashsystem::restapi::plugin \
-        --mode=eth-ports --hostname=10.0.0.1 \
-        --api-username=svc_monitor --api-password=xxx --insecure
+Only the ports in service are checked: ports with an IP address configured or with an active link.
 
 =over 8
 
 =item B<--include-name>
 
-Filter ports by C<node-port> name (can be a regexp).
+Filter ports by name (C<node-port>, can be a regexp).
 
 =item B<--exclude-name>
 
-Exclude ports by C<node-port> name (can be a regexp).
+Exclude ports by name (C<node-port>, can be a regexp).
 
 =item B<--add-unused>
 
-Also report the ports that have neither an IP address configured nor an active
-link (not cabled), for a full inventory.
-
-=item B<--unknown-status>
-
-Define the conditions to match for the status to be UNKNOWN.
-
-Threshold on each port. Available macros: C<name>, C<link_state>, C<speed>,
-C<roles>, C<ip>, C<node_name>, C<port_id>, C<configured>.
-
-To also require a negotiated speed on the management ports:
-
-    --warning-status='%{roles} =~ /management/ && %{speed} !~ /^1Gb/'
-
-With no iSCSI in service, no port carries an address and the mode reports the
-inventory without ever alerting. That is the intended behaviour: it starts
-alerting by itself the day an address is configured.
+Also check the ports that have neither an IP address configured nor an active link.
 
 =item B<--warning-status>
 
 Define the conditions to match for the status to be WARNING.
-
-Threshold on each port. Available macros: C<name>, C<link_state>, C<speed>,
-C<roles>, C<ip>, C<node_name>, C<port_id>, C<configured>.
-
-To also require a negotiated speed on the management ports:
-
-    --warning-status='%{roles} =~ /management/ && %{speed} !~ /^1Gb/'
-
-With no iSCSI in service, no port carries an address and the mode reports the
-inventory without ever alerting. That is the intended behaviour: it starts
-alerting by itself the day an address is configured.
+You can use the following variables: C<%{name}>, C<%{link_state}>, C<%{speed}>, C<%{roles}>, C<%{ip}>, C<%{node_name}>, C<%{port_id}>, C<%{configured}>
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL.
+Define the conditions to match for the status to be CRITICAL (default: C<'%{configured} eq "yes" and %{link_state} !~ /^active$/i'>).
+You can use the following variables: C<%{name}>, C<%{link_state}>, C<%{speed}>, C<%{roles}>, C<%{ip}>, C<%{node_name}>, C<%{port_id}>, C<%{configured}>
 
-Threshold on each port. Available macros: C<name>, C<link_state>, C<speed>,
-C<roles>, C<ip>, C<node_name>, C<port_id>, C<configured>.
+=item B<--unknown-status>
 
-Default critical: C<%{configured} eq "yes" and %{link_state} !~ /^active$/i>.
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: C<%{name}>, C<%{link_state}>, C<%{speed}>, C<%{roles}>, C<%{ip}>, C<%{node_name}>, C<%{port_id}>, C<%{configured}>
 
-To also require a negotiated speed on the management ports:
+=item B<--warning-detected>
 
-    --warning-status='%{roles} =~ /management/ && %{speed} !~ /^1Gb/'
+Threshold.
 
-With no iSCSI in service, no port carries an address and the mode reports the
-inventory without ever alerting. That is the intended behaviour: it starts
-alerting by itself the day an address is configured.
+=item B<--critical-detected>
+
+Threshold.
 
 =item B<--warning-active>
 
-Warning threshold.
-
-Thresholds on the counts. C<ip-configured> is worth watching if iSCSI is ever
-put into service: it stays at zero as long as nothing is configured.
+Threshold.
 
 =item B<--critical-active>
 
-Critical threshold.
-
-Thresholds on the counts. C<ip-configured> is worth watching if iSCSI is ever
-put into service: it stays at zero as long as nothing is configured.
+Threshold.
 
 =item B<--warning-with-role>
 
-Warning threshold.
-
-Thresholds on the counts. C<ip-configured> is worth watching if iSCSI is ever
-put into service: it stays at zero as long as nothing is configured.
+Threshold on the number of ports allowed to carry a role (management, host, storage, replication).
 
 =item B<--critical-with-role>
 
-Critical threshold.
-
-Thresholds on the counts. C<ip-configured> is worth watching if iSCSI is ever
-put into service: it stays at zero as long as nothing is configured.
+Threshold on the number of ports allowed to carry a role (management, host, storage, replication).
 
 =item B<--warning-ip-configured>
 
-Warning threshold.
-
-Thresholds on the counts. C<ip-configured> is worth watching if iSCSI is ever
-put into service: it stays at zero as long as nothing is configured.
+Threshold on the number of ports with an IP address configured.
 
 =item B<--critical-ip-configured>
 
-Critical threshold.
-
-Thresholds on the counts. C<ip-configured> is worth watching if iSCSI is ever
-put into service: it stays at zero as long as nothing is configured.
+Threshold on the number of ports with an IP address configured.
 
 =back
 

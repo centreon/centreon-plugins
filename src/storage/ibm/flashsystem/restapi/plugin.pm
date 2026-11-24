@@ -57,41 +57,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Monitor IBM Storage Virtualize systems (FlashSystem, Storwize, SAN Volume
-Controller) through the REST API served on port 7443.
-
-The plugin discovers everything from the API: no array-specific value is
-hard-coded, so a newly added system is monitored by the same commands and the
-same service templates as the existing ones.
-
-Requires Storage Virtualize 8.1.3 or later, and an array account with the
-B<Monitor> role.
-
-=over 8
-
-=item B<Available modes>
-
-C<capacity>, C<drives>, C<eth-ports>, C<eventlog>, C<fc-ports>, C<hardware>, C<hosts>,
-C<performance>, C<replication>, C<system-status>, C<volume-groups>, C<volumes>.
-
-Run C<--list-mode> to get the authoritative list: only implemented modes are
-declared, so anything listed can actually be run.
-
-C<system-status> can be used as the host check command: it is CRITICAL only
-when no canister or no pool is online. A dead power supply or a degraded
-partition does not alter it.
-
-=item B<Splitting a mode across several services>
-
-A mode that returns several concerns at once is split with
-C<--filter-counters>, a regular expression on the counter labels, no plugin
-code and no extra command. C<performance> is split that way into three
-services: C<--filter-counters=latency>,
-C<--filter-counters=iops|bandwidth|cache> and C<--filter-counters=cpu>.
-
-The same idea restricts a scope rather than a counter set:
-C<--include-partition> gives one replication service per storage partition.
-
-=back
+Check IBM Storage Virtualize systems (FlashSystem, Storwize, SAN Volume Controller) using the REST API.
 
 =cut

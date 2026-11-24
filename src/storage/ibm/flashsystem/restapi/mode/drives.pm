@@ -185,24 +185,9 @@ __END__
 
 =head1 MODE
 
-Track the drives: FlashCore Module wear, NVMe paths and physical fill, per
-drive.
+Check drives: NVMe paths, predicted replacement, FlashCore Module wear and physical usage.
 
-The concise C<lsdrive> view only carries status and capacity; everything that
-makes drive B<tracking> lives in the detailed per-drive view (one call per
-drive): C<write_endurance_used>, the two path statuses, the physical fill and
-the predicted C<replacement_date>.
-
-Drive B<status> stays with the C<hardware> mode, which already covers every
-drive among its components, carrying it here too would double each alert.
-This mode alerts, by default, on a fallen path or a predicted end of life.
-
-Example:
-
-    perl centreon_plugins.pl --plugin=storage::ibm::flashsystem::restapi::plugin \
-        --mode=drives --hostname=10.0.0.1 \
-        --api-username=svc_monitor --api-password=xxx --insecure \
-        --warning-endurance=80 --critical-endurance=90
+The drive status itself is checked by the C<hardware> mode.
 
 =over 8
 
@@ -214,77 +199,60 @@ Filter drives by id (can be a regexp).
 
 Exclude drives by id (can be a regexp).
 
-=item B<--unknown-path-status>
-
-Define the conditions to match for the path status to be UNKNOWN.
-You can use the following variables: C<%{name}>, C<%{paths_online}>,
-C<%{paths_total}>, C<%{port_1_status}>, C<%{port_2_status}>, C<%{use}>,
-C<%{firmware}>. Paths without a known state are not counted in
-C<%{paths_total}>.
-
 =item B<--warning-path-status>
 
-Define the conditions to match for the path status to be WARNING
-(default: C<'%{paths_online} < %{paths_total}'>).
-You can use the following variables: C<%{name}>, C<%{paths_online}>,
-C<%{paths_total}>, C<%{port_1_status}>, C<%{port_2_status}>, C<%{use}>,
-C<%{firmware}>.
+Define the conditions to match for the status to be WARNING (default: C<'%{paths_online} < %{paths_total}'>).
+You can use the following variables: C<%{name}>, C<%{paths_online}>, C<%{paths_total}>, C<%{port_1_status}>, C<%{port_2_status}>, C<%{use}>, C<%{firmware}>.
+Paths without a known state are not counted in C<%{paths_total}>.
 
 =item B<--critical-path-status>
 
-Define the conditions to match for the path status to be CRITICAL
-(default: C<< '%{paths_total} > 0 and %{paths_online} == 0' >>).
-You can use the following variables: C<%{name}>, C<%{paths_online}>,
-C<%{paths_total}>, C<%{port_1_status}>, C<%{port_2_status}>, C<%{use}>,
-C<%{firmware}>.
+Define the conditions to match for the status to be CRITICAL (default: C<< '%{paths_total} > 0 and %{paths_online} == 0' >>).
+You can use the following variables: C<%{name}>, C<%{paths_online}>, C<%{paths_total}>, C<%{port_1_status}>, C<%{port_2_status}>, C<%{use}>, C<%{firmware}>
 
-=item B<--unknown-replacement-status>
+=item B<--unknown-path-status>
 
-Define the conditions to match for the replacement status to be UNKNOWN.
-You can use the following variables: C<%{name}>, C<%{replacement_date}>.
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: C<%{name}>, C<%{paths_online}>, C<%{paths_total}>, C<%{port_1_status}>, C<%{port_2_status}>, C<%{use}>, C<%{firmware}>
 
 =item B<--warning-replacement-status>
 
-Define the conditions to match for the replacement status to be WARNING
-(default: C<'%{replacement_date} ne ""'>): the array predicts an end of life.
-You can use the following variables: C<%{name}>, C<%{replacement_date}>.
+Define the conditions to match for the status to be WARNING (default: C<'%{replacement_date} ne ""'>).
+You can use the following variables: C<%{name}>, C<%{replacement_date}>
 
 =item B<--critical-replacement-status>
 
-Define the conditions to match for the replacement status to be CRITICAL.
-You can use the following variables: C<%{name}>, C<%{replacement_date}>.
+Define the conditions to match for the status to be CRITICAL.
+You can use the following variables: C<%{name}>, C<%{replacement_date}>
+
+=item B<--unknown-replacement-status>
+
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: C<%{name}>, C<%{replacement_date}>
+
+=item B<--warning-detected>
+
+Threshold.
+
+=item B<--critical-detected>
+
+Threshold.
 
 =item B<--warning-endurance>
 
-Warning threshold.
-
-Thresholds on the FlashCore Module wear, in percent. No default in the code:
-the values are set in the service template macro (80/90 suggested). Observed
-on these arrays after their first months: 0 %.
+Threshold in percentage of the write endurance used.
 
 =item B<--critical-endurance>
 
-Critical threshold.
-
-Thresholds on the FlashCore Module wear, in percent. No default in the code:
-the values are set in the service template macro (80/90 suggested). Observed
-on these arrays after their first months: 0 %.
+Threshold in percentage of the write endurance used.
 
 =item B<--warning-physical-usage-prct>
 
-Warning threshold.
-
-Thresholds on the physical fill of each module. The system-level threshold in
-the capacity mode is the one that matters; the per-drive figure exists to spot
-an unbalanced distribution.
+Threshold in percentage.
 
 =item B<--critical-physical-usage-prct>
 
-Critical threshold.
-
-Thresholds on the physical fill of each module. The system-level threshold in
-the capacity mode is the one that matters; the per-drive figure exists to spot
-an unbalanced distribution.
+Threshold in percentage.
 
 =back
 

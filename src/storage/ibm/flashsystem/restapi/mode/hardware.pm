@@ -215,33 +215,17 @@ __END__
 
 =head1 MODE
 
-Check hardware health: enclosures, node and expansion canisters, power
-supplies, batteries, drives, arrays, mdisks and quorum devices.
-
-Enclosure subsystems are additionally checked through the C<online_*>/C<total_*>
-counters the enclosure itself reports. A subsystem whose total is zero is not
-fitted on that model and is skipped rather than counted as missing.
-
-Families that do not exist on a given model or firmware are skipped silently,
-so the same mode covers every Storage Virtualize system.
-
-Example:
-
-    perl centreon_plugins.pl --plugin=storage::ibm::flashsystem::restapi::plugin \
-        --mode=hardware --hostname=10.0.0.1 \
-        --api-username=svc_monitor --api-password=xxx
+Check hardware components (enclosures, canisters, power supplies, batteries, fan modules, drives, arrays, mdisks, quorum devices), enclosure subsystems and environment.
 
 =over 8
 
 =item B<--include-type>
 
-Filter component families by label (can be a regexp): C<enclosure>,
-C<node canister>, C<expansion canister>, C<power supply>, C<battery>,
-C<fan module>, C<drive>, C<array>, C<mdisk>, C<quorum>.
+Filter component families by label (C<enclosure>, C<node canister>, C<expansion canister>, C<power supply>, C<battery>, C<fan module>, C<drive>, C<array>, C<mdisk>, C<quorum>) (can be a regexp).
 
 =item B<--exclude-type>
 
-Exclude component families by label (can be a regexp).
+Exclude component families by label (C<enclosure>, C<node canister>, C<expansion canister>, C<power supply>, C<battery>, C<fan module>, C<drive>, C<array>, C<mdisk>, C<quorum>) (can be a regexp).
 
 =item B<--include-name>
 
@@ -251,84 +235,67 @@ Filter components by name or id (can be a regexp).
 
 Exclude components by name or id (can be a regexp).
 
-=item B<--unknown-component-status>
-
-Define the conditions to match for the status to be UNKNOWN.
-
-Threshold on each component. Available macros: C<name>, C<type>, C<status>.
-
-Critical means B<service lost>, warning means B<redundancy lost>. Every part
-here is redundant, two power supplies, two canisters, six fan modules, a DRAID
-across twelve drives, so a degraded component eats the margin without stopping
-anything. Merging the two wakes someone up for a fault that can wait for
-business hours, and buries the real outage among them.
-
 =item B<--warning-component-status>
 
-Define the conditions to match for the status to be WARNING.
-
-Threshold on each component. Available macros: C<name>, C<type>, C<status>.
-
-Default warning: C<%{status} =~ /^(degraded|degraded_paths|degraded_ports)$/i>.
-
-Critical means B<service lost>, warning means B<redundancy lost>. Every part
-here is redundant, two power supplies, two canisters, six fan modules, a DRAID
-across twelve drives, so a degraded component eats the margin without stopping
-anything. Merging the two wakes someone up for a fault that can wait for
-business hours, and buries the real outage among them.
+Define the conditions to match for the status to be WARNING (default: C<'%{status} =~ /^(degraded|degraded_paths|degraded_ports)$/i'>).
+You can use the following variables: C<%{name}>, C<%{type}>, C<%{status}>
 
 =item B<--critical-component-status>
 
-Define the conditions to match for the status to be CRITICAL.
+Define the conditions to match for the status to be CRITICAL (default: C<'%{status} =~ /^(offline|excluded)$/i'>).
+You can use the following variables: C<%{name}>, C<%{type}>, C<%{status}>
 
-Threshold on each component. Available macros: C<name>, C<type>, C<status>.
+=item B<--unknown-component-status>
 
-Default critical: C<%{status} =~ /^(offline|excluded)$/i>.
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: C<%{name}>, C<%{type}>, C<%{status}>
 
-Critical means B<service lost>, warning means B<redundancy lost>. Every part
-here is redundant, two power supplies, two canisters, six fan modules, a DRAID
-across twelve drives, so a degraded component eats the margin without stopping
-anything. Merging the two wakes someone up for a fault that can wait for
-business hours, and buries the real outage among them.
+=item B<--warning-subsystem-status>
+
+Define the conditions to match for the status to be WARNING (default: C<< '%{online} < %{total}' >>).
+You can use the following variables: C<%{enclosure}>, C<%{label}>, C<%{online}>, C<%{total}>
+
+=item B<--critical-subsystem-status>
+
+Define the conditions to match for the status to be CRITICAL (default: C<'%{online} == 0'>).
+You can use the following variables: C<%{enclosure}>, C<%{label}>, C<%{online}>, C<%{total}>
 
 =item B<--unknown-subsystem-status>
 
 Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: C<%{enclosure}>, C<%{label}>, C<%{online}>, C<%{total}>
 
-Threshold on each enclosure subsystem. Available macros: C<enclosure>,
-C<label>, C<online>, C<total>.
+=item B<--warning-components-detected>
 
-=item B<--warning-subsystem-status>
+Threshold.
 
-Define the conditions to match for the status to be WARNING.
+=item B<--critical-components-detected>
 
-Threshold on each enclosure subsystem. Available macros: C<enclosure>,
-C<label>, C<online>, C<total>.
-
-Default warning: C<%{online} E<lt> %{total}> - one power supply out of two is a.
-lost redundancy, not an outage.
-
-=item B<--critical-subsystem-status>
-
-Define the conditions to match for the status to be CRITICAL.
-
-Threshold on each enclosure subsystem. Available macros: C<enclosure>,
-C<label>, C<online>, C<total>.
-
-Default critical: C<%{online} == 0> - nothing left in that subsystem.
-.
+Threshold.
 
 =item B<--warning-components-degraded>
 
-Warning threshold.
-
-Thresholds on the number of components that are not online.
+Threshold.
 
 =item B<--critical-components-degraded>
 
-Critical threshold.
+Threshold.
 
-Thresholds on the number of components that are not online.
+=item B<--warning-temperature>
+
+Threshold in degrees Celsius.
+
+=item B<--critical-temperature>
+
+Threshold in degrees Celsius.
+
+=item B<--warning-power>
+
+Threshold in watts.
+
+=item B<--critical-power>
+
+Threshold in watts.
 
 =back
 

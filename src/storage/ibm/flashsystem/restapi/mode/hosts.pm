@@ -170,20 +170,11 @@ __END__
 
 =head1 MODE
 
-Check the status of the hosts declared on the system.
+Check hosts.
 
 This mode also supports service discovery (C<--disco-format>, C<--disco-show>).
 
-Every declared host is evaluated. A host that is offline on purpose, a spare
-logical partition profile, an idle backup host, still reports offline: acknowledging it in
-Centreon records who decided it is expected and when that should be revisited,
-which a hard-coded exclusion would not.
-
-Example:
-
-    perl centreon_plugins.pl --plugin=storage::ibm::flashsystem::restapi::plugin \
-        --mode=hosts --hostname=10.0.0.1 \
-        --api-username=svc_monitor --api-password=xxx
+A host is C<offline> when none of its ports is connected (for example a server powered off on purpose) and C<degraded> when only part of them are.
 
 =over 8
 
@@ -203,81 +194,52 @@ Filter hosts by storage partition name (can be a regexp).
 
 Exclude hosts by storage partition name (can be a regexp).
 
-=item B<--unknown-status>
-
-Define the conditions to match for the status to be UNKNOWN.
-
-Threshold on each host. Available macros: C<name>, C<status>, C<port_count>,
-C<host_cluster_name>, C<partition_name>.
-
-The natural order of severity is B<inverted> here, on purpose. C<offline> means
-no WWPN of that host connects any more: the array cannot tell a deliberately
-powered-off server from a failed one, and the common case is the former
-(spares, backup hosts), a warning keeps it visible without waking anyone.
-C<degraded> means only B<part> of the paths answer: the host is running, in
-production, on eaten-into redundancy, and the next lost path cuts its storage.
-That is actionable right now (zoning, SFP, switch) and is often the only place
-such a fabric fault shows up.
-
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING.
-
-Threshold on each host. Available macros: C<name>, C<status>, C<port_count>,
-C<host_cluster_name>, C<partition_name>.
-
-Default warning: C<%{status} =~ /^offline$/i>.
-
-The natural order of severity is B<inverted> here, on purpose. C<offline> means
-no WWPN of that host connects any more: the array cannot tell a deliberately
-powered-off server from a failed one, and the common case is the former
-(spares, backup hosts), a warning keeps it visible without waking anyone.
-C<degraded> means only B<part> of the paths answer: the host is running, in
-production, on eaten-into redundancy, and the next lost path cuts its storage.
-That is actionable right now (zoning, SFP, switch) and is often the only place
-such a fabric fault shows up.
+Define the conditions to match for the status to be WARNING (default: C<'%{status} =~ /^offline$/i'>).
+You can use the following variables: C<%{name}>, C<%{status}>, C<%{port_count}>, C<%{host_cluster_name}>, C<%{partition_name}>
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL.
+Define the conditions to match for the status to be CRITICAL (default: C<'%{status} =~ /^degraded$/i'>).
+You can use the following variables: C<%{name}>, C<%{status}>, C<%{port_count}>, C<%{host_cluster_name}>, C<%{partition_name}>
 
-Threshold on each host. Available macros: C<name>, C<status>, C<port_count>,
-C<host_cluster_name>, C<partition_name>.
+=item B<--unknown-status>
 
-Default critical: C<%{status} =~ /^degraded$/i>.
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: C<%{name}>, C<%{status}>, C<%{port_count}>, C<%{host_cluster_name}>, C<%{partition_name}>
 
-The natural order of severity is B<inverted> here, on purpose. C<offline> means
-no WWPN of that host connects any more: the array cannot tell a deliberately
-powered-off server from a failed one, and the common case is the former
-(spares, backup hosts), a warning keeps it visible without waking anyone.
-C<degraded> means only B<part> of the paths answer: the host is running, in
-production, on eaten-into redundancy, and the next lost path cuts its storage.
-That is actionable right now (zoning, SFP, switch) and is often the only place
-such a fabric fault shows up.
+=item B<--warning-detected>
+
+Threshold.
+
+=item B<--critical-detected>
+
+Threshold.
+
+=item B<--warning-online>
+
+Threshold.
+
+=item B<--critical-online>
+
+Threshold.
 
 =item B<--warning-offline>
 
-Warning threshold.
-
-Thresholds on the number of offline and degraded hosts.
+Threshold.
 
 =item B<--critical-offline>
 
-Critical threshold.
-
-Thresholds on the number of offline and degraded hosts.
+Threshold.
 
 =item B<--warning-degraded>
 
-Warning threshold.
-
-Thresholds on the number of offline and degraded hosts.
+Threshold.
 
 =item B<--critical-degraded>
 
-Critical threshold.
-
-Thresholds on the number of offline and degraded hosts.
+Threshold.
 
 =back
 

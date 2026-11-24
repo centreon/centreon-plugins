@@ -156,25 +156,16 @@ __END__
 
 =head1 MODE
 
-Check unfixed entries of the event log.
+Check unfixed event log entries.
 
-The array reports two kinds of unfixed entries: C<alert>, which require an
-action and populate the "Recommended Actions" panel of the GUI, and C<message>,
-which are informational and never clear. Only alerts are evaluated by default;
-messages are counted and exposed as a metric.
-
-Example:
-
-    perl centreon_plugins.pl --plugin=storage::ibm::flashsystem::restapi::plugin \
-        --mode=eventlog --hostname=10.0.0.1 \
-        --api-username=svc_monitor --api-password=xxx
+Entries with the C<alert> status are the recommended actions of the system. Entries with the C<message> status are informational: they are counted but not checked by default.
 
 =over 8
 
 =item B<--include-status>
 
-Filter entries by status (can be a regexp, default: C<^alert$>). Set it to an
-empty value to also evaluate informational messages.
+Filter entries by status (can be a regexp, default: C<^alert$>).
+Set it to an empty value to also check the entries with the C<message> status.
 
 =item B<--exclude-status>
 
@@ -212,55 +203,36 @@ Filter entries by object name (can be a regexp).
 
 Exclude entries by object name (can be a regexp).
 
-=item B<--unknown-event-status>
-
-Define the conditions to match for the status to be UNKNOWN.
-
-Threshold on each selected entry. Available macros: C<status>, C<error_code>,
-C<event_id>, C<object_type>, C<object_name>, C<description>,
-C<last_timestamp>, C<sequence_number>.
-
 =item B<--warning-event-status>
 
 Define the conditions to match for the status to be WARNING.
-
-Threshold on each selected entry. Available macros: C<status>, C<error_code>,
-C<event_id>, C<object_type>, C<object_name>, C<description>,
-C<last_timestamp>, C<sequence_number>.
+You can use the following variables: C<%{sequence_number}>, C<%{status}>, C<%{error_code}>, C<%{event_id}>, C<%{object_type}>, C<%{object_name}>, C<%{description}>, C<%{last_timestamp}>
 
 =item B<--critical-event-status>
 
-Define the conditions to match for the status to be CRITICAL.
+Define the conditions to match for the status to be CRITICAL (default: C<'%{status} =~ /^alert$/i'>).
+You can use the following variables: C<%{sequence_number}>, C<%{status}>, C<%{error_code}>, C<%{event_id}>, C<%{object_type}>, C<%{object_name}>, C<%{description}>, C<%{last_timestamp}>
 
-Threshold on each selected entry. Available macros: C<status>, C<error_code>,
-C<event_id>, C<object_type>, C<object_name>, C<description>,
-C<last_timestamp>, C<sequence_number>.
+=item B<--unknown-event-status>
 
-Default critical: C<%{status} =~ /^alert$/i>.
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: C<%{sequence_number}>, C<%{status}>, C<%{error_code}>, C<%{event_id}>, C<%{object_type}>, C<%{object_name}>, C<%{description}>, C<%{last_timestamp}>
 
 =item B<--warning-alerts>
 
-Warning threshold.
-
-Thresholds on the number of unfixed alerts and messages.
+Threshold.
 
 =item B<--critical-alerts>
 
-Critical threshold.
-
-Thresholds on the number of unfixed alerts and messages.
+Threshold.
 
 =item B<--warning-messages>
 
-Warning threshold.
-
-Thresholds on the number of unfixed alerts and messages.
+Threshold.
 
 =item B<--critical-messages>
 
-Critical threshold.
-
-Thresholds on the number of unfixed alerts and messages.
+Threshold.
 
 =back
 
