@@ -59,12 +59,17 @@ IF EXIST "%PERL_INSTALL_DIR%\c\bin\curl-deps.txt" (
 ENDLOCAL
 
 REM Static pp options and the entry script.
+REM Net::SSL / Crypt::SSLeay are excluded: Crypt::SSLeay is linked against
+REM Strawberry's own OpenSSL, which is not bundled. TLS goes through
+REM Net::SSLeay / IO::Socket::SSL instead.
 (
     ECHO --lib=centreon-plugins\src\
     ECHO -o resources\scripts\x64\centreon\centreon_plugins.exe
     ECHO centreon-plugins\src\centreon_plugins.pl
     ECHO --unicode
     ECHO -X IO::Socket::INET6
+    ECHO -X Net::SSL
+    ECHO -X Crypt::SSLeay
     ECHO --verbose
 )>>%PP_ARGS%
 
