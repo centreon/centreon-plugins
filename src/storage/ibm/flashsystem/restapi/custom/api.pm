@@ -263,16 +263,6 @@ sub request {
 
         next if ($code == 429 && $self->rate_limit_wait(attempt => $attempt));
 
-        if ($code == 429 && $cache_ttl > 0) {
-            my $stale = $self->cached_response(key => $cache_key, max_age => 900);
-            if (defined($stale)) {
-                $self->{output}->output_add(
-                    long_msg => "HTTP 429 on '" . $options{command} . "': served the cached response instead."
-                );
-                return $stale;
-            }
-        }
-
         return undef if ($code == 404 && $options{optional});
 
         $self->{output}->option_exit(
@@ -356,7 +346,6 @@ An expired or rejected token is renewed automatically.
 =item B<--command-cache-ttl>
 
 Define the number of seconds a command response is cached and shared by the checks of the same system (default: 0, disabled).
-When the system still answers HTTP 429 after the retries, a cached response less than 15 minutes old is used.
 
 =item B<--rate-limit-max-wait>
 

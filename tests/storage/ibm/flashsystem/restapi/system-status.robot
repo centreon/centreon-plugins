@@ -45,3 +45,23 @@ system-status ${tc}
     ...    3
     ...    --warning-pools-online=2:
     ...    WARNING: Array pools online: 1/1 | 'system.canisters.online.count'=2;;1:;0;2 'system.pools.online.count'=1;2:;1:;0;1
+
+system-status command cache
+    [Documentation]    The second and third runs target an API path the mock does not serve.
+    [Tags]    storage    ibm    flashsystem    restapi
+    Remove File    /tmp/ibm_flashsystem_api_rsp_*
+
+    ${command}    Catenate    ${CMD}    --command-cache-ttl=60
+    Ctn Run Command And Check Result As Strings
+    ...    ${command}
+    ...    OK: Array canisters online: 2/2, pools online: 1/1 | 'system.canisters.online.count'=2;;1:;0;2 'system.pools.online.count'=1;;1:;0;1
+
+    ${command}    Catenate    ${CMD}    --command-cache-ttl=60    --api-path=/nonexistent
+    Ctn Run Command And Check Result As Strings
+    ...    ${command}
+    ...    OK: Array canisters online: 2/2, pools online: 1/1 | 'system.canisters.online.count'=2;;1:;0;2 'system.pools.online.count'=1;;1:;0;1
+
+    ${command}    Catenate    ${CMD}    --command-cache-ttl=0    --api-path=/nonexistent
+    Ctn Run Command And Check Result As Regexp
+    ...    ${command}
+    ...    ^UNKNOWN: API command '\\S+' failed: HTTP 404
