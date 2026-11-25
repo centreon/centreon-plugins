@@ -87,6 +87,10 @@ jobs:
         shell: cmd
         run: .github\scripts\build_centreon_plugins_64.bat
 
+      - name: Check bundled OpenSSL (single, supported version)
+        shell: cmd
+        run: perl .github\scripts\windows\check-bundled-openssl.pl .github\scripts\resources\scripts\x64\centreon\centreon_plugins.exe
+
       - name: Smoke-test the executable (standalone, version, HTTP backends)
         shell: pwsh
         run: |

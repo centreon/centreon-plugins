@@ -25,11 +25,13 @@ DEL /F /Q %PP_ARGS% 2>NUL
 SETLOCAL EnableDelayedExpansion
 REM Standard native libraries, resolved by prefix (version-agnostic). Link EVERY
 REM match, not just the first: Strawberry ships its own libs with a "__" suffix
-REM (e.g. libssl-3-x64__.dll) while the mingw libcurl closure adds non-suffixed
-REM ones (libssl-3-x64.dll). Net::SSLeay needs Strawberry's build, Net::Curl needs
-REM mingw's -- both must be bundled (different filenames, so they coexist).
+REM (e.g. libxml2-2__.dll) while the mingw libcurl closure may add non-suffixed
+REM ones -- both are bundled (different filenames, so they coexist).
+REM OpenSSL is deliberately NOT listed: Net::SSLeay is rebuilt against the mingw
+REM OpenSSL (see setup-strawberry-perl), whose libssl/libcrypto DLLs come with the
+REM libcurl closure below. Strawberry's own OpenSSL (*__.dll) must not be bundled.
 SET "LINKED= "
-FOR %%L IN (libxml2-2 libiconv-2 liblzma-5 zlib1 libcrypto libssl) DO (
+FOR %%L IN (libxml2-2 libiconv-2 liblzma-5 zlib1) DO (
     SET "FOUND="
     FOR /f "delims=" %%F IN ('DIR /b "%PERL_INSTALL_DIR%\c\bin\%%L*.dll" 2^>nul') DO (
         SET "FOUND=1"
@@ -57,12 +59,17 @@ IF EXIST "%PERL_INSTALL_DIR%\c\bin\curl-deps.txt" (
 ENDLOCAL
 
 REM Static pp options and the entry script.
+REM Net::SSL / Crypt::SSLeay are excluded: Crypt::SSLeay is linked against
+REM Strawberry's own OpenSSL, which is not bundled. TLS goes through
+REM Net::SSLeay / IO::Socket::SSL instead.
 (
     ECHO --lib=centreon-plugins\src\
     ECHO -o resources\scripts\x64\centreon\centreon_plugins.exe
     ECHO centreon-plugins\src\centreon_plugins.pl
     ECHO --unicode
     ECHO -X IO::Socket::INET6
+    ECHO -X Net::SSL
+    ECHO -X Crypt::SSLeay
     ECHO --verbose
 )>>%PP_ARGS%
 
