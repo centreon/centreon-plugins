@@ -128,6 +128,15 @@ runs:
         # in C:\Strawberry\c\bin, with mingw64\bin last as a fallback.
         $env:PATH = "C:\Strawberry\perl\bin;C:\Strawberry\perl\site\bin;C:\Strawberry\c\bin;$env:PATH;C:\msys64\mingw64\bin"
         $env:OPENSSL_PREFIX = $prefix
+        # Hide Crypt::OpenSSL::Bignum from the test suite: Strawberry's copy is
+        # linked against Strawberry's own OpenSSL, and t/local/33_x509_create_cert.t
+        # frees with it a BIGNUM allocated by the mingw OpenSSL, which corrupts the
+        # heap (STATUS_HEAP_CORRUPTION). That test skips the block when the module
+        # cannot be loaded. Crypt::OpenSSL::Bignum is not bundled in the executable.
+        $hide = "$prefix\perl-hide\Crypt\OpenSSL"
+        New-Item -ItemType Directory -Force $hide | Out-Null
+        Set-Content "$hide\Bignum.pm" 'die "Crypt::OpenSSL::Bignum hidden for the Net::SSLeay test suite\n";' -Encoding ASCII
+        $env:PERL5LIB = "$prefix\perl-hide"
         perl C:\Strawberry\perl\bin\cpanm --reinstall CHRISN/Net-SSLeay-1.97_01.tar.gz
         if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
