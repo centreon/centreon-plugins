@@ -63,7 +63,6 @@ runs:
           JSON::XS ^
           Net::FTPSSL ^
           Net::NTP ^
-          Net::SSLeay ^
           Pod::Simple::Search ^
           Tie::RefHash::Weak ^
           Win32::Job ^
@@ -74,7 +73,7 @@ runs:
       if: steps.cache-perl.outputs.cache-hit != 'true'
       shell: powershell
       run: |
-        & C:\msys64\usr\bin\bash.exe -lc "pacman -S --noconfirm mingw-w64-x86_64-curl"
+        & C:\msys64\usr\bin\bash.exe -lc "pacman -S --noconfirm mingw-w64-x86_64-curl mingw-w64-x86_64-openssl"
         Copy-Item "C:\msys64\mingw64\include\curl" "C:\Strawberry\c\include\" -Recurse -Force
         Copy-Item "C:\msys64\mingw64\lib\libcurl.dll.a" "C:\Strawberry\c\lib\" -Force
         # libcurl-4.dll drags a large mingw dependency tree (libssh2, nghttp2,
@@ -94,6 +93,65 @@ runs:
           'Libs: -L${libdir} -lcurl',
           'Cflags: -I${includedir}'
         ($pc -join "`n") + "`n" | Set-Content 'C:\Strawberry\c\lib\pkgconfig\libcurl.pc' -Encoding ASCII
+
+    # Rebuild Net::SSLeay against the mingw OpenSSL already bundled with the
+    # libcurl closure, instead of Strawberry's own (libssl-3-x64__.dll), so the
+    # packed executable ships a single, up-to-date OpenSSL. --reinstall is
+    # required: Strawberry ships a prebuilt Net::SSLeay that cpanm would
+    # otherwise consider up to date.
+    # Why a development release (1.97_01):
+    # - msys2 now ships OpenSSL 4.x, and libcurl is linked against it, so OpenSSL 4
+    #   is bundled for Net::Curl anyway.
+    # - The latest stable Net::SSLeay (1.96) does not build against OpenSSL 4
+    #   (it uses the TLSv1*_method() functions removed in 4.0). 1.97_01 is the
+    #   first release supporting OpenSSL 4; the stable 1.97 is announced upstream.
+    # - Alternatives were rejected: keeping Strawberry's OpenSSL leaves an
+    #   end-of-life 3.3.0 in the executable, and building a separate OpenSSL 3.5
+    #   for Net::SSLeay would bundle two OpenSSL versions again.
+    # Mitigation: the module's test suite runs (no --notest) to validate the
+    # build, and the exact tarball is pinned by URL and SHA-256 so that no
+    # newer development release or altered file is picked up silently.
+    # TODO(CTOR-2696): switch to the 1.97 stable tarball (URL and SHA-256) once
+    # it is released.
+    - name: Rebuild Net::SSLeay against mingw OpenSSL
+      if: steps.cache-perl.outputs.cache-hit != 'true'
+      shell: powershell
+      run: |
+        # Stage only the OpenSSL headers, import libraries and CLI in a dedicated
+        # prefix: pointing OPENSSL_PREFIX at C:\msys64\mingw64 directly would put
+        # every mingw header ahead of Strawberry's own on the include path.
+        $prefix = 'C:\openssl-mingw'
+        New-Item -ItemType Directory -Force "$prefix\include", "$prefix\lib", "$prefix\bin" | Out-Null
+        Copy-Item 'C:\msys64\mingw64\include\openssl' "$prefix\include\" -Recurse -Force
+        Copy-Item 'C:\msys64\mingw64\lib\libcrypto.dll.a', 'C:\msys64\mingw64\lib\libssl.dll.a' "$prefix\lib\" -Force
+        Copy-Item 'C:\msys64\mingw64\bin\openssl.exe' "$prefix\bin\" -Force
+        # Makefile.PL runs "openssl version"; its DLLs come from the curl closure
+        # in C:\Strawberry\c\bin, with mingw64\bin last as a fallback.
+        $env:PATH = "C:\Strawberry\perl\bin;C:\Strawberry\perl\site\bin;C:\Strawberry\c\bin;$env:PATH;C:\msys64\mingw64\bin"
+        $env:OPENSSL_PREFIX = $prefix
+        # Hide Crypt::OpenSSL::Bignum from the test suite: Strawberry's copy is
+        # linked against Strawberry's own OpenSSL, and t/local/33_x509_create_cert.t
+        # frees with it a BIGNUM allocated by the mingw OpenSSL, which corrupts the
+        # heap (STATUS_HEAP_CORRUPTION). That test skips the block when the module
+        # cannot be loaded. Crypt::OpenSSL::Bignum is not bundled in the executable.
+        $hide = "$prefix\perl-hide\Crypt\OpenSSL"
+        New-Item -ItemType Directory -Force $hide | Out-Null
+        Set-Content "$hide\Bignum.pm" 'die "Crypt::OpenSSL::Bignum hidden for the Net::SSLeay test suite\n";' -Encoding ASCII
+        $env:PERL5LIB = "$prefix\perl-hide"
+        # Fetch the tarball over HTTPS and check it against the SHA-256 published
+        # in the author's CPAN CHECKSUMS file: cpanm alone uses plain HTTP and
+        # verifies nothing.
+        $url = 'https://cpan.metacpan.org/authors/id/C/CH/CHRISN/Net-SSLeay-1.97_01.tar.gz'
+        $sha256 = '1b6463d0a5b736ecda393310c5e4bd05508314937117b7f49b4c90ecf1a46cde'
+        $tarball = "$env:RUNNER_TEMP\Net-SSLeay-1.97_01.tar.gz"
+        Invoke-WebRequest -Uri $url -OutFile $tarball
+        $actual = (Get-FileHash $tarball -Algorithm SHA256).Hash.ToLower()
+        if ($actual -ne $sha256) {
+          Write-Error "Net::SSLeay tarball checksum mismatch: expected $sha256, got $actual"
+          exit 1
+        }
+        perl C:\Strawberry\perl\bin\cpanm --reinstall $tarball
+        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
     - name: Install CPAN Curl module
       if: steps.cache-perl.outputs.cache-hit != 'true'
