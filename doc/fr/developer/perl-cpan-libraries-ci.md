@@ -260,7 +260,7 @@ En cas d'échec, un artifact de log d'erreur est uploadé sous le nom `install_e
 
 ### `deliver-packages-pulp`
 
-Livre tous les paquets dans le dépôt Pulp de Centreon sous le module `perl-cpan-libraries`, avec l'action `package-delivery-pulp` en `testing` et `unstable`, et l'action `promote-to-stable-pulp` en `stable`. Les paquets livrés ou promus sont ensuite vérifiés sur Pulp : un paquet manquant fait échouer le job.
+Livre tous les paquets dans le dépôt Pulp de Centreon sous le module `perl-cpan-libraries`, avec l'action partagée `centreon/github-actions/pulp/package-delivery` en `testing` et `unstable`, et l'action partagée `centreon/github-actions/pulp/promote-to-stable` en `stable`. Les paquets livrés ou promus sont ensuite vérifiés sur Pulp : un paquet manquant fait échouer le job.
 
 **Conditions :**
 - `stability` est `testing` ou `unstable`, **OU** `stability == 'stable'` avec un événement `push` (pas `workflow_dispatch`)

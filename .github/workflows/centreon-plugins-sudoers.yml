@@ -130,7 +130,7 @@ jobs:
       - name: Deliver packages on Pulp
         if: ${{ contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) }}
         id: deliver_pulp
-        uses: ./.github/actions/package-delivery-pulp
+        uses: centreon/github-actions/pulp/package-delivery@pulp/v1
         with:
           module_name: ${{ env.module_name }}
           repository_name: plugins
@@ -147,7 +147,7 @@ jobs:
       - name: Promote packages on Pulp
         if: ${{ needs.get-environment.outputs.stability == 'stable' && needs.get-environment.outputs.release_type != '' }}
         id: promote_pulp
-        uses: ./.github/actions/promote-to-stable-pulp
+        uses: centreon/github-actions/pulp/promote-to-stable@pulp/v1
         with:
           module_name: ${{ env.module_name }}
           repository_name: plugins
