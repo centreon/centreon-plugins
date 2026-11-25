@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -44,9 +44,9 @@ sub check_options {
 
 my $oid_fileSystemSpaceEntry = '.1.3.6.1.4.1.19746.1.3.2.1.1';
 my $oid_sysDescr = '.1.3.6.1.2.1.1.1.0'; # 'Data Domain OS 5.4.1.1-411752'
-my ($oid_fileSystemResourceName, $oid_fileSystemSpaceUsed, $oid_fileSystemSpaceAvail);
+my ($oid_fileSystemResourceName, $oid_fileSystemSpaceUsed, $oid_fileSystemSpaceAvail, $oid_fileSystemResourceTier);
 
-my @mapping = ('name', 'total', 'used');
+my @mapping = ('name', 'tier', 'total', 'used');
 
 sub manage_selection {
     my ($self, %options) = @_;
@@ -73,6 +73,7 @@ sub manage_selection {
         $oid_fileSystemResourceName = '.1.3.6.1.4.1.19746.1.3.2.1.1.3';
         $oid_fileSystemSpaceUsed = '.1.3.6.1.4.1.19746.1.3.2.1.1.5';
         $oid_fileSystemSpaceAvail = '.1.3.6.1.4.1.19746.1.3.2.1.1.6';
+        $oid_fileSystemResourceTier = '.1.3.6.1.4.1.19746.1.3.2.1.1.9';
     } else {
         $oid_fileSystemResourceName = '.1.3.6.1.4.1.19746.1.3.2.1.1.2';
         $oid_fileSystemSpaceUsed = '.1.3.6.1.4.1.19746.1.3.2.1.1.4';
@@ -92,14 +93,18 @@ sub manage_selection {
         $postcomp = 1 if ($name =~ /:\s*post-comp/);
         $name =~ s/:\s*(pre-comp|post-comp).*//;
 
+        my $tier = defined($oid_fileSystemResourceTier) ? $snmp_result->{$oid_fileSystemResourceTier . '.' . $instance} : undef;
+        $tier = 'Active Tier' if (!defined($tier) || $tier eq '');
+
         my $used = int($snmp_result->{$oid_fileSystemSpaceUsed . '.' . $instance} * 1024 * 1024 * 1024);
         my $free = int($snmp_result->{$oid_fileSystemSpaceAvail . '.' . $instance} * 1024 * 1024 * 1024);
         my $total = $used + $free;
 
         next if ($total == 0 || $precomp == 1);
 
-        $results->{$name} = {
+        $results->{ storage::emc::datadomain::snmp::lib::functions::get_fs_display_name(name => $name, tier => $tier) } = {
             name => $name,
+            tier => $tier,
             used => $used,
             total => $total
         };
