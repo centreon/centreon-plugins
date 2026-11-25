@@ -99,6 +99,19 @@ runs:
     # packed executable ships a single, up-to-date OpenSSL. --reinstall is
     # required: Strawberry ships a prebuilt Net::SSLeay that cpanm would
     # otherwise consider up to date.
+    # Why a development release (1.97_01):
+    # - msys2 now ships OpenSSL 4.x, and libcurl is linked against it, so OpenSSL 4
+    #   is bundled for Net::Curl anyway.
+    # - The latest stable Net::SSLeay (1.96) does not build against OpenSSL 4
+    #   (it uses the TLSv1*_method() functions removed in 4.0). 1.97_01 is the
+    #   first release supporting OpenSSL 4; the stable 1.97 is announced upstream.
+    # - Alternatives were rejected: keeping Strawberry's OpenSSL leaves an
+    #   end-of-life 3.3.0 in the executable, and building a separate OpenSSL 3.5
+    #   for Net::SSLeay would bundle two OpenSSL versions again.
+    # Mitigation: the module's test suite runs (no --notest) to validate the
+    # build, and the exact tarball is pinned so that no newer development
+    # release is picked up silently.
+    # TODO(CTOR-2696): switch to "Net::SSLeay@1.97" once 1.97 stable is released.
     - name: Rebuild Net::SSLeay against mingw OpenSSL
       if: steps.cache-perl.outputs.cache-hit != 'true'
       shell: powershell
@@ -115,7 +128,7 @@ runs:
         # in C:\Strawberry\c\bin, with mingw64\bin last as a fallback.
         $env:PATH = "C:\Strawberry\perl\bin;C:\Strawberry\perl\site\bin;C:\Strawberry\c\bin;$env:PATH;C:\msys64\mingw64\bin"
         $env:OPENSSL_PREFIX = $prefix
-        perl C:\Strawberry\perl\bin\cpanm --reinstall --notest Net::SSLeay
+        perl C:\Strawberry\perl\bin\cpanm --reinstall CHRISN/Net-SSLeay-1.97_01.tar.gz
         if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
     - name: Install CPAN Curl module

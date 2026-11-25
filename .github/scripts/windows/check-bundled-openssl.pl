@@ -38,22 +38,23 @@ foreach my $member ($zip->membersMatching(qr/\.dll\z/i)) {
         push @errors, "$entry: Strawberry's own OpenSSL build is bundled";
     }
 
-    if ($name =~ /^libcrypto-.*\.dll\z/i) {
-        $libcrypto_count++;
-        open(my $fh, '<:raw', $path) or die "cannot open $path: $!\n";
-        my $content = do { local $/; <$fh> };
-        close($fh);
-        # OPENSSL_VERSION_TEXT, e.g. "OpenSSL 3.6.5 30 Sep 2025".
-        my %found = map { $_ => 1 } $content =~ /OpenSSL (\d+\.\d+\.\d+)[a-z]?(?:-\w+)? +\d{1,2} \w{3} \d{4}/g;
-        if (scalar(keys %found) != 1) {
-            push @errors, "$entry: cannot determine the OpenSSL version";
-        } else {
-            my ($version) = keys %found;
-            $versions{$version} = 1;
-            print "$entry: OpenSSL $version\n";
-            push @errors, "$entry: OpenSSL $version is older than " . join('.', @min_version)
-                if version_lt([split(/\./, $version)], \@min_version);
-        }
+    # Look for OPENSSL_VERSION_TEXT (e.g. "OpenSSL 3.6.5 30 Sep 2025") in every
+    # DLL, not only libcrypto: an XS module statically linked against OpenSSL
+    # embeds it too.
+    open(my $fh, '<:raw', $path) or die "cannot open $path: $!\n";
+    my $content = do { local $/; <$fh> };
+    close($fh);
+    my %found = map { $_ => 1 } $content =~ /OpenSSL (\d+\.\d+\.\d+)[a-z]?(?:-\w+)? +\d{1,2} \w{3} \d{4}/g;
+    my $is_libcrypto = $name =~ /^libcrypto-.*\.dll\z/i;
+    $libcrypto_count++ if $is_libcrypto;
+    if (scalar(keys %found) > 1 || ($is_libcrypto && !%found)) {
+        push @errors, "$entry: cannot determine the OpenSSL version";
+    } elsif (%found) {
+        my ($version) = keys %found;
+        $versions{$version} = 1;
+        print "$entry: OpenSSL $version\n";
+        push @errors, "$entry: OpenSSL $version is older than " . join('.', @min_version)
+            if version_lt([split(/\./, $version)], \@min_version);
     }
 
     open(my $ph, '-|', 'objdump', '-p', $path) or die "cannot run objdump: $!\n";
