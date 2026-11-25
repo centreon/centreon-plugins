@@ -63,7 +63,6 @@ runs:
           JSON::XS ^
           Net::FTPSSL ^
           Net::NTP ^
-          Net::SSLeay ^
           Pod::Simple::Search ^
           Tie::RefHash::Weak ^
           Win32::Job ^
@@ -74,7 +73,7 @@ runs:
       if: steps.cache-perl.outputs.cache-hit != 'true'
       shell: powershell
       run: |
-        & C:\msys64\usr\bin\bash.exe -lc "pacman -S --noconfirm mingw-w64-x86_64-curl"
+        & C:\msys64\usr\bin\bash.exe -lc "pacman -S --noconfirm mingw-w64-x86_64-curl mingw-w64-x86_64-openssl"
         Copy-Item "C:\msys64\mingw64\include\curl" "C:\Strawberry\c\include\" -Recurse -Force
         Copy-Item "C:\msys64\mingw64\lib\libcurl.dll.a" "C:\Strawberry\c\lib\" -Force
         # libcurl-4.dll drags a large mingw dependency tree (libssh2, nghttp2,
@@ -94,6 +93,30 @@ runs:
           'Libs: -L${libdir} -lcurl',
           'Cflags: -I${includedir}'
         ($pc -join "`n") + "`n" | Set-Content 'C:\Strawberry\c\lib\pkgconfig\libcurl.pc' -Encoding ASCII
+
+    # Rebuild Net::SSLeay against the mingw OpenSSL already bundled with the
+    # libcurl closure, instead of Strawberry's own (libssl-3-x64__.dll), so the
+    # packed executable ships a single, up-to-date OpenSSL. --reinstall is
+    # required: Strawberry ships a prebuilt Net::SSLeay that cpanm would
+    # otherwise consider up to date.
+    - name: Rebuild Net::SSLeay against mingw OpenSSL
+      if: steps.cache-perl.outputs.cache-hit != 'true'
+      shell: powershell
+      run: |
+        # Stage only the OpenSSL headers, import libraries and CLI in a dedicated
+        # prefix: pointing OPENSSL_PREFIX at C:\msys64\mingw64 directly would put
+        # every mingw header ahead of Strawberry's own on the include path.
+        $prefix = 'C:\openssl-mingw'
+        New-Item -ItemType Directory -Force "$prefix\include", "$prefix\lib", "$prefix\bin" | Out-Null
+        Copy-Item 'C:\msys64\mingw64\include\openssl' "$prefix\include\" -Recurse -Force
+        Copy-Item 'C:\msys64\mingw64\lib\libcrypto.dll.a', 'C:\msys64\mingw64\lib\libssl.dll.a' "$prefix\lib\" -Force
+        Copy-Item 'C:\msys64\mingw64\bin\openssl.exe' "$prefix\bin\" -Force
+        # Makefile.PL runs "openssl version"; its DLLs come from the curl closure
+        # in C:\Strawberry\c\bin, with mingw64\bin last as a fallback.
+        $env:PATH = "C:\Strawberry\perl\bin;C:\Strawberry\perl\site\bin;C:\Strawberry\c\bin;$env:PATH;C:\msys64\mingw64\bin"
+        $env:OPENSSL_PREFIX = $prefix
+        perl C:\Strawberry\perl\bin\cpanm --reinstall --notest Net::SSLeay
+        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
     - name: Install CPAN Curl module
       if: steps.cache-perl.outputs.cache-hit != 'true'
