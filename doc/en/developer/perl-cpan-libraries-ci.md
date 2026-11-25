@@ -260,7 +260,7 @@ On failure, an error log artifact is uploaded as `install_error_log_{distrib}-{a
 
 ### `deliver-packages-pulp`
 
-Delivers all packages to the Centreon Pulp repository under the `perl-cpan-libraries` module name, with the `package-delivery-pulp` action on `testing` and `unstable`, and the `promote-to-stable-pulp` action on `stable`. The delivered or promoted packages are then verified on Pulp, and a missing package fails the job.
+Delivers all packages to the Centreon Pulp repository under the `perl-cpan-libraries` module name, with the shared `centreon/github-actions/pulp/package-delivery` action on `testing` and `unstable`, and the shared `centreon/github-actions/pulp/promote-to-stable` action on `stable`. The delivered or promoted packages are then verified on Pulp, and a missing package fails the job.
 
 **Conditions:**
 - `stability` is `testing` or `unstable`, **OR** `stability == 'stable'` with a `push` event (not `workflow_dispatch`)

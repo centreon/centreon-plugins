@@ -45,6 +45,7 @@ jobs:
         with:
           allowlist: |
             centreon/security-tools
+            centreon/github-actions/pulp/
 
   yaml-lint:
     runs-on: ubuntu-24.04

@@ -281,7 +281,7 @@ Livre les paquets dans le dépôt Pulp de Centreon (servi sur `packages.centreon
 - `package_plugins == 'True'`
 - `stability` est `testing` ou `unstable`, **OU** `stability == 'stable'` avec un événement `push` (pas `workflow_dispatch`)
 
-Pour chaque distribution, utilise l'action `package-delivery-pulp` avec le module `plugins` en `testing` et `unstable`, et l'action `promote-to-stable-pulp` (promotion des paquets de `testing`) en `stable`. Les paquets livrés ou promus sont ensuite vérifiés sur Pulp : un paquet manquant fait échouer le job.
+Pour chaque distribution, utilise l'action partagée `centreon/github-actions/pulp/package-delivery` avec le module `plugins` en `testing` et `unstable`, et l'action partagée `centreon/github-actions/pulp/promote-to-stable` (promotion des paquets de `testing`) en `stable`. Les paquets livrés ou promus sont ensuite vérifiés sur Pulp : un paquet manquant fait échouer le job.
 
 ### `release-tag`
 

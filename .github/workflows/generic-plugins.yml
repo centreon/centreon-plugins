@@ -353,7 +353,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # package-delivery-pulp takes no arch input: each row simply restores the cache holding
+        # the package-delivery action takes no arch input: each row simply restores the cache holding
         # its own architecture and uploads it.
         include:
           - distrib: el8
@@ -398,7 +398,7 @@ jobs:
       - name: Deliver packages on Pulp
         if: ${{ contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) }}
         id: deliver_pulp
-        uses: ./.github/actions/package-delivery-pulp
+        uses: centreon/github-actions/pulp/package-delivery@pulp/v1
         with:
           module_name: generic-plugins
           repository_name: plugins
@@ -415,7 +415,7 @@ jobs:
       - name: Promote packages on Pulp
         if: ${{ needs.get-environment.outputs.stability == 'stable' && needs.get-environment.outputs.release_type != '' }}
         id: promote_pulp
-        uses: ./.github/actions/promote-to-stable-pulp
+        uses: centreon/github-actions/pulp/promote-to-stable@pulp/v1
         with:
           module_name: generic-plugins
           repository_name: plugins
