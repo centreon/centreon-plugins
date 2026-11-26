@@ -24,10 +24,9 @@ cargo build
  
 # Static linking
  
-`cargo build` links the binary against the glibc of your own machine. The packaged binary has to
-run on every supported distribution, the oldest one being el8 with glibc 2.28 as of 2026, and glibc offers
-no forward compatibility: a binary built against a recent glibc fails to start on an older one.
-The CI therefore links statically against musl instead:
+`cargo build` links the binary against the glibc of your own machine. If the binary is purposed to
+run on various distributions, a binary built against a recent glibc will fail to run on an older one.
+The CI therefore links statically against musl instead, and so should you if you plan to deploy the binary you compile on various platforms. The build command in that case is:
  
 ```bash
 rustup target add x86_64-unknown-linux-musl
