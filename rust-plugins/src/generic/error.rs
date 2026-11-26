@@ -71,6 +71,9 @@ pub enum Error {
     #[snafu(display("Could not decode Snmp PDU received from server : {}", err))]
     InvalidSnmpPduDecode { err: String },
 
+    #[snafu(display("Could not send the whole Snmp PDU: {sent} bytes sent out of {expected}"))]
+    IncompleteSnmpPduSend { sent: usize, expected: usize },
+
     #[snafu(display("Could not decode a value in the Snmp response : {}", detail))]
     InvalidSnmpValue { detail: String },
 

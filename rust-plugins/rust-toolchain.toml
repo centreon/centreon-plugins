@@ -1,0 +1,10 @@
+# Same stable toolchain as the 'lint' job of .github/workflows/generic-plugins.yml,
+# and the minimum required by 'rust-version' in Cargo.toml: rustup selects it for
+# every cargo command run in this directory, so that the build, clippy and the
+# tests give the same result locally and in CI.
+#
+# Formatting is the exception: rustfmt.toml relies on nightly-only options, so
+# 'cargo fmt' must be run on the dated nightly named in rustfmt-toolchain.txt.
+[toolchain]
+channel = "1.100"
+components = ["rustfmt", "clippy"]

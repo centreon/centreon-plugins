@@ -123,3 +123,50 @@ The `threshold-suffix` field defines the threshold options of the metric: here,
  
 For a table (`"query": "Walk"`) with one metric per instance and an aggregation over all
 instances, see `rs-collections/applications-protocol-snmp/cpu.json`.
+
+# Development
+
+## Toolchains
+
+`rust-toolchain.toml` pins the stable toolchain used to build, lint and test
+the plugin, the same as the CI. rustup installs and selects it automatically
+for any `cargo` command run in this directory.
+
+Formatting is the exception: `rustfmt.toml` relies on options only available
+on the nightly channel, so the code is formatted with the dated nightly named
+in `rustfmt-toolchain.txt`, the same as the CI and the git hooks:
+
+```bash
+rustup toolchain install "$(< rustfmt-toolchain.txt)" --profile minimal --component rustfmt
+cargo "+$(< rustfmt-toolchain.txt)" fmt
+```
+
+To move to a newer nightly, change that file only, then reformat with it.
+
+## Quality gate
+
+Before opening a pull request touching `rust-plugins/`, run the following command or
+enable githooks (recommended):
+
+```bash
+./scripts/check.sh
+```
+
+It runs what the `lint` and `build` jobs of
+`.github/workflows/generic-plugins.yml` enforce (`Cargo.lock` consistency,
+formatting, `clippy --all-targets -D warnings`, `cargo test --all-targets`).
+
+## No panic in production code
+
+A panic reachable from untrusted input (a malformed JSON definition, a
+malicious SNMP response) turns a reportable `UNKNOWN` into a plugin crash.
+`Cargo.toml` therefore enables, under `[lints.clippy]`, the clippy lints that
+forbid `.unwrap()`, `.expect()`, `panic!`, `todo!`, `unimplemented!`,
+`unreachable!` and assertions in functions returning a `Result`. Being clippy
+lints, they run wherever clippy runs: CI, git hook and `scripts/check.sh`.
+
+Test code is exempted by `clippy.toml`. When a call genuinely cannot fail,
+state why with `#[expect(clippy::expect_used, reason = "...")]`.
+
+With the repository's git hooks (`git config core.hooksPath .githooks`), the
+`Cargo.lock`, formatting and clippy checks also run on commit.

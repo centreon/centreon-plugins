@@ -72,15 +72,19 @@ jobs:
       # wrap_comments, imports_granularity, trailing_comma): a stable rustfmt ignores them with a
       # warning. Only the formatting runs on nightly, pinned to a date so that the result does not
       # change from one run to the next; the build, clippy and the tests stay on the pinned stable.
-      # Keep the date in sync with .githooks/pre-commit.d/11_rust_fmt.sh.
+      # The nightly is named in rust-plugins/rustfmt-toolchain.txt, shared with the pre-commit hook
+      # and rust-plugins/scripts/check.sh.
       - name: Install pinned nightly rustfmt
-        run: rustup toolchain install nightly-2026-11-20 --profile minimal --component rustfmt
+        run: |
+          NIGHTLY_TOOLCHAIN="$(< rust-plugins/rustfmt-toolchain.txt)"
+          echo "NIGHTLY_TOOLCHAIN=${NIGHTLY_TOOLCHAIN}" >> "${GITHUB_ENV}"
+          rustup toolchain install "${NIGHTLY_TOOLCHAIN}" --profile minimal --component rustfmt
         shell: bash
 
       - name: Check formatting
         run: |
           cd rust-plugins
-          cargo +nightly-2026-11-20 fmt --check
+          cargo "+${NIGHTLY_TOOLCHAIN}" fmt --check
         shell: bash
 
       - name: Clippy
@@ -114,10 +118,12 @@ jobs:
       - name: Checkout sources
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
+      # --all-targets also builds the benches, which run once in test mode: criterion, a
+      # bench-only dev-dependency, is otherwise reported as an unused dependency.
       - name: Unit tests
         run: |
           cd rust-plugins
-          cargo test
+          cargo test --all-targets
         shell: bash
 
       # The binary is built once per architecture and packaged for every supported distribution,
