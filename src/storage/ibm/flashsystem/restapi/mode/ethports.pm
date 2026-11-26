@@ -66,14 +66,13 @@ sub set_counters {
                 perfdatas => [ { template => '%s', min => 0 } ]
             }
         },
-        # The role flags say what a port is allowed to carry, not what it carries.
-        { label => 'with-role', nlabel => 'ethports.withrole.count', set => {
+        { label => 'with-role', nlabel => 'ethports.withrole.count', display_ok => 0, set => {
                 key_values => [ { name => 'with_role' } ],
                 output_template => '%s role-capable',
                 perfdatas => [ { template => '%s', min => 0 } ]
             }
         },
-        { label => 'ip-configured', nlabel => 'ethports.ip.configured.count', set => {
+        { label => 'ip-configured', nlabel => 'ethports.ip.configured.count', display_ok => 0, set => {
                 key_values => [ { name => 'ip_configured' } ],
                 output_template => '%s IP configured',
                 perfdatas => [ { template => '%s', min => 0 } ]
@@ -127,7 +126,7 @@ sub manage_selection {
             if (is_not_empty($entry->{IP_address}) && !defined($addresses{$key}));
     }
 
-    $self->{global} = { detected => 0, active => 0, with_role => 0, ip_configured => scalar(keys %addresses) };
+    $self->{global} = { detected => 0, active => 0, with_role => 0, ip_configured => 0 };
     $self->{ports} = {};
 
     foreach my $port (@{$options{custom}->request(command => 'lsportethernet')}) {
@@ -146,6 +145,7 @@ sub manage_selection {
         $self->{global}->{with_role}++ if (scalar(@roles) > 0);
 
         my $configured = defined($addresses{$name}) ? 'yes' : 'no';
+        $self->{global}->{ip_configured}++ if ($configured eq 'yes');
         next if ($configured eq 'no' && $link !~ /^active$/i && !defined($self->{option_results}->{add_unused}));
 
         $self->{ports}->{$name} = {

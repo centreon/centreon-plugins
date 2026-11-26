@@ -38,19 +38,19 @@ fc-ports ${tc}
     ...    --
     ...    1
     ...    ${EMPTY}
-    ...    OK: Fibre Channel ports: 8 detected, 8 active, 0 inactive, 648 host login(s) - All Fibre Channel ports are active | 'fcports.detected.count'=8;;;0; 'fcports.active.count'=8;;;0; 'fcports.inactive.count'=0;;;0; 'fcports.host.logins.count'=648;;;0;
+    ...    OK: Fibre Channel ports: 8 detected, 8 active, 324 host login(s) - All Fibre Channel ports are active | 'fcports.detected.count'=8;;;0; 'fcports.active.count'=8;;;0; 'fcports.inactive.count'=0;;;0; 'fcports.host.logins.count'=324;;;0;
     ...    2
     ...    --include-name='^node1'
-    ...    OK: Fibre Channel ports: 4 detected, 4 active, 0 inactive, 324 host login(s) - All Fibre Channel ports are active | 'fcports.detected.count'=4;;;0; 'fcports.active.count'=4;;;0; 'fcports.inactive.count'=0;;;0; 'fcports.host.logins.count'=324;;;0;
+    ...    OK: Fibre Channel ports: 4 detected, 4 active, 162 host login(s) - All Fibre Channel ports are active | 'fcports.detected.count'=4;;;0; 'fcports.active.count'=4;;;0; 'fcports.inactive.count'=0;;;0; 'fcports.host.logins.count'=162;;;0;
     ...    3
     ...    --critical-host-logins=10
-    ...    CRITICAL: Fibre Channel ports: 648 host login(s) | 'fcports.detected.count'=8;;;0; 'fcports.active.count'=8;;;0; 'fcports.inactive.count'=0;;;0; 'fcports.host.logins.count'=648;;0:10;0;
+    ...    CRITICAL: Fibre Channel ports: 324 host login(s) | 'fcports.detected.count'=8;;;0; 'fcports.active.count'=8;;;0; 'fcports.inactive.count'=0;;;0; 'fcports.host.logins.count'=324;;0:10;0;
     ...    4
     ...    --warning-status='\\\%{port_speed} =~ /16Gb/'
-    ...    WARNING: Port 'node1-1' status: active, speed: 16Gb, attachment: switch, host logins: 6 - Port 'node1-2' status: active, speed: 16Gb, attachment: switch, host logins: 6 - Port 'node1-3' status: active, speed: 16Gb, attachment: switch, host logins: 156 - Port 'node1-4' status: active, speed: 16Gb, attachment: switch, host logins: 156 - Port 'node2-1' status: active, speed: 16Gb, attachment: switch, host logins: 6 - Port 'node2-2' status: active, speed: 16Gb, attachment: switch, host logins: 6 - Port 'node2-3' status: active, speed: 16Gb, attachment: switch, host logins: 156 - Port 'node2-4' status: active, speed: 16Gb, attachment: switch, host logins: 156 | 'fcports.detected.count'=8;;;0; 'fcports.active.count'=8;;;0; 'fcports.inactive.count'=0;;;0; 'fcports.host.logins.count'=648;;;0;
+    ...    WARNING: Port 'node1-1' status: active, speed: 16Gb, attachment: switch, host logins: 3 - Port 'node1-2' status: active, speed: 16Gb, attachment: switch, host logins: 3 - Port 'node1-3' status: active, speed: 16Gb, attachment: switch, host logins: 78 - Port 'node1-4' status: active, speed: 16Gb, attachment: switch, host logins: 78 - Port 'node2-1' status: active, speed: 16Gb, attachment: switch, host logins: 3 - Port 'node2-2' status: active, speed: 16Gb, attachment: switch, host logins: 3 - Port 'node2-3' status: active, speed: 16Gb, attachment: switch, host logins: 78 - Port 'node2-4' status: active, speed: 16Gb, attachment: switch, host logins: 78 | 'fcports.detected.count'=8;;;0; 'fcports.active.count'=8;;;0; 'fcports.inactive.count'=0;;;0; 'fcports.host.logins.count'=324;;;0;
     ...    5
     ...    --include-type='nomatch'
-    ...    OK: Fibre Channel ports: 0 detected, 0 active, 0 inactive, 0 host login(s) | 'fcports.detected.count'=0;;;0; 'fcports.active.count'=0;;;0; 'fcports.inactive.count'=0;;;0; 'fcports.host.logins.count'=0;;;0;
+    ...    OK: Fibre Channel ports: 0 detected, 0 active, 0 host login(s) | 'fcports.detected.count'=0;;;0; 'fcports.active.count'=0;;;0; 'fcports.inactive.count'=0;;;0; 'fcports.host.logins.count'=0;;;0;
 
 fc-ports discovery ${tc}
     [Tags]    storage    ibm    flashsystem    restapi

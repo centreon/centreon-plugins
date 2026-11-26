@@ -38,10 +38,10 @@ volume-groups ${tc}
     ...    --
     ...    1
     ...    ${EMPTY}
-    ...    OK: Volume groups: 34 detected, 33 replicated, 34 without a snapshot policy, 0 restoring - All volume groups are healthy | 'volumegroups.detected.count'=34;;;0; 'volumegroups.replicated.count'=33;;;0; 'volumegroups.without.snapshot.policy.count'=34;;;0; 'volumegroups.restoring.count'=0;;;0;
+    ...    OK: Volume groups: 34 detected, 33 replicated - All volume groups are healthy | 'volumegroups.detected.count'=34;;;0; 'volumegroups.replicated.count'=33;;;0; 'volumegroups.without.snapshot.policy.count'=34;;;0; 'volumegroups.restoring.count'=0;;;0;
     ...    2
     ...    --include-partition='partition-a'
-    ...    OK: Volume groups: 4 detected, 4 replicated, 4 without a snapshot policy, 0 restoring - All volume groups are healthy | 'volumegroups.detected.count'=4;;;0; 'volumegroups.replicated.count'=4;;;0; 'volumegroups.without.snapshot.policy.count'=4;;;0; 'volumegroups.restoring.count'=0;;;0;
+    ...    OK: Volume groups: 4 detected, 4 replicated - All volume groups are healthy | 'volumegroups.detected.count'=4;;;0; 'volumegroups.replicated.count'=4;;;0; 'volumegroups.without.snapshot.policy.count'=4;;;0; 'volumegroups.restoring.count'=0;;;0;
     ...    3
     ...    --warning-without-snapshot-policy=0
     ...    WARNING: Volume groups: 34 without a snapshot policy | 'volumegroups.detected.count'=34;;;0; 'volumegroups.replicated.count'=33;;;0; 'volumegroups.without.snapshot.policy.count'=34;0:0;;0; 'volumegroups.restoring.count'=0;;;0;
@@ -50,7 +50,7 @@ volume-groups ${tc}
     ...    CRITICAL: Volume group 'vg-01' 28 volume(s), backup: off, partition: partition-a, replication: policy-a | 'volumegroups.detected.count'=2;;;0; 'volumegroups.replicated.count'=2;;;0; 'volumegroups.without.snapshot.policy.count'=2;;;0; 'volumegroups.restoring.count'=0;;;0;
     ...    5
     ...    --exclude-name='^vg-[0-2]'
-    ...    OK: Volume groups: 5 detected, 4 replicated, 5 without a snapshot policy, 0 restoring - All volume groups are healthy | 'volumegroups.detected.count'=5;;;0; 'volumegroups.replicated.count'=4;;;0; 'volumegroups.without.snapshot.policy.count'=5;;;0; 'volumegroups.restoring.count'=0;;;0;
+    ...    OK: Volume groups: 5 detected, 4 replicated - All volume groups are healthy | 'volumegroups.detected.count'=5;;;0; 'volumegroups.replicated.count'=4;;;0; 'volumegroups.without.snapshot.policy.count'=5;;;0; 'volumegroups.restoring.count'=0;;;0;
 
 volume-groups discovery ${tc}
     [Tags]    storage    ibm    flashsystem    restapi

@@ -25,16 +25,16 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::plugins::constants qw(:counters :values);
-use centreon::plugins::misc qw(is_empty is_excluded);
+use centreon::plugins::misc qw(is_empty is_excluded is_not_empty);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 my $component_commands = [
     { command => 'lsenclosure',          label => 'enclosure' },
     { command => 'lsnodecanister',       label => 'node canister' },
-    { command => 'lsenclosurecanister',  label => 'expansion canister', id_fields => [ 'canister_id' ] },
-    { command => 'lsenclosurepsu',       label => 'power supply', id_fields => [ 'PSU_id' ] },
-    { command => 'lsenclosurebattery',   label => 'battery', id_fields => [ 'battery_id' ] },
-    { command => 'lsenclosurefanmodule', label => 'fan module', id_fields => [ 'fan_module_id' ] },
+    { command => 'lsenclosurecanister',  label => 'enclosure canister', id_fields => [ 'canister_id' ], in_enclosure => 1 },
+    { command => 'lsenclosurepsu',       label => 'power supply', id_fields => [ 'PSU_id' ], in_enclosure => 1 },
+    { command => 'lsenclosurebattery',   label => 'battery', id_fields => [ 'battery_id' ], in_enclosure => 1 },
+    { command => 'lsenclosurefanmodule', label => 'fan module', id_fields => [ 'fan_module_id' ], in_enclosure => 1 },
     { command => 'lsdrive',              label => 'drive' },
     { command => 'lsarray',              label => 'array', id_fields => [ 'mdisk_name', 'mdisk_id' ] },
     { command => 'lsmdisk',              label => 'mdisk' },
@@ -93,7 +93,7 @@ sub set_counters {
                 perfdatas => [ { template => '%s', min => 0 } ]
             }
         },
-        { label => 'components-degraded', nlabel => 'hardware.components.degraded.count', set => {
+        { label => 'components-degraded', nlabel => 'hardware.components.degraded.count', display_ok => 0, set => {
                 key_values => [ { name => 'degraded' } ],
                 output_template => '%s not online',
                 perfdatas => [ { template => '%s', min => 0 } ]
@@ -176,6 +176,9 @@ sub manage_selection {
                 $name = $entry->{$field};
                 last;
             }
+
+            $name = $entry->{enclosure_id} . ':' . $name
+                if ($family->{in_enclosure} && is_not_empty($entry->{enclosure_id}));
             next if (is_excluded($name, $self->{option_results}->{include_name}, $self->{option_results}->{exclude_name}));
 
             my $status = $entry->{status} // '';
@@ -221,15 +224,16 @@ Check hardware components (enclosures, canisters, power supplies, batteries, fan
 
 =item B<--include-type>
 
-Filter component families by label (C<enclosure>, C<node canister>, C<expansion canister>, C<power supply>, C<battery>, C<fan module>, C<drive>, C<array>, C<mdisk>, C<quorum>) (can be a regexp).
+Filter component families by label (C<enclosure>, C<node canister>, C<enclosure canister>, C<power supply>, C<battery>, C<fan module>, C<drive>, C<array>, C<mdisk>, C<quorum>) (can be a regexp).
 
 =item B<--exclude-type>
 
-Exclude component families by label (C<enclosure>, C<node canister>, C<expansion canister>, C<power supply>, C<battery>, C<fan module>, C<drive>, C<array>, C<mdisk>, C<quorum>) (can be a regexp).
+Exclude component families by label (C<enclosure>, C<node canister>, C<enclosure canister>, C<power supply>, C<battery>, C<fan module>, C<drive>, C<array>, C<mdisk>, C<quorum>) (can be a regexp).
 
 =item B<--include-name>
 
 Filter components by name or id (can be a regexp).
+Enclosure canisters, power supplies, batteries and fan modules are named C<enclosure_id:id> (for example C<1:2>).
 
 =item B<--exclude-name>
 

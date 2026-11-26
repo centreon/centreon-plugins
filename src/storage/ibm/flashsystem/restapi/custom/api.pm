@@ -85,13 +85,12 @@ sub response_message {
     return 'HTTP ' . $options{code} . (is_not_empty($options{content}) ? ' - ' . $options{content} : '');
 }
 
-# Waits before a retry on HTTP 429: Retry-After when the array sends it, a
-# growing step otherwise. Returns 0 once the time budget of the check is spent.
 sub rate_limit_wait {
     my ($self, %options) = @_;
 
     my $delay = $self->{http}->get_first_header(name => 'Retry-After');
     $delay = (defined($delay) && $delay =~ /^\s*(\d+)\s*$/) ? $1 : $options{attempt} * 2;
+    $delay = 1 if ($delay < 1);
 
     $self->{rate_limit_waited} //= 0;
     return 0 if ($self->{rate_limit_waited} + $delay > $self->{option_results}->{rate_limit_max_wait});

@@ -139,8 +139,6 @@ sub manage_selection {
         next if (is_excluded($event->{object_type}, $self->{option_results}->{include_object_type}, $self->{option_results}->{exclude_object_type}));
         next if (is_excluded($event->{object_name}, $self->{option_results}->{include_object_name}, $self->{option_results}->{exclude_object_name}));
 
-        # Messages are counted even though the default status filter keeps
-        # them out of the evaluated entries.
         $self->{global}->{alerts}++ if ($event->{status} =~ /^alert$/i);
         $self->{global}->{messages}++ if ($event->{status} =~ /^message$/i);
 

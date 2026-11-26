@@ -57,3 +57,6 @@ drives ${tc}
     ...    7
     ...    --include-id='^0$' --critical-replacement-status='\\\%{replacement_date} eq ""'
     ...    CRITICAL: Drive '0' (enclosure 1 slot 8) no replacement predicted | 'drives.detected.count'=1;;;0; '0#drive.endurance.used.percentage'=0%;;;0;100 '0#drive.physical.space.usage.percentage'=42.94%;;;0;100
+    ...    8
+    ...    --exclude-id='.*'
+    ...    UNKNOWN: No drive found. Please check filters.

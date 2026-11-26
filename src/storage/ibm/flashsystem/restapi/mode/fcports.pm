@@ -66,7 +66,7 @@ sub set_counters {
                 perfdatas => [ { template => '%s', min => 0 } ]
             }
         },
-        { label => 'inactive', nlabel => 'fcports.inactive.count', set => {
+        { label => 'inactive', nlabel => 'fcports.inactive.count', display_ok => 0, set => {
                 key_values => [ { name => 'inactive' } ],
                 output_template => '%s inactive',
                 perfdatas => [ { template => '%s', min => 0 } ]
@@ -118,13 +118,12 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    # Host logins are read on the virtual (NPIV) target ports, keyed on
-    # fc_io_port_id, then summed per physical port.
     my %logins;
     foreach my $target (@{$options{custom}->request_optional(command => 'lstargetportfc')}) {
         my $count = $target->{active_login_count};
-        next if (is_empty($target->{fc_io_port_id}) || !defined($count) || $count !~ /^\d+$/);
-        $logins{$target->{fc_io_port_id}} += $count;
+        next if (is_empty($target->{fc_io_port_id}) || is_empty($target->{current_node_id}));
+        next if (!defined($count) || $count !~ /^\d+$/);
+        $logins{$target->{current_node_id} . '-' . $target->{fc_io_port_id}} += $count;
     }
 
     $self->{global} = { detected => 0, active => 0, inactive => 0, host_logins => 0 };
@@ -138,7 +137,7 @@ sub manage_selection {
         next if (is_excluded($type, $self->{option_results}->{include_type}, $self->{option_results}->{exclude_type}));
 
         my $status = $port->{status} // '';
-        my $login_count = $logins{$port->{fc_io_port_id} // ''} // '';
+        my $login_count = $logins{($port->{node_id} // '') . '-' . ($port->{fc_io_port_id} // '')} // '';
 
         $self->{global}->{detected}++;
         if ($status =~ /^active$/i) {

@@ -48,7 +48,7 @@ sub set_counters {
     $self->{maps_counters_type} = [
         { name => 'physical', type => COUNTER_TYPE_GLOBAL, prefix_output => 'Physical space ' },
         { name => 'logical', type => COUNTER_TYPE_GLOBAL, prefix_output => 'Logical space ' },
-        { name => 'reduction', type => COUNTER_TYPE_INSTANCE, prefix_output => 'Data reduction: ',
+        { name => 'reduction', type => COUNTER_TYPE_GLOBAL, prefix_output => 'Data reduction: ',
           skipped_code => { NO_VALUE() => 1 } },
         { name => 'pools', type => COUNTER_TYPE_INSTANCE, prefix_output => "Pool '%{name}' ",
           message_multiple => 'All pools are online', skipped_code => { NO_VALUE() => 1 } }
@@ -212,7 +212,7 @@ sub manage_selection {
 
     $self->{reduction} = {};
     if (defined($before) && defined($after) && $after > 0) {
-        $self->{reduction}->{system} = {
+        $self->{reduction} = {
             reduction_ratio => $before / $after,
             reduction_saved => $before - $after
         };
@@ -236,7 +236,7 @@ sub manage_selection {
         }
 
         if ($used > 0 && $effective > 0) {
-            $self->{reduction}->{system} = {
+            $self->{reduction} = {
                 reduction_ratio => $effective / $used,
                 reduction_saved => $effective - $used
             };

@@ -70,13 +70,13 @@ sub set_counters {
                 perfdatas => [ { template => '%s', min => 0 } ]
             }
         },
-        { label => 'degraded', nlabel => 'volumes.degraded.count', set => {
+        { label => 'degraded', nlabel => 'volumes.degraded.count', display_ok => 0, set => {
                 key_values => [ { name => 'degraded' } ],
                 output_template => '%s degraded',
                 perfdatas => [ { template => '%s', min => 0 } ]
             }
         },
-        { label => 'offline', nlabel => 'volumes.offline.count', set => {
+        { label => 'offline', nlabel => 'volumes.offline.count', display_ok => 0, set => {
                 key_values => [ { name => 'offline' } ],
                 output_template => '%s offline',
                 perfdatas => [ { template => '%s', min => 0 } ]
@@ -161,7 +161,6 @@ sub manage_selection {
         $self->{global}->{offline}++ if ($status =~ /^offline$/i);
         $self->{global}->{unsynchronised}++ if ($sync eq 'no');
 
-        # Aggregated mode: only abnormal volumes become instances by default.
         my $healthy = $status =~ /^online$/i && $fast_write !~ /^corrupt$/i && $sync eq 'yes' && $formatting !~ /^yes$/i;
         next if ($healthy && !defined($self->{option_results}->{add_all_volumes}));
 

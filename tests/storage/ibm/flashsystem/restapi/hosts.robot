@@ -41,7 +41,7 @@ hosts ${tc}
     ...    WARNING: Host 'host-29' status: offline, ports: 4, partition: partition-b - Host 'host-43' status: offline, ports: 4, partition: partition-b - Host 'host-51' status: offline, ports: 4, partition: partition-b - Host 'host-54' status: offline, ports: 4, partition: partition-b | 'hosts.detected.count'=12;;;0; 'hosts.online.count'=8;;;0; 'hosts.offline.count'=4;;;0; 'hosts.degraded.count'=0;;;0;
     ...    2
     ...    --include-partition='partition-a'
-    ...    OK: Hosts: 8 declared, 8 online, 0 offline, 0 degraded - All hosts are online | 'hosts.detected.count'=8;;;0; 'hosts.online.count'=8;;;0; 'hosts.offline.count'=0;;;0; 'hosts.degraded.count'=0;;;0;
+    ...    OK: Hosts: 8 declared, 8 online - All hosts are online | 'hosts.detected.count'=8;;;0; 'hosts.online.count'=8;;;0; 'hosts.offline.count'=0;;;0; 'hosts.degraded.count'=0;;;0;
     ...    3
     ...    --critical-status='\\\%{status} =~ /offline/'
     ...    CRITICAL: Host 'host-29' status: offline, ports: 4, partition: partition-b - Host 'host-43' status: offline, ports: 4, partition: partition-b - Host 'host-51' status: offline, ports: 4, partition: partition-b - Host 'host-54' status: offline, ports: 4, partition: partition-b | 'hosts.detected.count'=12;;;0; 'hosts.online.count'=8;;;0; 'hosts.offline.count'=4;;;0; 'hosts.degraded.count'=0;;;0;
@@ -50,7 +50,7 @@ hosts ${tc}
     ...    WARNING: Host 'host-29' status: offline, ports: 4, partition: partition-b | 'hosts.detected.count'=1;;;0; 'hosts.online.count'=0;;;0; 'hosts.offline.count'=1;;;0; 'hosts.degraded.count'=0;;;0;
     ...    5
     ...    --exclude-partition='partition-b'
-    ...    OK: Hosts: 8 declared, 8 online, 0 offline, 0 degraded - All hosts are online | 'hosts.detected.count'=8;;;0; 'hosts.online.count'=8;;;0; 'hosts.offline.count'=0;;;0; 'hosts.degraded.count'=0;;;0;
+    ...    OK: Hosts: 8 declared, 8 online - All hosts are online | 'hosts.detected.count'=8;;;0; 'hosts.online.count'=8;;;0; 'hosts.offline.count'=0;;;0; 'hosts.degraded.count'=0;;;0;
 
 hosts discovery ${tc}
     [Tags]    storage    ibm    flashsystem    restapi

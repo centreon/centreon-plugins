@@ -65,13 +65,13 @@ sub set_counters {
                 perfdatas => [ { template => '%s', min => 0 } ]
             }
         },
-        { label => 'offline', nlabel => 'hosts.offline.count', set => {
+        { label => 'offline', nlabel => 'hosts.offline.count', display_ok => 0, set => {
                 key_values => [ { name => 'offline' } ],
                 output_template => '%s offline',
                 perfdatas => [ { template => '%s', min => 0 } ]
             }
         },
-        { label => 'degraded', nlabel => 'hosts.degraded.count', set => {
+        { label => 'degraded', nlabel => 'hosts.degraded.count', display_ok => 0, set => {
                 key_values => [ { name => 'degraded' } ],
                 output_template => '%s degraded',
                 perfdatas => [ { template => '%s', min => 0 } ]

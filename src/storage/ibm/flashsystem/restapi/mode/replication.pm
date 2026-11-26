@@ -276,9 +276,13 @@ sub manage_selection {
         };
     }
 
-    $self->{output}->output_add(short_msg => 'No replication configured on this system')
-        if (scalar(keys %{$self->{partitions}}) == 0 && scalar(keys %{$self->{groups}}) == 0
-            && scalar(keys %{$self->{partnerships}}) == 0 && scalar(keys %{$self->{relationships}}) == 0);
+    if (scalar(keys %{$self->{partitions}}) == 0 && scalar(keys %{$self->{groups}}) == 0
+        && scalar(keys %{$self->{partnerships}}) == 0 && scalar(keys %{$self->{relationships}}) == 0) {
+        my $returned = scalar(@$partitions) + scalar(@$groups) + scalar(@$partnerships) + scalar(@$relationships);
+        $self->{output}->output_add(
+            short_msg => $returned > 0 ? 'No replication object matches the filters' : 'No replication configured on this system'
+        );
+    }
 }
 
 1;

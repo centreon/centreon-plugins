@@ -38,16 +38,16 @@ hardware ${tc}
     ...    --
     ...    1
     ...    ${EMPTY}
-    ...    OK: Hardware: 35 component(s), 0 not online - All hardware components are online - Enclosure: temperature 26 C, power draw 543 W - All enclosure subsystems are fully populated | 'hardware.components.detected.count'=35;;;0; 'hardware.components.degraded.count'=0;;;0; 'hardware.temperature.celsius'=26C;;;; 'hardware.power.watt'=543W;;;0;
+    ...    OK: Hardware: 35 component(s) - All hardware components are online - Enclosure: temperature 26 C, power draw 543 W - All enclosure subsystems are fully populated | 'hardware.components.detected.count'=35;;;0; 'hardware.components.degraded.count'=0;;;0; 'hardware.temperature.celsius'=26C;;;; 'hardware.power.watt'=543W;;;0;
     ...    2
     ...    --include-type='quorum'
-    ...    OK: Hardware: 6 component(s), 0 not online - All hardware components are online - Enclosure: temperature 26 C, power draw 543 W | 'hardware.components.detected.count'=6;;;0; 'hardware.components.degraded.count'=0;;;0; 'hardware.temperature.celsius'=26C;;;; 'hardware.power.watt'=543W;;;0;
+    ...    OK: Hardware: 6 component(s) - All hardware components are online - Enclosure: temperature 26 C, power draw 543 W | 'hardware.components.detected.count'=6;;;0; 'hardware.components.degraded.count'=0;;;0; 'hardware.temperature.celsius'=26C;;;; 'hardware.power.watt'=543W;;;0;
     ...    3
     ...    --exclude-name='.*'
-    ...    OK: Hardware: 0 component(s), 0 not online - Enclosure: temperature 26 C, power draw 543 W | 'hardware.components.detected.count'=0;;;0; 'hardware.components.degraded.count'=0;;;0; 'hardware.temperature.celsius'=26C;;;; 'hardware.power.watt'=543W;;;0;
+    ...    OK: Hardware: 0 component(s) - Enclosure: temperature 26 C, power draw 543 W | 'hardware.components.detected.count'=0;;;0; 'hardware.components.degraded.count'=0;;;0; 'hardware.temperature.celsius'=26C;;;; 'hardware.power.watt'=543W;;;0;
     ...    4
     ...    --warning-component-status='\\\%{status} =~ /online/' --include-type='battery'
-    ...    WARNING: Battery '1' status: online - Battery '2' status: online | 'hardware.components.detected.count'=2;;;0; 'hardware.components.degraded.count'=0;;;0; 'hardware.temperature.celsius'=26C;;;; 'hardware.power.watt'=543W;;;0;
+    ...    WARNING: Battery '1:1' status: online - Battery '1:2' status: online | 'hardware.components.detected.count'=2;;;0; 'hardware.components.degraded.count'=0;;;0; 'hardware.temperature.celsius'=26C;;;; 'hardware.power.watt'=543W;;;0;
     ...    5
     ...    --warning-temperature=10 --critical-temperature=20
     ...    CRITICAL: Enclosure: temperature 26 C | 'hardware.components.detected.count'=35;;;0; 'hardware.components.degraded.count'=0;;;0; 'hardware.temperature.celsius'=26C;0:10;0:20;; 'hardware.power.watt'=543W;;;0;

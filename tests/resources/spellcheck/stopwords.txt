@@ -91,7 +91,6 @@ dfsrevent
 --display-transform-dst
 --display-transform-src
 dns-resolve-time
-DRAID
 DSM
 --dyn-mode
 Ekara
@@ -167,7 +166,6 @@ iPushPro
 ipv4
 ipv6
 ISAM
-iSCSI
 iSendPro
 IVE
 Iwsva
@@ -465,7 +463,6 @@ WildFire
 WLAN
 WLC
 WSMAN
-WWPN
 XCP-ng
 Xen
 XPath

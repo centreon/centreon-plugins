@@ -134,7 +134,8 @@ sub manage_selection {
     $self->{global} = { detected => 0 };
     $self->{drives} = {};
 
-    foreach my $drive (@{$options{custom}->request(command => 'lsdrive')}) {
+    my $drives = $options{custom}->request(command => 'lsdrive');
+    foreach my $drive (@$drives) {
         next if (ref($drive) ne 'HASH' || !defined($drive->{id}) || $drive->{id} !~ /^\d+$/);
         next if (is_excluded($drive->{id}, $self->{option_results}->{include_id}, $self->{option_results}->{exclude_id}));
 
@@ -175,8 +176,9 @@ sub manage_selection {
         $self->{drives}->{$drive->{id}} = $entry;
     }
 
-    $self->{output}->option_exit(short_msg => 'No drive returned by lsdrive.')
-        if ($self->{global}->{detected} == 0);
+    $self->{output}->option_exit(
+        short_msg => scalar(@$drives) > 0 ? 'No drive found. Please check filters.' : 'No drive returned by lsdrive.'
+    ) if ($self->{global}->{detected} == 0);
 }
 
 1;

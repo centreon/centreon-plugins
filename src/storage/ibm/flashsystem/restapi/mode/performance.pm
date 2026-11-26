@@ -68,13 +68,13 @@ sub set_counters {
                 perfdatas => [ { template => '%.3f', unit => 'ms', min => 0 } ]
             }
         },
-        { label => 'read-latency', nlabel => 'system.io.read.latency.milliseconds', set => {
+        { label => 'read-latency', nlabel => 'system.io.read.latency.milliseconds', display_ok => 0, set => {
                 key_values => [ { name => 'read_latency' } ],
                 output_template => 'read %.3f ms',
                 perfdatas => [ { template => '%.3f', unit => 'ms', min => 0 } ]
             }
         },
-        { label => 'write-latency', nlabel => 'system.io.write.latency.milliseconds', set => {
+        { label => 'write-latency', nlabel => 'system.io.write.latency.milliseconds', display_ok => 0, set => {
                 key_values => [ { name => 'write_latency' } ],
                 output_template => 'write %.3f ms',
                 perfdatas => [ { template => '%.3f', unit => 'ms', min => 0 } ]
@@ -99,43 +99,43 @@ sub set_counters {
                 perfdatas => [ { template => '%s', unit => '%', min => 0, max => 100 } ]
             }
         },
-        { label => 'compression-cpu', nlabel => 'system.cpu.compression.utilization.percentage', set => {
+        { label => 'compression-cpu', nlabel => 'system.cpu.compression.utilization.percentage', display_ok => 0, set => {
                 key_values => [ { name => 'compression_cpu' } ],
                 output_template => 'compression cpu %s %%',
                 perfdatas => [ { template => '%s', unit => '%', min => 0, max => 100 } ]
             }
         },
-        { label => 'write-cache', nlabel => 'system.cache.write.usage.percentage', set => {
+        { label => 'write-cache', nlabel => 'system.cache.write.usage.percentage', display_ok => 0, set => {
                 key_values => [ { name => 'write_cache' } ],
                 output_template => 'write cache %s %%',
                 perfdatas => [ { template => '%s', unit => '%', min => 0, max => 100 } ]
             }
         },
-        { label => 'total-cache', nlabel => 'system.cache.total.usage.percentage', set => {
+        { label => 'total-cache', nlabel => 'system.cache.total.usage.percentage', display_ok => 0, set => {
                 key_values => [ { name => 'total_cache' } ],
                 output_template => 'total cache %s %%',
                 perfdatas => [ { template => '%s', unit => '%', min => 0, max => 100 } ]
             }
         },
-        { label => 'backend-latency', nlabel => 'system.backend.latency.milliseconds', set => {
+        { label => 'backend-latency', nlabel => 'system.backend.latency.milliseconds', display_ok => 0, set => {
                 key_values => [ { name => 'backend_latency' } ],
                 output_template => 'backend %.3f ms',
                 perfdatas => [ { template => '%.3f', unit => 'ms', min => 0 } ]
             }
         },
-        { label => 'drive-latency', nlabel => 'system.drive.latency.milliseconds', set => {
+        { label => 'drive-latency', nlabel => 'system.drive.latency.milliseconds', display_ok => 0, set => {
                 key_values => [ { name => 'drive_latency' } ],
                 output_template => 'drives %.3f ms',
                 perfdatas => [ { template => '%.3f', unit => 'ms', min => 0 } ]
             }
         },
-        { label => 'fc-iops', nlabel => 'system.fc.usage.iops', set => {
+        { label => 'fc-iops', nlabel => 'system.fc.usage.iops', display_ok => 0, set => {
                 key_values => [ { name => 'fc_iops' } ],
                 output_template => 'fc %s IOPS',
                 perfdatas => [ { template => '%s', unit => 'iops', min => 0 } ]
             }
         },
-        { label => 'fc-bandwidth', nlabel => 'system.fc.usage.bytespersecond', set => {
+        { label => 'fc-bandwidth', nlabel => 'system.fc.usage.bytespersecond', display_ok => 0, set => {
                 key_values => [ { name => 'fc_bandwidth' } ],
                 output_template => 'fc %s %s/s',
                 output_change_bytes => 1,
@@ -160,7 +160,6 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    # statistics_status 'off' freezes lssystemstats: the values no longer move.
     my $system = $options{custom}->request(command => 'lssystem')->[0];
     $self->{output}->option_exit(
         short_msg => 'Statistics collection is ' . $system->{statistics_status}
@@ -197,9 +196,14 @@ sub manage_selection {
         next if (!defined($self->{option_results}->{add_peaks}));
         my $peak = $entry->{stat_peak};
         next if (!defined($peak) || $peak !~ /^-?\d+(?:\.\d+)?$/);
+        my $peak_display = $peak . $measure->{unit};
+        if (defined($measure->{scale})) {
+            my ($value, $unit) = $self->{perfdata}->change_bytes(value => $peak * $measure->{scale});
+            $peak_display = sprintf('%.2f %s/s', $value, $unit);
+        }
         push @peaks, sprintf(
-            '%s peak %s%s at %s',
-            $measure->{stat}, $peak, $measure->{unit}, $entry->{stat_peak_time} // 'unknown'
+            '%s peak %s at %s',
+            $measure->{stat}, $peak_display, $entry->{stat_peak_time} // 'unknown'
         );
     }
 

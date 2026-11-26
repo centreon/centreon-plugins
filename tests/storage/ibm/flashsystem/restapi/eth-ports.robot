@@ -38,19 +38,19 @@ eth-ports ${tc}
     ...    --
     ...    1
     ...    ${EMPTY}
-    ...    OK: Ethernet ports: 6 detected, 2 active, 6 role-capable, 0 IP configured - All Ethernet ports in service are active | 'ethports.detected.count'=6;;;0; 'ethports.active.count'=2;;;0; 'ethports.withrole.count'=6;;;0; 'ethports.ip.configured.count'=0;;;0;
+    ...    OK: Ethernet ports: 6 detected, 2 active - All Ethernet ports in service are active | 'ethports.detected.count'=6;;;0; 'ethports.active.count'=2;;;0; 'ethports.withrole.count'=6;;;0; 'ethports.ip.configured.count'=0;;;0;
     ...    2
     ...    --add-unused
-    ...    OK: Ethernet ports: 6 detected, 2 active, 6 role-capable, 0 IP configured - All Ethernet ports in service are active | 'ethports.detected.count'=6;;;0; 'ethports.active.count'=2;;;0; 'ethports.withrole.count'=6;;;0; 'ethports.ip.configured.count'=0;;;0;
+    ...    OK: Ethernet ports: 6 detected, 2 active - All Ethernet ports in service are active | 'ethports.detected.count'=6;;;0; 'ethports.active.count'=2;;;0; 'ethports.withrole.count'=6;;;0; 'ethports.ip.configured.count'=0;;;0;
     ...    3
     ...    --critical-active=1
     ...    CRITICAL: Ethernet ports: 2 active | 'ethports.detected.count'=6;;;0; 'ethports.active.count'=2;;0:1;0; 'ethports.withrole.count'=6;;;0; 'ethports.ip.configured.count'=0;;;0;
     ...    4
     ...    --include-name='^node1'
-    ...    OK: Ethernet ports: 3 detected, 1 active, 3 role-capable, 0 IP configured - Port 'node1-1' link active, speed 1Gb/s, roles: management | 'ethports.detected.count'=3;;;0; 'ethports.active.count'=1;;;0; 'ethports.withrole.count'=3;;;0; 'ethports.ip.configured.count'=0;;;0;
+    ...    OK: Ethernet ports: 3 detected, 1 active - Port 'node1-1' link active, speed 1Gb/s, roles: management | 'ethports.detected.count'=3;;;0; 'ethports.active.count'=1;;;0; 'ethports.withrole.count'=3;;;0; 'ethports.ip.configured.count'=0;;;0;
     ...    5
     ...    --exclude-name='^node1'
-    ...    OK: Ethernet ports: 3 detected, 1 active, 3 role-capable, 0 IP configured - Port 'node2-1' link active, speed 1Gb/s, roles: management | 'ethports.detected.count'=3;;;0; 'ethports.active.count'=1;;;0; 'ethports.withrole.count'=3;;;0; 'ethports.ip.configured.count'=0;;;0;
+    ...    OK: Ethernet ports: 3 detected, 1 active - Port 'node2-1' link active, speed 1Gb/s, roles: management | 'ethports.detected.count'=3;;;0; 'ethports.active.count'=1;;;0; 'ethports.withrole.count'=3;;;0; 'ethports.ip.configured.count'=0;;;0;
     ...    6
     ...    --add-unused --critical-status='\\\%{link_state} !~ /^active$/i'
     ...    CRITICAL: Port 'node1-2' link inactive, roles: management/host/storage/replication - Port 'node1-3' link inactive, roles: host/storage/replication - Port 'node2-2' link inactive, roles: management/host/storage/replication - Port 'node2-3' link inactive, roles: host/storage/replication | 'ethports.detected.count'=6;;;0; 'ethports.active.count'=2;;;0; 'ethports.withrole.count'=6;;;0; 'ethports.ip.configured.count'=0;;;0;

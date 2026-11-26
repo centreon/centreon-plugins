@@ -73,13 +73,13 @@ sub set_counters {
                 perfdatas => [ { template => '%s', min => 0 } ]
             }
         },
-        { label => 'without-snapshot-policy', nlabel => 'volumegroups.without.snapshot.policy.count', set => {
+        { label => 'without-snapshot-policy', nlabel => 'volumegroups.without.snapshot.policy.count', display_ok => 0, set => {
                 key_values => [ { name => 'without_snapshot_policy' } ],
                 output_template => '%s without a snapshot policy',
                 perfdatas => [ { template => '%s', min => 0 } ]
             }
         },
-        { label => 'restoring', nlabel => 'volumegroups.restoring.count', set => {
+        { label => 'restoring', nlabel => 'volumegroups.restoring.count', display_ok => 0, set => {
                 key_values => [ { name => 'restoring' } ],
                 output_template => '%s restoring',
                 perfdatas => [ { template => '%s', min => 0 } ]

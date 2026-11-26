@@ -48,3 +48,13 @@ replication ${tc}
     ...    4
     ...    --exclude-partnership='.*'
     ...    CRITICAL: Storage partition 'partition-b' high availability status: problem, link: synchronized, system-a: healthy, system-b: healthy | 'replication.partitions.detected.count'=2;;;0; 'replication.volumegroups.detected.count'=33;;;0; 'replication.relationships.detected.count'=0;;;0;
+
+replication all filtered out
+    [Tags]    storage    ibm    flashsystem    restapi
+    ${command}    Catenate
+    ...    ${CMD}
+    ...    --exclude-partition='.*'
+    ...    --exclude-volume-group='.*'
+    ...    --exclude-partnership='.*'
+    ...    --exclude-relationship='.*'
+    Ctn Run Command And Check Result As Regexp    ${command}    No replication object matches the filters

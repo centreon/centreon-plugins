@@ -38,16 +38,16 @@ volumes ${tc}
     ...    --
     ...    1
     ...    ${EMPTY}
-    ...    OK: Volumes: 20 detected, 20 online, 0 degraded, 0 offline, 0 with copies out of sync | 'volumes.detected.count'=20;;;0; 'volumes.online.count'=20;;;0; 'volumes.degraded.count'=0;;;0; 'volumes.offline.count'=0;;;0; 'volumes.unsynchronised.count'=0;;;0;
+    ...    OK: Volumes: 20 detected, 20 online, 0 with copies out of sync | 'volumes.detected.count'=20;;;0; 'volumes.online.count'=20;;;0; 'volumes.degraded.count'=0;;;0; 'volumes.offline.count'=0;;;0; 'volumes.unsynchronised.count'=0;;;0;
     ...    2
     ...    --include-name='^vol-00[1-3]$'
-    ...    OK: Volumes: 3 detected, 3 online, 0 degraded, 0 offline, 0 with copies out of sync | 'volumes.detected.count'=3;;;0; 'volumes.online.count'=3;;;0; 'volumes.degraded.count'=0;;;0; 'volumes.offline.count'=0;;;0; 'volumes.unsynchronised.count'=0;;;0;
+    ...    OK: Volumes: 3 detected, 3 online, 0 with copies out of sync | 'volumes.detected.count'=3;;;0; 'volumes.online.count'=3;;;0; 'volumes.degraded.count'=0;;;0; 'volumes.offline.count'=0;;;0; 'volumes.unsynchronised.count'=0;;;0;
     ...    3
     ...    --add-all-volumes --include-name='^vol-00[1-2]$'
-    ...    OK: Volumes: 2 detected, 2 online, 0 degraded, 0 offline, 0 with copies out of sync - All volumes are online and synchronised | 'volumes.detected.count'=2;;;0; 'volumes.online.count'=2;;;0; 'volumes.degraded.count'=0;;;0; 'volumes.offline.count'=0;;;0; 'volumes.unsynchronised.count'=0;;;0;
+    ...    OK: Volumes: 2 detected, 2 online, 0 with copies out of sync - All volumes are online and synchronised | 'volumes.detected.count'=2;;;0; 'volumes.online.count'=2;;;0; 'volumes.degraded.count'=0;;;0; 'volumes.offline.count'=0;;;0; 'volumes.unsynchronised.count'=0;;;0;
     ...    4
     ...    --exclude-pool='pool-a'
-    ...    OK: Volumes: 0 detected, 0 online, 0 degraded, 0 offline, 0 with copies out of sync | 'volumes.detected.count'=0;;;0; 'volumes.online.count'=0;;;0; 'volumes.degraded.count'=0;;;0; 'volumes.offline.count'=0;;;0; 'volumes.unsynchronised.count'=0;;;0;
+    ...    OK: Volumes: 0 detected, 0 online, 0 with copies out of sync | 'volumes.detected.count'=0;;;0; 'volumes.online.count'=0;;;0; 'volumes.degraded.count'=0;;;0; 'volumes.offline.count'=0;;;0; 'volumes.unsynchronised.count'=0;;;0;
     ...    5
     ...    --warning-status='\\\%{status} =~ /online/' --include-name='^vol-001$' --add-all-volumes
     ...    WARNING: Volume 'vol-001' status: online, pool: pool-a, volume group: vg-01 | 'volumes.detected.count'=1;;;0; 'volumes.online.count'=1;;;0; 'volumes.degraded.count'=0;;;0; 'volumes.offline.count'=0;;;0; 'volumes.unsynchronised.count'=0;;;0;
