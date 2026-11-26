@@ -15,6 +15,11 @@ Makefile                            @centreon/owners-cpp
 
 *.sh                                @centreon/owners-bash
 
+*.rs                                @centreon/owners-rust
+rust-plugins/**                     @centreon/owners-rust
+rust-plugins/**/*.md                @centreon/owners-rust @centreon/owners-doc
+rust-plugins/**/*.sh                @centreon/owners-rust @centreon/owners-bash
+
 tests/**                            @centreon/owners-robot-e2e
 
 packaging/**                        @centreon/owners-perl
@@ -23,6 +28,7 @@ selinux/**                          @centreon/owners-pipelines
 
 .githooks/**                        @centreon/owners-perl
 .githooks/pre-commit.d/gitleaks.sh  @centreon/owners-security
+.githooks/pre-commit.d/*_rust_*.sh  @centreon/owners-rust @centreon/owners-bash
 
 # Pipelines Codeowners rules
 .github/**                    @centreon/owners-pipelines
