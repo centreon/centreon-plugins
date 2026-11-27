@@ -537,7 +537,7 @@ fn get_data_from_udp(_target: &str, message: Message<GetBulkRequest>) -> Result<
 #[cfg(not(test))]
 fn get_data_from_udp(target: &str, message: Message<GetBulkRequest>) -> Result<Message<Pdus>> {
     use crate::generic::error::Error::{
-        FailedToConnectToHost, InvalidSnmpPduDecode, InvalidSnmpPduEncode,
+        FailedToConnectToHost, IncompleteSnmpPduSend, InvalidSnmpPduDecode, InvalidSnmpPduEncode,
     };
     use log::{info, trace};
     use std::net::UdpSocket;
@@ -549,7 +549,12 @@ fn get_data_from_udp(target: &str, message: Message<GetBulkRequest>) -> Result<M
     // Send the message through an UDP socket
     let encoded: Vec<u8> = rasn::der::encode(&message).map_err(|_| InvalidSnmpPduEncode {})?;
     let res: usize = socket.send(&encoded)?;
-    assert!(res == encoded.len());
+    if res != encoded.len() {
+        return Err(IncompleteSnmpPduSend {
+            sent: res,
+            expected: encoded.len(),
+        });
+    }
     let mut buf: [u8; 1024] = [0; 1024];
     info!("waiting to receive data from {:?}", socket.peer_addr());
     let resp: (usize, std::net::SocketAddr) =

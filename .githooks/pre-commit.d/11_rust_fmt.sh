@@ -8,8 +8,8 @@ set -euo pipefail
 # channel, so the check runs 'cargo fmt --check' on the same dated nightly as
 # the CI: a stable rustfmt would ignore those options and format differently.
 #
-# The check only runs when a Rust source file or the rustfmt configuration of
-# rust-plugins is staged. It checks the whole crate, as the CI does.
+# The check only runs when a Rust source file, the rustfmt configuration or the
+# nightly pin of rust-plugins is staged. It checks the whole crate, as the CI does.
 #
 # The nightly toolchain is optional: when rustup or that toolchain is missing the
 # hook warns and lets the commit through.
@@ -26,14 +26,18 @@ fi
 source "${SCRIPT_DIR}/../lib/common.sh"
 
 CRATE_DIR='rust-plugins'
-# Keep in sync with the 'lint' job of .github/workflows/generic-plugins.yml
-NIGHTLY_TOOLCHAIN='nightly-2026-11-20'
+# Same dated nightly as the 'lint' job of .github/workflows/generic-plugins.yml
+# and rust-plugins/scripts/check.sh
+NIGHTLY_TOOLCHAIN="$(< "${CRATE_DIR}/rustfmt-toolchain.txt")"
 
 # Look for a staged Rust source file or rustfmt configuration
 RUST_STAGED=false
 while IFS= read -r file; do
   case "${file}" in
-    "${CRATE_DIR}"/*.rs | "${CRATE_DIR}/rustfmt.toml" | "${CRATE_DIR}/.rustfmt.toml") RUST_STAGED=true ;;
+    "${CRATE_DIR}"/*.rs | "${CRATE_DIR}/rustfmt.toml" | "${CRATE_DIR}/.rustfmt.toml" | \
+    "${CRATE_DIR}/rustfmt-toolchain.txt")
+      RUST_STAGED=true
+      ;;
   esac
 done < <(git diff --cached --name-only --diff-filter=ACMR)
 

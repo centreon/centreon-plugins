@@ -1,0 +1,4 @@
+# Test code may panic: that is how a test fails. See [lints.clippy] in Cargo.toml.
+allow-expect-in-tests = true
+allow-panic-in-tests = true
+allow-unwrap-in-tests = true
