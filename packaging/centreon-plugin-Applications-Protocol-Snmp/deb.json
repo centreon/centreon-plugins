@@ -1,5 +1,6 @@
 {
     "dependencies": [
-        "libsnmp-perl"
+        "libsnmp-perl",
+        "libnetaddr-ip-perl"
     ]
 }
