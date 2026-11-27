@@ -366,7 +366,7 @@ sub disco_show {
         if (defined($self->{option_results}->{speed}) && $self->{option_results}->{speed} ne '') {
             $interface_speed = $self->{option_results}->{speed};
         }
-        next if (defined($self->{option_results}->{skip_speed0}) && $interface_speed == 0);
+        next if (defined($self->{option_results}->{skip_speed0}) && ($interface_speed eq '' || $interface_speed == 0));
         next if (defined($self->{option_results}->{filter_status}) && defined($result->{$self->{oid_opstatus} . "." . $_}) && 
             $self->{oid_opstatus_mapping}->{$result->{$self->{oid_opstatus} . "." . $_}} !~ /$self->{option_results}->{filter_status}/i);
         next if ($self->is_admin_status_down(admin_status => $result->{$self->{oid_adminstatus} . "." . $_}));
