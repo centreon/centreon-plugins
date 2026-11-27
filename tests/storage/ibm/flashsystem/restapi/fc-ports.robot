@@ -1,0 +1,73 @@
+*** Settings ***
+Documentation     storage::ibm::flashsystem::restapi::plugin
+
+Resource          ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
+
+Suite Setup       Start Mockoon    ${MOCKOON_JSON}
+Suite Teardown    Stop Mockoon
+Test Timeout      120s
+
+
+*** Variables ***
+${MOCKOON_JSON}    ${CURDIR}${/}flashsystem.mockoon.json
+
+${CMD}             ${CENTREON_PLUGINS}
+...                --plugin=storage::ibm::flashsystem::restapi::plugin
+...                --mode=fc-ports
+...                --hostname=${HOSTNAME}
+...                --proto=http
+...                --port=${APIPORT}
+...                --api-username=user
+...                --api-password=pass
+...                --statefile-dir=/tmp
+
+
+*** Test Cases ***
+fc-ports ${tc}
+    [Tags]    storage    ibm    flashsystem    restapi
+    ${command}    Catenate
+    ...    ${CMD}
+    ...    ${extra_options}
+
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
+
+    Examples:
+    ...    tc
+    ...    extra_options
+    ...    expected_result
+    ...    --
+    ...    1
+    ...    ${EMPTY}
+    ...    OK: Fibre Channel ports: 8 detected, 8 active, 324 host login(s) - All Fibre Channel ports are active | 'fcports.detected.count'=8;;;0; 'fcports.active.count'=8;;;0; 'fcports.inactive.count'=0;;;0; 'fcports.host.logins.count'=324;;;0;
+    ...    2
+    ...    --include-name='^node1'
+    ...    OK: Fibre Channel ports: 4 detected, 4 active, 162 host login(s) - All Fibre Channel ports are active | 'fcports.detected.count'=4;;;0; 'fcports.active.count'=4;;;0; 'fcports.inactive.count'=0;;;0; 'fcports.host.logins.count'=162;;;0;
+    ...    3
+    ...    --critical-host-logins=10
+    ...    CRITICAL: Fibre Channel ports: 324 host login(s) | 'fcports.detected.count'=8;;;0; 'fcports.active.count'=8;;;0; 'fcports.inactive.count'=0;;;0; 'fcports.host.logins.count'=324;;0:10;0;
+    ...    4
+    ...    --warning-status='\\\%{port_speed} =~ /16Gb/'
+    ...    WARNING: Port 'node1-1' status: active, speed: 16Gb, attachment: switch, host logins: 3 - Port 'node1-2' status: active, speed: 16Gb, attachment: switch, host logins: 3 - Port 'node1-3' status: active, speed: 16Gb, attachment: switch, host logins: 78 - Port 'node1-4' status: active, speed: 16Gb, attachment: switch, host logins: 78 - Port 'node2-1' status: active, speed: 16Gb, attachment: switch, host logins: 3 - Port 'node2-2' status: active, speed: 16Gb, attachment: switch, host logins: 3 - Port 'node2-3' status: active, speed: 16Gb, attachment: switch, host logins: 78 - Port 'node2-4' status: active, speed: 16Gb, attachment: switch, host logins: 78 | 'fcports.detected.count'=8;;;0; 'fcports.active.count'=8;;;0; 'fcports.inactive.count'=0;;;0; 'fcports.host.logins.count'=324;;;0;
+    ...    5
+    ...    --include-type='nomatch'
+    ...    OK: Fibre Channel ports: 0 detected, 0 active, 0 host login(s) | 'fcports.detected.count'=0;;;0; 'fcports.active.count'=0;;;0; 'fcports.inactive.count'=0;;;0; 'fcports.host.logins.count'=0;;;0;
+
+fc-ports discovery ${tc}
+    [Tags]    storage    ibm    flashsystem    restapi
+    ${command}    Catenate
+    ...    ${CMD}
+    ...    ${extra_options}
+
+    Ctn Run Command Without Connector And Check Result As Strings    ${command}    ${expected_result}
+
+    Examples:
+    ...    tc
+    ...    extra_options
+    ...    expected_result
+    ...    --
+    ...    1
+    ...    --disco-format
+    ...    <?xml version="1.0" encoding="utf-8"?> <data> <element>name</element> <element>node_name</element> <element>port_id</element> <element>type</element> <element>status</element> <element>attachment</element> </data>
+    ...    2
+    ...    --disco-show
+    ...    <?xml version="1.0" encoding="utf-8"?> <data> <label attachment="switch" name="node1-1" node_name="node1" port_id="1" status="active" type="fc"/> <label attachment="switch" name="node1-2" node_name="node1" port_id="2" status="active" type="fc"/> <label attachment="switch" name="node1-3" node_name="node1" port_id="3" status="active" type="fc"/> <label attachment="switch" name="node1-4" node_name="node1" port_id="4" status="active" type="fc"/> <label attachment="switch" name="node2-1" node_name="node2" port_id="1" status="active" type="fc"/> <label attachment="switch" name="node2-2" node_name="node2" port_id="2" status="active" type="fc"/> <label attachment="switch" name="node2-3" node_name="node2" port_id="3" status="active" type="fc"/> <label attachment="switch" name="node2-4" node_name="node2" port_id="4" status="active" type="fc"/> </data>

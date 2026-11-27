@@ -112,6 +112,8 @@ FibreAlliance
 --filter-ppid
 --filter-vdom
 --filter-vm
+FlashCore
+FlashSystem
 --force-64bits-counters
 --force-counters32
 --force-counters64
@@ -205,6 +207,8 @@ MAPI
 MBean
 Mbps
 McAfee
+mdisk
+mdisks
 Mellanox
 memAvailReal
 memBuffer
@@ -265,6 +269,7 @@ NSClient
 NTLMv2
 NTP
 Nutanix
+NVMe
 NVOS
 OAuth
 OAuth2
@@ -368,6 +373,7 @@ statefile
 --statefile-concat-cwd
 Statuspage
 Stormshield
+Storwize
 sudoers
 superseed
 SureBackup
@@ -427,6 +433,7 @@ VeloCloud
 Veritas
 vhost
 VIRSHCLI
+Virtualize
 VM
 VMs
 VMware
