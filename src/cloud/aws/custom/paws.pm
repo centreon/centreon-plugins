@@ -277,16 +277,27 @@ sub cloudwatch_list_metrics {
     return $metric_results;
 }
 
+sub cloudwatchlogs_service {
+    my ($self, %options) = @_;
+
+    my %service_options = (region => $self->{option_results}->{region});
+    $service_options{endpoint} = $self->{option_results}->{endpoint}
+        if (defined($self->{option_results}->{endpoint}) && $self->{option_results}->{endpoint} ne '');
+
+    return $self->{paws}->service('CloudWatchLogs', %service_options);
+}
+
+# Returns the log groups with the same keys as the awscli custom mode (JSON output of the aws CLI).
 sub cloudwatchlogs_describe_log_groups {
     my ($self, %options) = @_;
 
     my $log_groups_results = [];
     eval {
-        my $cw = $self->{paws}->service('CloudWatchLogs', region => $self->{option_results}->{region});
+        my $cw = $self->cloudwatchlogs_service();
         my %cw_options = ();
         while ((my $list_log_groups = $cw->DescribeLogGroups(%cw_options))) {
-            foreach (@{$list_log_groups->{LogGroups}}) {
-                push @$log_groups_results, $_;
+            foreach (@{$list_log_groups->{LogGroups} // []}) {
+                push @$log_groups_results, { logGroupName => $_->{LogGroupName} };
             }
 
             last if (!defined($list_log_groups->{NextToken}));
@@ -301,23 +312,27 @@ sub cloudwatchlogs_describe_log_groups {
     return $log_groups_results;
 }
 
+# Returns the log events with the same keys as the awscli custom mode (JSON output of the aws CLI).
 sub cloudwatchlogs_filter_log_events {
     my ($self, %options) = @_;
 
-    my $log_groups_results = [];
+    my $events_results = [];
     eval {
-        my $cw = $self->{paws}->service('CloudWatchLogs', region => $self->{option_results}->{region});
-        my %cw_options = ();
+        my $cw = $self->cloudwatchlogs_service();
+        my %cw_options = (LogGroupName => $options{group_name});
         $cw_options{StartTime} = $options{start_time} if (defined($options{start_time}));
-        $cw_options{LogStreamNames} = [@{$options{LogStreamNames}}] if (defined($options{LogStreamNames}));
-        $cw_options{LogGroupName} = $options{group_name};
-        while ((my $list_log_groups = $cw->FilterLogEvents(%cw_options))) {
-            foreach (@{$list_log_groups->{logGroups}}) {
-                push @$log_groups_results, $_;
+        $cw_options{LogStreamNames} = [ @{$options{stream_names}} ] if (defined($options{stream_names}));
+        while ((my $list_events = $cw->FilterLogEvents(%cw_options))) {
+            foreach (@{$list_events->{Events} // []}) {
+                push @$events_results, {
+                    logStreamName => $_->{LogStreamName},
+                    timestamp     => $_->{Timestamp},
+                    message       => $_->{Message}
+                };
             }
 
-            last if (!defined($list_log_groups->{NextToken}));
-            $cw_options{NextToken} = $list_log_groups->{NextToken};
+            last if (!defined($list_events->{NextToken}));
+            $cw_options{NextToken} = $list_events->{NextToken};
         }
     };
     if ($@) {
@@ -325,7 +340,7 @@ sub cloudwatchlogs_filter_log_events {
         $self->{output}->option_exit();
     }
 
-    return $log_groups_results;
+    return $events_results;
 }
 
 sub ebs_list_volumes {
@@ -968,6 +983,10 @@ does not return value when not defined.
 =item B<--proxyurl>
 
 Proxy URL if any
+
+=item B<--endpoint>
+
+Override the AWS service endpoint URL (only supported by the C<cloudtrail> and C<cloudwatchlogs> plugins).
 
 =back
 
