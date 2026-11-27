@@ -911,8 +911,33 @@ sub cloudtrail_trail_status {
     return $trail_status;
 }
 
+sub securityhub_check_filters {
+    my ($self, %options) = @_;
+
+    return if (!defined($options{filters}));
+
+    centreon::plugins::misc::mymodule_load(
+        output => $self->{output},
+        module => 'Paws::SecurityHub::AwsSecurityFindingFilters',
+        error_msg => "Cannot load module 'Paws::SecurityHub::AwsSecurityFindingFilters'."
+    );
+
+    # Paws dies on filter keys missing from its (possibly outdated) API model
+    my $meta = Paws::SecurityHub::AwsSecurityFindingFilters->meta();
+    my @unsupported = grep { !defined($meta->find_attribute_by_name($_)) } sort(keys %{$options{filters}});
+    return if (scalar(@unsupported) == 0);
+
+    $self->{output}->add_option_msg(
+        short_msg => 'Security Hub filter(s) not supported by the installed Paws version: ' . join(', ', @unsupported) .
+            '. Use --custommode=awscli or set --filters without them.'
+    );
+    $self->{output}->option_exit();
+}
+
 sub securityhub_get_findings {
     my ($self, %options) = @_;
+
+    $self->securityhub_check_filters(filters => $options{filters});
 
     my $findings = [];
     eval {
@@ -930,7 +955,7 @@ sub securityhub_get_findings {
             foreach my $finding (@{$results->{Findings}}) {
                 my $resources = [];
                 foreach my $resource (@{$finding->{Resources}}) {
-                    push @$resources, { Id => $resource->{Id}, Type => $resource->{Type} };
+                    push @$resources, { Id => $resource->{Id}, Type => $resource->{Type}, Tags => defined($resource->{Tags}) ? $resource->{Tags}->{Map} : undef };
                 }
                 push @$findings, {
                     Id => $finding->{Id},

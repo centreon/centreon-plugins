@@ -29,21 +29,21 @@ cat<<EOF2
             "Id": "finding-4",
             "Severity": { "Label": "MEDIUM", "Normalized": 40 },
             "Resources": [
-                { "Id": "arn:aws:ec2:eu-west-1:123456789012:instance/i-0002", "Type": "AwsEc2Instance" }
+                { "Id": "arn:aws:ec2:eu-west-1:123456789012:instance/i-0002", "Type": "AwsEc2Instance", "Tags": { "Name": "centreon2" } }
             ]
         },
         {
             "Id": "finding-5",
             "Severity": { "Label": "INFORMATIONAL", "Normalized": 0 },
             "Resources": [
-                { "Id": "arn:aws:ec2:eu-west-1:123456789012:instance/i-0002", "Type": "AwsEc2Instance" }
+                { "Id": "arn:aws:ec2:eu-west-1:123456789012:instance/i-0002", "Type": "AwsEc2Instance", "Tags": { "Name": "centreon2" } }
             ]
         },
         {
             "Id": "finding-6",
             "Severity": { "Label": "LOW", "Normalized": 10 },
             "Resources": [
-                { "Id": "arn:aws:ec2:eu-west-1:123456789012:instance/i-0002", "Type": "AwsEc2Instance" }
+                { "Id": "arn:aws:ec2:eu-west-1:123456789012:instance/i-0002", "Type": "AwsEc2Instance", "Tags": { "Name": "centreon2" } }
             ]
         }
     ]

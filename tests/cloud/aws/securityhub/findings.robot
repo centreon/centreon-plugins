@@ -38,16 +38,42 @@ AWS Security Hub findings ${tc}
     ...    CRITICAL: Findings critical: 1 | 'findings.critical.total.count'=1;;0:0;0; 'findings.high.total.count'=1;;;0; 'findings.medium.total.count'=0;;;0; 'findings.low.total.count'=0;;;0; 'findings.informational.total.count'=0;;;0; 'arn:aws:s3:::my-bucket#findings.critical.total.count'=1;;;0; 'arn:aws:s3:::my-bucket#findings.high.total.count'=1;;;0; 'arn:aws:s3:::my-bucket#findings.medium.total.count'=0;;;0; 'arn:aws:s3:::my-bucket#findings.low.total.count'=0;;;0; 'arn:aws:s3:::my-bucket#findings.informational.total.count'=0;;;0; 'arn:aws:s3:::my-bucket#findings.total.count'=2;;;0;
     ...    3
     ...    --include-resource-id='i-0002' --warning-resource-findings-medium=0
-    ...    WARNING: resource 'arn:aws:ec2:eu-west-1:123456789012:instance/i-0002' type 'AwsEc2Instance' medium: 1 | 'findings.critical.total.count'=0;;;0; 'findings.high.total.count'=0;;;0; 'findings.medium.total.count'=1;;;0; 'findings.low.total.count'=1;;;0; 'findings.informational.total.count'=1;;;0; 'arn:aws:ec2:eu-west-1:123456789012:instance/i-0002#findings.critical.total.count'=0;;;0; 'arn:aws:ec2:eu-west-1:123456789012:instance/i-0002#findings.high.total.count'=0;;;0; 'arn:aws:ec2:eu-west-1:123456789012:instance/i-0002#findings.medium.total.count'=1;0:0;;0; 'arn:aws:ec2:eu-west-1:123456789012:instance/i-0002#findings.low.total.count'=1;;;0; 'arn:aws:ec2:eu-west-1:123456789012:instance/i-0002#findings.informational.total.count'=1;;;0; 'arn:aws:ec2:eu-west-1:123456789012:instance/i-0002#findings.total.count'=3;;;0;
+    ...    WARNING: resource 'arn:aws:ec2:eu-west-1:123456789012:instance/i-0002' name 'centreon2' type 'AwsEc2Instance' medium: 1 | 'findings.critical.total.count'=0;;;0; 'findings.high.total.count'=0;;;0; 'findings.medium.total.count'=1;;;0; 'findings.low.total.count'=1;;;0; 'findings.informational.total.count'=1;;;0; 'arn:aws:ec2:eu-west-1:123456789012:instance/i-0002#findings.critical.total.count'=0;;;0; 'arn:aws:ec2:eu-west-1:123456789012:instance/i-0002#findings.high.total.count'=0;;;0; 'arn:aws:ec2:eu-west-1:123456789012:instance/i-0002#findings.medium.total.count'=1;0:0;;0; 'arn:aws:ec2:eu-west-1:123456789012:instance/i-0002#findings.low.total.count'=1;;;0; 'arn:aws:ec2:eu-west-1:123456789012:instance/i-0002#findings.informational.total.count'=1;;;0; 'arn:aws:ec2:eu-west-1:123456789012:instance/i-0002#findings.total.count'=3;;;0;
     ...    4
     ...    --exclude-resource-type='AwsEc2Instance'
     ...    OK: Findings critical: 1, high: 1, medium: 0, low: 0, informational: 0 - resource 'arn:aws:s3:::my-bucket' type 'AwsS3Bucket' critical: 1, high: 1, medium: 0, low: 0, informational: 0, total: 2 | 'findings.critical.total.count'=1;;;0; 'findings.high.total.count'=1;;;0; 'findings.medium.total.count'=0;;;0; 'findings.low.total.count'=0;;;0; 'findings.informational.total.count'=0;;;0; 'arn:aws:s3:::my-bucket#findings.critical.total.count'=1;;;0; 'arn:aws:s3:::my-bucket#findings.high.total.count'=1;;;0; 'arn:aws:s3:::my-bucket#findings.medium.total.count'=0;;;0; 'arn:aws:s3:::my-bucket#findings.low.total.count'=0;;;0; 'arn:aws:s3:::my-bucket#findings.informational.total.count'=0;;;0; 'arn:aws:s3:::my-bucket#findings.total.count'=2;;;0;
     ...    5
     ...    --include-resource-id='i-0002' --critical-resource-findings-total=2
-    ...    CRITICAL: resource 'arn:aws:ec2:eu-west-1:123456789012:instance/i-0002' type 'AwsEc2Instance' total: 3 | 'findings.critical.total.count'=0;;;0; 'findings.high.total.count'=0;;;0; 'findings.medium.total.count'=1;;;0; 'findings.low.total.count'=1;;;0; 'findings.informational.total.count'=1;;;0; 'arn:aws:ec2:eu-west-1:123456789012:instance/i-0002#findings.critical.total.count'=0;;;0; 'arn:aws:ec2:eu-west-1:123456789012:instance/i-0002#findings.high.total.count'=0;;;0; 'arn:aws:ec2:eu-west-1:123456789012:instance/i-0002#findings.medium.total.count'=1;;;0; 'arn:aws:ec2:eu-west-1:123456789012:instance/i-0002#findings.low.total.count'=1;;;0; 'arn:aws:ec2:eu-west-1:123456789012:instance/i-0002#findings.informational.total.count'=1;;;0; 'arn:aws:ec2:eu-west-1:123456789012:instance/i-0002#findings.total.count'=3;;0:2;0;
+    ...    CRITICAL: resource 'arn:aws:ec2:eu-west-1:123456789012:instance/i-0002' name 'centreon2' type 'AwsEc2Instance' total: 3 | 'findings.critical.total.count'=0;;;0; 'findings.high.total.count'=0;;;0; 'findings.medium.total.count'=1;;;0; 'findings.low.total.count'=1;;;0; 'findings.informational.total.count'=1;;;0; 'arn:aws:ec2:eu-west-1:123456789012:instance/i-0002#findings.critical.total.count'=0;;;0; 'arn:aws:ec2:eu-west-1:123456789012:instance/i-0002#findings.high.total.count'=0;;;0; 'arn:aws:ec2:eu-west-1:123456789012:instance/i-0002#findings.medium.total.count'=1;;;0; 'arn:aws:ec2:eu-west-1:123456789012:instance/i-0002#findings.low.total.count'=1;;;0; 'arn:aws:ec2:eu-west-1:123456789012:instance/i-0002#findings.informational.total.count'=1;;;0; 'arn:aws:ec2:eu-west-1:123456789012:instance/i-0002#findings.total.count'=3;;0:2;0;
     ...    6
+    ...    --include-resource-id='i-0002' --tag-key-name='hehe' --critical-resource-findings-total=2
+    ...    CRITICAL: resource 'arn:aws:ec2:eu-west-1:123456789012:instance/i-0002' type 'AwsEc2Instance' total: 3 | 'findings.critical.total.count'=0;;;0; 'findings.high.total.count'=0;;;0; 'findings.medium.total.count'=1;;;0; 'findings.low.total.count'=1;;;0; 'findings.informational.total.count'=1;;;0; 'arn:aws:ec2:eu-west-1:123456789012:instance/i-0002#findings.critical.total.count'=0;;;0; 'arn:aws:ec2:eu-west-1:123456789012:instance/i-0002#findings.high.total.count'=0;;;0; 'arn:aws:ec2:eu-west-1:123456789012:instance/i-0002#findings.medium.total.count'=1;;;0; 'arn:aws:ec2:eu-west-1:123456789012:instance/i-0002#findings.low.total.count'=1;;;0; 'arn:aws:ec2:eu-west-1:123456789012:instance/i-0002#findings.informational.total.count'=1;;;0; 'arn:aws:ec2:eu-west-1:123456789012:instance/i-0002#findings.total.count'=3;;0:2;0;
+    ...    7
     ...    --include-resource-id='i-0002' --warning-findings-low=0
     ...    WARNING: Findings low: 1 | 'findings.critical.total.count'=0;;;0; 'findings.high.total.count'=0;;;0; 'findings.medium.total.count'=1;;;0; 'findings.low.total.count'=1;0:0;;0; 'findings.informational.total.count'=1;;;0; 'arn:aws:ec2:eu-west-1:123456789012:instance/i-0002#findings.critical.total.count'=0;;;0; 'arn:aws:ec2:eu-west-1:123456789012:instance/i-0002#findings.high.total.count'=0;;;0; 'arn:aws:ec2:eu-west-1:123456789012:instance/i-0002#findings.medium.total.count'=1;;;0; 'arn:aws:ec2:eu-west-1:123456789012:instance/i-0002#findings.low.total.count'=1;;;0; 'arn:aws:ec2:eu-west-1:123456789012:instance/i-0002#findings.informational.total.count'=1;;;0; 'arn:aws:ec2:eu-west-1:123456789012:instance/i-0002#findings.total.count'=3;;;0;
-    ...    7
+    ...    8
     ...    --filters='[1]'
     ...    UNKNOWN: Cannot decode --filters option: it must be a JSON object.
+
+AWS Security Hub findings paws unsupported filters ${tc}
+    [Tags]    cloud    aws    securityhub
+    ${command}    Catenate
+    ...    ${CENTREON_PLUGINS} --plugin=cloud::aws::securityhub::plugin
+    ...    --custommode=paws --region=eu-west-1
+    ...    --aws-secret-key=secret --aws-access-key=key
+    ...    --mode=findings
+    ...    ${extraoptions}
+
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
+
+    Examples:
+    ...    tc
+    ...    extraoptions
+    ...    expected_result
+    ...    --
+    ...    1
+    ...    ${EMPTY}
+    ...    UNKNOWN: Security Hub filter(s) not supported by the installed Paws version: VulnerabilitiesFixAvailable. Use --custommode=awscli or set --filters without them.
+    ...    2
+    ...    --filters='{"VulnerabilitiesExploitAvailable":[{"Value":"YES","Comparison":"EQUALS"}],"RecordState":[{"Value":"ACTIVE","Comparison":"EQUALS"}]}'
+    ...    UNKNOWN: Security Hub filter(s) not supported by the installed Paws version: VulnerabilitiesExploitAvailable. Use --custommode=awscli or set --filters without them.

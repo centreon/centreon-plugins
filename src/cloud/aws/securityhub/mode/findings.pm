@@ -39,13 +39,31 @@ my $DEFAULT_FILTERS = {
 
 my @SEVERITIES = ('critical', 'high', 'medium', 'low', 'informational');
 
+sub custom_prefix_output {
+    my ($self, %options) = @_;
+
+    if ($options{instance_value}->{name}) {
+        return sprintf(
+            "resource '%s' name '%s' type '%s' ",
+            $options{instance_value}->{id},
+            $options{instance_value}->{name},
+            $options{instance_value}->{type}
+        );
+    }
+    return sprintf(
+        "resource '%s' type '%s' ",
+        $options{instance_value}->{id},
+        $options{instance_value}->{type}
+    );
+}
+
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
         { name => 'global', type => COUNTER_TYPE_GLOBAL, prefix_output => 'Findings ' },
         {
-            name => 'resources', type => COUNTER_TYPE_INSTANCE, prefix_output => "resource '%{id}' type '%{type}' ",
+            name => 'resources', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'custom_prefix_output',
             message_multiple => 'All resources are ok'
         }
     ];
@@ -64,7 +82,7 @@ sub set_counters {
         push @{$self->{maps_counters}->{resources}}, {
             label => 'resource-findings-' . $severity, nlabel => 'findings.' . $severity . '.total.count',
             set => {
-                key_values => [ { name => $severity }, { name => 'id' }, { name => 'type' } ],
+                key_values => [ { name => $severity }, { name => 'id' }, { name => 'name' }, { name => 'type' } ],
                 output_template => $severity . ': %s',
                 perfdatas => [
                     { template => '%s', min => 0, label_extra_instance => 1, instance_use => 'id' }
@@ -76,7 +94,7 @@ sub set_counters {
     push @{$self->{maps_counters}->{resources}}, {
         label => 'resource-findings-total', nlabel => 'findings.total.count',
         set => {
-            key_values => [ { name => 'total' }, { name => 'id' }, { name => 'type' } ],
+            key_values => [ { name => 'total' }, { name => 'id' }, { name => 'name' }, { name => 'type' } ],
             output_template => 'total: %s',
             perfdatas => [
                 { template => '%s', min => 0, label_extra_instance => 1, instance_use => 'id' }
@@ -92,6 +110,7 @@ sub new {
 
     $options{options}->add_options(arguments => {
         'filters:s'               => { name => 'filters' },
+        'tag-key-name:s'          => { name => 'tag_key_name', default => 'Name' },
         'include-resource-id:s'   => { name => 'include_resource_id' },
         'exclude-resource-id:s'   => { name => 'exclude_resource_id' },
         'include-resource-type:s' => { name => 'include_resource_type' },
@@ -134,10 +153,20 @@ sub manage_selection {
         my $selected = 0;
         foreach my $resource (@{$finding->{Resources} // []}) {
             my $type = $resource->{Type} // '';
+            my $name = '';
+            if (defined($resource->{Tags}) && defined($resource->{Tags}->{$self->{option_results}->{tag_key_name}})) {
+                $name = $resource->{Tags}->{$self->{option_results}->{tag_key_name}};
+            }
             next if (is_excluded($resource->{Id}, $self->{option_results}->{include_resource_id}, $self->{option_results}->{exclude_resource_id}, output => $self->{output}));
             next if (is_excluded($type, $self->{option_results}->{include_resource_type}, $self->{option_results}->{exclude_resource_type}, output => $self->{output}));
 
-            $self->{resources}->{ $resource->{Id} } //= { id => $resource->{Id}, type => $type, total => 0, map { $_ => 0 } @SEVERITIES };
+            $self->{resources}->{ $resource->{Id} } //= {
+                id   => $resource->{Id},
+                name => $name,
+                type => $type,
+                total => 0,
+                map { $_ => 0 } @SEVERITIES
+            };
             $self->{resources}->{ $resource->{Id} }->{$severity}++;
             $self->{resources}->{ $resource->{Id} }->{total}++;
             $selected = 1;
@@ -163,12 +192,21 @@ perl centreon_plugins.pl --plugin=cloud::aws::securityhub::plugin --custommode=a
 
 Required IAM permission: C<securityhub:GetFindings>.
 
+With C<--custommode=paws>, only the filters known by the installed Paws version can be used.
+Paws 0.46 does not support the C<Vulnerabilities*> filters (including C<VulnerabilitiesFixAvailable>,
+which is part of the default filters): the plugin then returns UNKNOWN.
+Use C<--custommode=awscli>, or set C<--filters> without these filters.
+
 =over 8
 
 =item B<--filters>
 
-Set the Security Hub findings filters (JSON). Default filters: 
-'{"VulnerabilitiesFixAvailable":[{"Value":"YES","Comparison":"EQUALS"}],"RecordState":[{"Value":"ACTIVE","Comparison":"EQUALS"}],"WorkflowStatus":[{"Value":"NEW","Comparison":"EQUALS"},{"Value":"NOTIFIED","Comparison":"EQUALS"}]}'
+Set the Security Hub findings filters with JSON format (default filters:
+'{"VulnerabilitiesFixAvailable":[{"Value":"YES","Comparison":"EQUALS"}],"RecordState":[{"Value":"ACTIVE","Comparison":"EQUALS"}],"WorkflowStatus":[{"Value":"NEW","Comparison":"EQUALS"},{"Value":"NOTIFIED","Comparison":"EQUALS"}]}').
+
+=item B<--tag-key-name>
+
+Set Tag key used to display the resource name in the output (default: 'Name').
 
 =item B<--include-resource-id>
 
