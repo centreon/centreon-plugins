@@ -29,12 +29,12 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '0.1';
     $self->{modes} = {
         'backup'                    => 'database::mysql::mode::backup',
         'collection'                => 'centreon::common::protocols::sql::mode::collection',
         'connection-time'           => 'centreon::common::protocols::sql::mode::connectiontime',
         'databases-size'            => 'database::mysql::mode::databasessize',
+        'galera-cluster'            => 'database::mysql::mode::galeracluster',
         'innodb-bufferpool-hitrate' => 'database::mysql::mode::innodbbufferpoolhitrate',
         'long-queries'              => 'database::mysql::mode::longqueries',
         'myisam-keycache-hitrate'   => 'database::mysql::mode::myisamkeycachehitrate',
