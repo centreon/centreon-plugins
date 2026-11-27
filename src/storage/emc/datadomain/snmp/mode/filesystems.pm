@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,6 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use centreon::plugins::constants qw/:counters :values/;
 use storage::emc::datadomain::snmp::lib::functions;
 
 sub custom_disk_usage_output {
@@ -68,13 +69,13 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output' },
+        { name => 'global', type => COUNTER_TYPE_GLOBAL, prefix_output => 'Number of filesystems ' },
         {
-            name => 'fs', type => 3, cb_prefix_output => 'prefix_fs_output', cb_long_output => 'fs_long_output', indent_long_output => '    ', message_multiple => 'All filesystems are ok',
+            name => 'fs', type => COUNTER_TYPE_MULTIPLE, prefix_output => "filesystem '%{name}' ", long_output => "checking filesystem '%{name}'", indent_long_output => '    ', message_multiple => 'All filesystems are ok',
             group => [
-                { name => 'space', type => 0, skipped_code => { -10 => 1 } },
-                { name => 'precomp', type => 0, skipped_code => { -10 => 1 } },
-                { name => 'cleanable', type => 0, skipped_code => { -10 => 1 } }
+                { name => 'space', type => COUNTER_MULTIPLE_INSTANCE, skipped_code => { NO_VALUE() => 1 } },
+                { name => 'precomp', type => COUNTER_MULTIPLE_INSTANCE, skipped_code => { NO_VALUE() => 1 } },
+                { name => 'cleanable', type => COUNTER_MULTIPLE_INSTANCE, skipped_code => { NO_VALUE() => 1 } }
             ]
         }
     ];
@@ -148,7 +149,8 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        'filter-fs-name:s' => { name => 'filter_fs_name' }
+        'filter-fs-name:s' => { name => 'filter_fs_name' },
+        'filter-tier:s'    => { name => 'filter_tier' }
     });
 
     return $self;
@@ -157,7 +159,7 @@ sub new {
 my $oid_fileSystemSpaceEntry = '.1.3.6.1.4.1.19746.1.3.2.1.1';
 my $oid_sysDescr = '.1.3.6.1.2.1.1.1.0'; # 'Data Domain OS 5.4.1.1-411752'
 my ($oid_fileSystemResourceName, $oid_fileSystemSpaceUsed, $oid_fileSystemSpaceAvail);
-my ($oid_fileSystemSpaceCleanable);
+my ($oid_fileSystemSpaceCleanable, $oid_fileSystemResourceTier);
 
 sub manage_selection {
     my ($self, %options) = @_;
@@ -185,6 +187,7 @@ sub manage_selection {
         $oid_fileSystemSpaceUsed = '.1.3.6.1.4.1.19746.1.3.2.1.1.5';
         $oid_fileSystemSpaceAvail = '.1.3.6.1.4.1.19746.1.3.2.1.1.6';
         $oid_fileSystemSpaceCleanable = '.1.3.6.1.4.1.19746.1.3.2.1.1.8';
+        $oid_fileSystemResourceTier = '.1.3.6.1.4.1.19746.1.3.2.1.1.9'; 
     } else {
         $oid_fileSystemResourceName = '.1.3.6.1.4.1.19746.1.3.2.1.1.2';
         $oid_fileSystemSpaceUsed = '.1.3.6.1.4.1.19746.1.3.2.1.1.4';
@@ -205,9 +208,15 @@ sub manage_selection {
         $postcomp = 1 if ($name =~ /:\s*post-comp/);
         $name =~ s/:\s*(pre-comp|post-comp).*//;
 
+        my $tier = defined($oid_fileSystemResourceTier) ? $snmp_result->{$oid_fileSystemResourceTier . '.' . $instance} : undef; # With a Cloud Tier, the same filesystem is reported once per tier ('Active Tier', 'Cloud Tier' and 'Total').
+        $tier = 'Active Tier' if (!defined($tier) || $tier eq ''); # Rows without a tier belong to the Active Tier.
+
         next if (defined($self->{option_results}->{filter_fs_name}) && $self->{option_results}->{filter_fs_name} ne '' &&
             $name !~ /$self->{option_results}->{filter_fs_name}/);
+        next if (defined($self->{option_results}->{filter_tier}) && $self->{option_results}->{filter_tier} ne '' &&
+            $tier !~ /$self->{option_results}->{filter_tier}/);
 
+        $name = storage::emc::datadomain::snmp::lib::functions::get_fs_display_name(name => $name, tier => $tier);
         my $used = int($snmp_result->{$oid_fileSystemSpaceUsed . '.' . $instance} * 1024 * 1024 * 1024);
         my $free = int($snmp_result->{$oid_fileSystemSpaceAvail . '.' . $instance} * 1024 * 1024 * 1024);
         my $total = $used + $free;
@@ -261,13 +270,59 @@ Check filesystems.
 
 =item B<--filter-fs-name>
 
-Check filesystems by name.
+Check filesystems by name (can be a regexp).
 
-=item B<--warning-*> B<--critical-*>
+=item B<--filter-tier>
 
-Thresholds.
-Can be: 'fs-detected', 'space-usage, 'space-usage-free',
-'space-usage-prct', 'space-precompression-usage', 'space-cleanable'.
+Check filesystems by tier (can be a regexp). Example: C<--filter-tier='Active Tier'>.
+
+=item B<--warning-fs-detected>
+
+Threshold.
+
+=item B<--critical-fs-detected>
+
+Threshold.
+
+=item B<--warning-space-cleanable>
+
+Threshold in bytes.
+
+=item B<--critical-space-cleanable>
+
+Threshold in bytes.
+
+=item B<--warning-space-precompression-usage>
+
+Threshold in bytes.
+
+=item B<--critical-space-precompression-usage>
+
+Threshold in bytes.
+
+=item B<--warning-space-usage>
+
+Threshold in bytes.
+
+=item B<--critical-space-usage>
+
+Threshold in bytes.
+
+=item B<--warning-space-usage-free>
+
+Threshold in bytes.
+
+=item B<--critical-space-usage-free>
+
+Threshold in bytes.
+
+=item B<--warning-space-usage-prct>
+
+Threshold in percentage.
+
+=item B<--critical-space-usage-prct>
+
+Threshold in percentage.
 
 =back
 

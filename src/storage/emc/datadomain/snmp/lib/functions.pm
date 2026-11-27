@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -25,6 +25,15 @@ sub get_version {
     
     return $1 if (defined($options{value}) && $options{value} =~ /(\d+\.\d+\.\d+)/);
     return undef;
+}
+
+# The Active Tier perfdata keep the plain filesystem name weither other tier are present
+# Other tiers (Cloud Tier, Total) get the tier appended to the name.
+sub get_fs_display_name {
+    my (%options) = @_;
+
+    return $options{name} if (!defined($options{tier}) || $options{tier} =~ /^\s*(active\s+tier)?\s*$/i);
+    return $options{name} . '~' . $options{tier};
 }
 
 1;
