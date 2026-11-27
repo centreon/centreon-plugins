@@ -114,8 +114,10 @@ sub authenticate {
             header => [
                 'X-Auth-Username: ' . $self->{option_results}->{api_username},
                 'X-Auth-Password: ' . $self->{option_results}->{api_password},
+                'Content-Type: application/json',
                 'Accept: application/json'
             ],
+            query_form_post => '',
             unknown_status => '',
             warning_status => '',
             critical_status => ''
